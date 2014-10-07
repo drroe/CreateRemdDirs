@@ -1,0 +1,9 @@
+DIMENSION   ~/CheathamWork/GACC/Topology/GACC.8.SGLD.dat
+NSTLIM      500
+DT          0.002
+NUMEXCHG    100
+TEMPERATURE 300.0
+TOPOLOGY    ~/CheathamWork/GACC/full.parm7
+MDIN_FILE   ~/CheathamWork/GACC/RunScripts/pme.remd.gamma1.opts
+# Only fully archive lowest Hamiltonian
+FULLARCHIVE 0

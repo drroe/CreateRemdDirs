@@ -1,0 +1,5 @@
+parm /home/droe/CheathamWork/CyclicPeptide/Protein/Structure/DFC-NewSpacing-Neutral-TIP3P/AltDFC.01.PagF.TIP3P.ff14SB.parm7
+ensemble ../run.000/TRAJ/rem.crd.001 
+strip :WAT
+autoimage
+trajout run0-0.nowat.nc netcdf remdtraj 

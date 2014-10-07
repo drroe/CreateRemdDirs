@@ -1,0 +1,35 @@
+Dimension 0
+&multirem
+   exch_type = 'TEMPERATURE',
+   group(1,:) = 1,2,3,4,
+   group(2,:) = 9,10,11,12,
+   group(3,:) = 5,6,7,8,
+   group(4,:) = 13,14,15,16,
+   desc = 'Temperature exchange from 277 K to 290.2 K'
+/
+Dimension 1
+&multirem
+   exch_type = 'HAMILTONIAN',
+   group(1,:) = 1,5,
+   group(2,:) = 9,13,
+   group(3,:) = 2,6,
+   group(4,:) = 10,14,
+   group(5,:) = 3,7,
+   group(6,:) = 11,15,
+   group(7,:) = 4,8,
+   group(8,:) = 12,16,
+   desc = 'Varying topology files'
+/
+Dimension 2
+&multirem
+   exch_type = 'HAMILTONIAN',
+   group(1,:) = 1,9,
+   group(2,:) = 5,13,
+   group(3,:) = 2,10,
+   group(4,:) = 6,14,
+   group(5,:) = 3,11,
+   group(6,:) = 7,15,
+   group(7,:) = 4,12,
+   group(8,:) = 8,16,
+   desc = 'AMD with various dihedral boost levels'
+/
