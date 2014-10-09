@@ -168,7 +168,7 @@ int main(int argc, char** argv) {
       // (FULLARCHIVE). The second saves all stripped trajs.
       if (REMD.FullArchive().empty()) {
         ErrorMsg("FULLARCHIVE must contain a comma-separated list of ensemble members to"
-                 " save full coordinates, or NONE to skip this step.");
+                 " save full coordinates, or NONE to skip this step.\n");
         return 1;
       }
       std::string ARDIR="Archive." + integerToString(start_run) + "." +
