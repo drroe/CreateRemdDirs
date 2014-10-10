@@ -45,9 +45,10 @@ int main(int argc, char** argv) {
       crd_dir.assign( argv[++iarg] );
     else if (Arg == "-d" && iarg+1 != argc)
       debug = atoi(argv[++iarg]);
-    else if (Arg == "-h" || Arg == "--help")
+    else if (Arg == "-h" || Arg == "--help") {
       Help();
-    else if (Arg == "-O")
+      return 0;
+    } else if (Arg == "-O")
       overwrite = true;
     else if (Arg == "--nomdin")
       hasMdin = false;
