@@ -25,7 +25,8 @@ void RemdDirs::OptHelp() {
       "  TRAJOUTARGS <args>     : Additional trajectory output args for analysis (--analyze).\n"
       "  FULLARCHIVE <arg>      : Comma-separated list of members to fully archive or NONE.\n"
       "  TOPOLOGY <file>        : Topology for 1D TREMD run.\n"
-      "  MDIN_FILE=<file>       : File containing extra MDIN input.\n"
+      "  MDIN_FILE <file>       : File containing extra MDIN input.\n"
+      "  RST_FILE <file>        : File containing NMR restraints (MD only).\n"
       "  TEMPERATURE <T>        : Temperature for 1D HREMD run.\n"
       "  NSTLIM <nstlim>        : Input file; steps per exchange. Required.\n"
       "  DT <step>              : Input file; time step. Required.\n"
@@ -98,6 +99,12 @@ int RemdDirs::ReadOptions(std::string const& input_file) {
       {
         if (CheckExists("MDIN file", VAR)) { err = 1; break; }
         mdin_file_ = tildeExpansion( VAR );
+      }
+      else if (OPT == "RST_FILE")
+      {
+        rst_file_ = VAR;
+        if (fileExists(rst_file_))
+          rst_file_ = tildeExpansion( rst_file_ );
       }
       else
       {
@@ -370,6 +377,12 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
              " or path relative to '%s'\n", top_file_.c_str(), run_dir.c_str());
     return 1;
   }
+  // Ensure restraint file exists if specified.
+  if (!rst_file_.empty() && !fileExists( rst_file_ )) {
+    ErrorMsg("Restraint file '%s' not found. Must specify absolute path"
+             " or path relative to '%s'\n", rst_file_.c_str(), run_dir.c_str());
+    return 1;
+  }
   // Groupfile will be used by MasterQsub.sh for command-line flags.
   TextFile GROUP;
   if (GROUP.OpenWrite("groupfile")) return 1;
@@ -398,7 +411,14 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
               run_type_.c_str(), total_time,
               nstlim_, dt_, irest, ntx, ig_,
               temp0_, temp0_, additionalInput_.c_str());
+  if (!rst_file_.empty()) {
+    MDIN.Printf("    nmropt=1,\n");
+    Msg("    Using NMR restraints.\n");
+  }
   MDIN.Printf(" &end\n");
+  if (!rst_file_.empty())
+    // Restraints
+    MDIN.Printf("&wt\n   TYPE=\"END\",\n&end\nDISANG=%s\n/\n", rst_file_.c_str());
   MDIN.Close();
   // Input coordinates for next run will be restarts of this
   crd_dir_ = "../" + run_dir + "/mdrst.rst7";

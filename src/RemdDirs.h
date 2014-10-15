@@ -33,7 +33,7 @@ class RemdDirs {
     typedef std::vector<std::string> Sarray;
     Sarray DimFileNames_;
 
-    std::string top_file_, trajoutargs_, fullarchive_, mdin_file_;
+    std::string top_file_, trajoutargs_, fullarchive_, mdin_file_, rst_file_;
     int nstlim_, ig_, numexchg_;
     double dt_, temp0_;
 

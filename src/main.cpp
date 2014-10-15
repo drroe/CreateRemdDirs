@@ -128,6 +128,7 @@ int main(int argc, char** argv) {
   int runWidth = std::max( DigitWidth(stop_run), 3 );
 
   if (runMode == CREATE || runMode == MD) {
+    Msg("Creating %i runs from %i to %i\n", stop_run - start_run + 1, start_run, stop_run);
     // Create runs
     REMD.SetCrdDir( crd_dir );
     for (int run = start_run; run <= stop_run; run++)
@@ -232,5 +233,6 @@ int main(int argc, char** argv) {
       return 1;
     } 
   }
+  Msg("\n");
   return 0;
 }
