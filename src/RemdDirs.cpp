@@ -18,7 +18,7 @@ RemdDirs::~RemdDirs() {
 
 void RemdDirs::OptHelp() {
   Msg("Input file variables:\n"
-//      "  CRD_DIR <dir>          : Starting coordinates location, expected file format is XXX.rst7\n"
+      "  CRD_FILE <dir>         : Starting coordinates location.\n"
       "  DIMENSION <file>       : File containing replica dimension information, 1 per dimension\n"
 //      "  START_RUN <start run>  : Run number to start with (run.<start_run>).\n"
 //      "  STOP_RUN <stop run>    : Run number to finish with (run.<stop run>).\n"
@@ -65,10 +65,9 @@ int RemdDirs::ReadOptions(std::string const& input_file) {
         VAR += (" " + tokens[i]);
       if (debug_ > 0)
         Msg("    Option: %s  Variable: %s\n", OPT.c_str(), VAR.c_str());
-      //if (OPT == "CRD_DIR")
-      //  crd_dir_=VAR;
-      //else
-      if (OPT == "DIMENSION")
+      if (OPT == "CRD_FILE")
+        crd_dir_ = VAR;
+      else if (OPT == "DIMENSION")
       {
         if (CheckExists("Dimension file", VAR)) { err = 1; break; }
         DimFileNames_.push_back( tildeExpansion(VAR) );
@@ -83,8 +82,11 @@ int RemdDirs::ReadOptions(std::string const& input_file) {
         numexchg_ = atoi( VAR.c_str() );
       else if (OPT == "TOPOLOGY")
       {
-        if (CheckExists("Topology file", VAR)) { err = 1; break; }
-        top_file_ = tildeExpansion( VAR );
+        top_file_ = VAR;
+        // If the TOPOLOGY exists at this point assume it is an absolute path
+        // and perform tildeExpansion.
+        if (fileExists(top_file_))
+          top_file_ = tildeExpansion( top_file_ );
       }
       else if (OPT == "TEMPERATURE")
         temp0_ = atof( VAR.c_str() );
@@ -203,6 +205,7 @@ int RemdDirs::LoadDimensions() {
   return 0;
 }
 
+// =============================================================================
 // RemdDirs::CreateRun()
 int RemdDirs::CreateRun(int start_run, int run_num, std::string const& run_dir) {
   typedef std::vector<unsigned int> Iarray;
@@ -345,5 +348,59 @@ int RemdDirs::CreateRun(int start_run, int run_num, std::string const& run_dir) 
   }
   // Input coordinates for next run will be restarts of this
   crd_dir_ = "../" + run_dir + "/RST";
+  return 0;
+}
+
+// =============================================================================
+// RemdDirs::CreateMD()
+int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
+  run_type_.assign("MD");
+  // Create and change to run directory.
+  if (Mkdir(run_dir)) return 1;
+  if (ChangeDir(run_dir)) return 1;
+  // Ensure that coords file exists for first run.
+  if (run_num == start_run && !fileExists(crd_dir_)) {
+    ErrorMsg("Coords file '%s' not found. Must specify absolute path"
+             " or path relative to '%s'\n", crd_dir_.c_str(), run_dir.c_str());
+    return 1;
+  }
+  // Ensure topology exists.
+  if (!fileExists( top_file_ )) {
+    ErrorMsg("Topology '%s' not found. Must specify absolute path"
+             " or path relative to '%s'\n", top_file_.c_str(), run_dir.c_str());
+    return 1;
+  }
+  // Groupfile will be used by MasterQsub.sh for command-line flags.
+  TextFile GROUP;
+  if (GROUP.OpenWrite("groupfile")) return 1;
+  GROUP.Printf("-i md.in -p %s -c %s -x mdcrd.nc -r mdrst.rst7\n", 
+               top_file_.c_str(), crd_dir_.c_str());
+  GROUP.Close();
+  // Info for this run.
+  if (debug_ >= 0) // 1 
+      Msg("\tMD: top=%s  temp0=%f\n", top_file_.c_str(), temp0_);
+  // Create input
+  double total_time = dt_ * (double)nstlim_;
+  int irest = 1;
+  int ntx = 5;
+  if (run_num == 0) {
+    Msg("    Run 0: irest=0, ntx=1\n");
+    irest = 0;
+    ntx = 1;
+  }
+  TextFile MDIN;
+  if (MDIN.OpenWrite("md.in")) return 1;
+  MDIN.Printf("%s %g ps\n"
+              " &cntrl\n"
+              "    imin = 0, nstlim = %i, dt = %f,\n"
+              "    irest = %i, ntx = %i, ig = %i,\n"
+              "    temp0 = %f, tempi = %f,\n%s",
+              run_type_.c_str(), total_time,
+              nstlim_, dt_, irest, ntx, ig_,
+              temp0_, temp0_, additionalInput_.c_str());
+  MDIN.Printf(" &end\n");
+  MDIN.Close();
+  // Input coordinates for next run will be restarts of this
+  crd_dir_ = "../" + run_dir + "/mdrst.rst7";
   return 0;
 }

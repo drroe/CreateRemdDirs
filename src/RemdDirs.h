@@ -10,9 +10,11 @@ class RemdDirs {
     int ReadOptions(std::string const&);
     int LoadDimensions();
     int CreateRun(int, int, std::string const&);
+    int CreateMD(int, int, std::string const&);
 
     void SetDebug(int d) { debug_ = d; }
     void SetCrdDir(std::string const& c) { crd_dir_ = c; }
+    std::string const& CrdFile() const { return crd_dir_; }
     const char* mdin_file() const { return mdin_file_.c_str(); }
     std::string const& Mdin_File() const { return mdin_file_; }
     int Nstlim() const { return nstlim_; }

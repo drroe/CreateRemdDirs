@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
   std::string crd_dir;
   bool hasMdin = true;
   bool overwrite = false;
-  enum RunModeType { CREATE=0, ANALYZE, ARCHIVE };
+  enum RunModeType { CREATE=0, MD, ANALYZE, ARCHIVE };
   RunModeType runMode = CREATE;
   // Get command line options
   for (int iarg = 1; iarg < argc; iarg++) {
@@ -68,31 +68,44 @@ int main(int argc, char** argv) {
   REMD.SetDebug(debug);
   if (REMD.ReadOptions( input_file )) return 1;
 
+  // If no dimensions defined assume normal MD run.
+  if (REMD.Ndims() == 0) {
+    Msg("  No dimensions defined: assuming MD run.\n");
+    runMode = MD;
+    // If no input coords specified on input line, use coords from file.
+    // First run only.
+    if (start_run == 0 && crd_dir.empty())
+      crd_dir = REMD.CrdFile();
+  }
+
   // Write options
   Msg("  START            : %i\n", start_run);
   Msg("  STOP             : %i\n", stop_run);
-  if (runMode == CREATE ) {
-    Msg("  CRD_DIR          : %s\n", crd_dir.c_str());
+  if (runMode == CREATE || runMode == MD) {
     Msg("  MDIN_FILE        : %s\n", REMD.mdin_file());
-    Msg("  NSTLIM=%i, DT=%f, NUMEXCHG=%i\n", REMD.Nstlim(), REMD.Dt(), REMD.Numexchg());
+    Msg("  NSTLIM=%i, DT=%f\n",  REMD.Nstlim(), REMD.Dt());
+    if (runMode == CREATE) {
+      Msg("  NUMEXCHG=%i\n", REMD.Numexchg());
+      Msg("  CRD_DIR          : %s\n", crd_dir.c_str());
+      Msg("  %u dimensions :\n", REMD.Ndims());
+      // Load dimensions
+      if (REMD.LoadDimensions()) return 1;
+    } else
+      Msg("  CRD              : %s\n", crd_dir.c_str());
   }
-  Msg("  %u dimensions :\n", REMD.Ndims());
-
-  // Load dimensions
-  if (REMD.LoadDimensions()) return 1;
 
   // Check options
-  if (runMode == CREATE) {
+  if (runMode == CREATE || runMode == MD) {
     if (crd_dir.empty()) {
-      ErrorMsg("Error: No starting coords directory specified.\n");
+      ErrorMsg("No starting coords directory/file specified.\n");
       return 1;
     }
     // If the COORDS dir exists at this point assume it is an absolute path
     // and perform tildeExpansion.
     if (fileExists(crd_dir))
       crd_dir = tildeExpansion( crd_dir );
-    if (REMD.Nstlim() < 1 || REMD.Numexchg() < 1) {
-      ErrorMsg("Error: NSTLIM or NUMEXCHG < 1\n");
+    if (REMD.Nstlim() < 1 || (runMode == CREATE &&REMD.Numexchg() < 1)) {
+      ErrorMsg("NSTLIM or NUMEXCHG < 1\n");
       return 1;
     }
     if (hasMdin && REMD.Mdin_File().empty()) {
@@ -101,11 +114,11 @@ int main(int argc, char** argv) {
     }
   }
   if (start_run < 0 ) {
-    ErrorMsg("Error: Negative value for START_RUN\n");
+    ErrorMsg("Negative value for START_RUN\n");
     return 1;
   }
   if (stop_run < start_run) {
-    ErrorMsg("Error: STOP_RUN < START_RUN\n");
+    ErrorMsg("STOP_RUN < START_RUN\n");
     return 1;
   }
 
@@ -114,7 +127,7 @@ int main(int argc, char** argv) {
   Msg("Working Dir: %s\n", TopDir.c_str());
   int runWidth = std::max( DigitWidth(stop_run), 3 );
 
-  if (runMode == CREATE) {
+  if (runMode == CREATE || runMode == MD) {
     // Create runs
     REMD.SetCrdDir( crd_dir );
     for (int run = start_run; run <= stop_run; run++)
@@ -128,7 +141,11 @@ int main(int argc, char** argv) {
         return 1;
       }
       // Create run input
-      if (REMD.CreateRun(start_run, run, RUNDIR)) return 1;
+      if (runMode == CREATE) {
+        if (REMD.CreateRun(start_run, run, RUNDIR)) return 1;
+      } else { // MD
+        if (REMD.CreateMD(start_run, run, RUNDIR)) return 1;
+      }
     }
   } else {
     // Ensure traj 1 for all runs between start and stop exist.
