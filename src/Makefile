@@ -22,6 +22,9 @@ CreateRemdDirs: $(OBJECTS)
 clean:
 	/bin/rm -f $(OBJECTS) CreateRemdDirs
 
+debug: clean
+	$(MAKE) install CXXFLAGS='-Wall -g'
+
 # Dependencies
 main.o: main.cpp RemdDirs.h ReplicaDimension.h FileRoutines.h Messages.h TextFile.h
 FileRoutines.o: FileRoutines.cpp FileRoutines.h Messages.h

@@ -87,12 +87,12 @@ int main(int argc, char** argv) {
     if (runMode == CREATE) {
       Msg("  NUMEXCHG=%i\n", REMD.Numexchg());
       Msg("  CRD_DIR          : %s\n", crd_dir.c_str());
-      Msg("  %u dimensions :\n", REMD.Ndims());
-      // Load dimensions
-      if (REMD.LoadDimensions()) return 1;
     } else
       Msg("  CRD              : %s\n", crd_dir.c_str());
   }
+  Msg("  %u dimensions :\n", REMD.Ndims());
+  // Load dimensions
+  if (REMD.LoadDimensions()) return 1;
 
   // Check options
   if (runMode == CREATE || runMode == MD) {
