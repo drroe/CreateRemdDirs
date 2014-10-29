@@ -91,8 +91,10 @@ int main(int argc, char** argv) {
       Msg("  CRD              : %s\n", crd_dir.c_str());
   }
   Msg("  %u dimensions :\n", REMD.Ndims());
-  // Load dimensions
-  if (REMD.LoadDimensions()) return 1;
+  // Load dimensions for REMD runs only.
+  if (runMode != MD) {
+    if (REMD.LoadDimensions()) return 1;
+  }
 
   // Check options
   if (runMode == CREATE || runMode == MD) {
