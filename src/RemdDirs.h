@@ -43,6 +43,7 @@ class RemdDirs {
     int top_dim_; ///< Set to index of temp0 dim or -1 = global temp
     int temp0_dim_; ///< Set to index to topo dim or -1 = global topo
     int debug_;
+    int n_md_runs_; ///< Number of MD runs.
     std::string run_type_;
     std::string additionalInput_;
     std::string crd_dir_; ///< Directory where input coordinates are.

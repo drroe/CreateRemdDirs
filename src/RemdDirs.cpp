@@ -7,7 +7,7 @@
 
 RemdDirs::RemdDirs() : nstlim_(-1), ig_(-1), numexchg_(-1),
    dt_(-1.0), temp0_(-1.0), totalReplicas_(0), top_dim_(-1),
-   temp0_dim_(-1), debug_(0)
+   temp0_dim_(-1), debug_(0), n_md_runs_(0)
 {}
 
 // DESTRUCTOR
@@ -31,7 +31,8 @@ void RemdDirs::OptHelp() {
       "  NSTLIM <nstlim>        : Input file; steps per exchange. Required.\n"
       "  DT <step>              : Input file; time step. Required.\n"
       "  IG <seed>              : Input file; random seed.\n"
-      "  NUMEXCHG <#>           : Input file; number of exchanges. Required.\n\n");
+      "  MDRUNS <#>             : Number of MD runs when not REMD (default 1).\n"
+      "  NUMEXCHG <#>           : Input file; number of exchanges. Required for REMD.\n\n");
 }
 
 // RemdDirs::ReadOptions()
@@ -73,6 +74,8 @@ int RemdDirs::ReadOptions(std::string const& input_file) {
         if (CheckExists("Dimension file", VAR)) { err = 1; break; }
         DimFileNames_.push_back( tildeExpansion(VAR) );
       }
+      else if (OPT == "MDRUNS")
+        n_md_runs_ = atoi( VAR.c_str() );
       else if (OPT == "NSTLIM")
         nstlim_ = atoi( VAR.c_str() );
       else if (OPT == "DT")
@@ -365,11 +368,33 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
   // Create and change to run directory.
   if (Mkdir(run_dir)) return 1;
   if (ChangeDir(run_dir)) return 1;
+  // Do some set up for groupfile runs.
+  int width = 3;
+  std::vector<std::string> crd_files;
+  if (n_md_runs_ > 1) {
+    Msg("Number of MD runs: %i\n", n_md_runs_);
+    // Figure out max width of md filename extension
+    width = std::max(DigitWidth( n_md_runs_ ), 3);
+    for (int grp=1; grp <= n_md_runs_; grp++)
+      crd_files.push_back(crd_dir_ + "/" + integerToString(grp, width) + ".rst7");
+  }
   // Ensure that coords file exists for first run.
-  if (run_num == start_run && !fileExists(crd_dir_)) {
-    ErrorMsg("Coords file '%s' not found. Must specify absolute path"
-             " or path relative to '%s'\n", crd_dir_.c_str(), run_dir.c_str());
-    return 1;
+  if (run_num == start_run) {
+    if (n_md_runs_ < 2) {
+      if (!fileExists(crd_dir_)) {
+        ErrorMsg("Coords file '%s' not found. Must specify absolute path"
+                 " or path relative to '%s'\n", crd_dir_.c_str(), run_dir.c_str());
+        return 1;
+      }
+    } else {
+      for (std::vector<std::string>::const_iterator file = crd_files.begin();
+                                                    file != crd_files.end(); ++file)
+        if (!fileExists(*file)) {
+          ErrorMsg("Coords file '%s' not found. Must specify absolute path"
+                 " or path relative to '%s'\n", file->c_str(), run_dir.c_str());
+          return 1;
+        }
+    }
   }
   // Ensure topology exists.
   if (!fileExists( top_file_ )) {
@@ -386,8 +411,14 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
   // Groupfile will be used by MasterQsub.sh for command-line flags.
   TextFile GROUP;
   if (GROUP.OpenWrite("groupfile")) return 1;
-  GROUP.Printf("-i md.in -p %s -c %s -x mdcrd.nc -r mdrst.rst7\n", 
-               top_file_.c_str(), crd_dir_.c_str());
+  if (n_md_runs_ < 2)
+    GROUP.Printf("-i md.in -p %s -c %s -x mdcrd.nc -r mdrst.rst7\n", 
+                 top_file_.c_str(), crd_dir_.c_str());
+  else {
+    for (int grp = 1; grp <= n_md_runs_; grp++) 
+      GROUP.Printf("-i md.in -p %s -c %s -x md.%0*i.nc -r %0*i.rst7\n",
+                   top_file_.c_str(), crd_files[grp-1].c_str(), width, grp, width, grp);
+  }
   GROUP.Close();
   // Info for this run.
   if (debug_ >= 0) // 1 
@@ -421,6 +452,7 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
     MDIN.Printf("&wt\n   TYPE=\"END\",\n&end\nDISANG=%s\n/\n", rst_file_.c_str());
   MDIN.Close();
   // Input coordinates for next run will be restarts of this
-  crd_dir_ = "../" + run_dir + "/mdrst.rst7";
+  crd_dir_ = "../" + run_dir + "/";
+  if (n_md_runs_ < 2) crd_dir_.append("mdrst.rst7");
   return 0;
 }
