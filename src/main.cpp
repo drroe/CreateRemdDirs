@@ -30,8 +30,10 @@ int main(int argc, char** argv) {
   std::string crd_dir;
   bool hasMdin = true;
   bool overwrite = false;
-  enum RunModeType { CREATE=0, MD, ANALYZE, ARCHIVE };
-  RunModeType runMode = CREATE;
+  enum RunType { REPLICA=0, MD };
+  enum ModeType { CREATE, ANALYZE, ARCHIVE };
+  RunType runType = REPLICA;
+  ModeType modeType = CREATE;
   // Get command line options
   for (int iarg = 1; iarg < argc; iarg++) {
     std::string Arg( argv[iarg] );
@@ -53,9 +55,9 @@ int main(int argc, char** argv) {
     else if (Arg == "--nomdin")
       hasMdin = false;
     else if (Arg == "--analyze")
-      runMode = ANALYZE;
+      modeType = ANALYZE;
     else if (Arg == "--archive")
-      runMode = ARCHIVE;
+      modeType = ARCHIVE;
     else {
       ErrorMsg("Unrecognized CMD line opt: %s\n", argv[iarg]);
       CmdLineHelp();
@@ -71,7 +73,7 @@ int main(int argc, char** argv) {
   // If no dimensions defined assume normal MD run.
   if (REMD.Ndims() == 0) {
     Msg("  No dimensions defined: assuming MD run.\n");
-    runMode = MD;
+    runType = MD;
     // If no input coords specified on input line, use coords from file.
     // First run only.
     if (start_run == 0 && crd_dir.empty())
@@ -81,23 +83,23 @@ int main(int argc, char** argv) {
   // Write options
   Msg("  START            : %i\n", start_run);
   Msg("  STOP             : %i\n", stop_run);
-  if (runMode == CREATE || runMode == MD) {
+  if (modeType == CREATE) {
     Msg("  MDIN_FILE        : %s\n", REMD.mdin_file());
     Msg("  NSTLIM=%i, DT=%f\n",  REMD.Nstlim(), REMD.Dt());
-    if (runMode == CREATE) {
+    if (runType == REPLICA) {
       Msg("  NUMEXCHG=%i\n", REMD.Numexchg());
       Msg("  CRD_DIR          : %s\n", crd_dir.c_str());
-    } else
+    } else // MD
       Msg("  CRD              : %s\n", crd_dir.c_str());
   }
-  Msg("  %u dimensions :\n", REMD.Ndims());
   // Load dimensions for REMD runs only.
-  if (runMode != MD) {
+  if (runType != MD) {
+    Msg("  %u dimensions :\n", REMD.Ndims());
     if (REMD.LoadDimensions()) return 1;
   }
 
   // Check options
-  if (runMode == CREATE || runMode == MD) {
+  if (modeType == CREATE) {
     if (crd_dir.empty()) {
       ErrorMsg("No starting coords directory/file specified.\n");
       return 1;
@@ -106,7 +108,7 @@ int main(int argc, char** argv) {
     // and perform tildeExpansion.
     if (fileExists(crd_dir))
       crd_dir = tildeExpansion( crd_dir );
-    if (REMD.Nstlim() < 1 || (runMode == CREATE &&REMD.Numexchg() < 1)) {
+    if (REMD.Nstlim() < 1 || (runType == REPLICA && REMD.Numexchg() < 1)) {
       ErrorMsg("NSTLIM or NUMEXCHG < 1\n");
       return 1;
     }
@@ -129,7 +131,7 @@ int main(int argc, char** argv) {
   Msg("Working Dir: %s\n", TopDir.c_str());
   int runWidth = std::max( DigitWidth(stop_run), 3 );
 
-  if (runMode == CREATE || runMode == MD) {
+  if (modeType == CREATE) {
     Msg("Creating %i runs from %i to %i\n", stop_run - start_run + 1, start_run, stop_run);
     // Create runs
     REMD.SetCrdDir( crd_dir );
@@ -144,21 +146,26 @@ int main(int argc, char** argv) {
         return 1;
       }
       // Create run input
-      if (runMode == CREATE) {
+      if (runType == REPLICA) {
         if (REMD.CreateRun(start_run, run, RUNDIR)) return 1;
       } else { // MD
         if (REMD.CreateMD(start_run, run, RUNDIR)) return 1;
       }
     }
   } else {
+    std::string traj_prefix;
+    if (runType == REPLICA)
+      traj_prefix.assign("/TRAJ/rem.crd.001");
+    else // MD
+      traj_prefix.assign("/md.nc.001");
     // Ensure traj 1 for all runs between start and stop exist.
     for (int run = start_run; run <= stop_run; run++)
     {
-      std::string TRAJ1 = "run." + integerToString(run, runWidth) +
-                           "/TRAJ/rem.crd.001";
+      std::string TRAJ1("run." + integerToString(run, runWidth) + traj_prefix);
       if (CheckExists("Trajectory", TRAJ1)) return 1;
     }
-    if (runMode == ANALYZE) {
+    // -------------------------------------------
+    if (modeType == ANALYZE) {
       // Set up input for analysis
       std::string CPPDIR = "Analyze." + integerToString(start_run) + "." + 
                                         integerToString(stop_run);
@@ -173,17 +180,18 @@ int main(int argc, char** argv) {
       if (CPPIN.OpenWrite( CPPDIR + "/batch.cpptraj.in" )) return 1;
       std::string TRAJINARGS;
       // If HREMD, need nosort keyword
-      if (REMD.RunType() == "HREMD")
+      if (REMD.RunType().empty() || REMD.RunType() == "HREMD")
         TRAJINARGS.assign("nosort");
       CPPIN.Printf("parm %s\n", REMD.Topology().c_str());
       for (int run = start_run; run <= stop_run; run++)
-        CPPIN.Printf("ensemble ../run.%0*i/TRAJ/rem.crd.001 %s\n", 
-                     runWidth, run, TRAJINARGS.c_str());
+        CPPIN.Printf("ensemble ../run.%0*i%s %s\n", 
+                     runWidth, run, traj_prefix.c_str(), TRAJINARGS.c_str());
       CPPIN.Printf("strip :WAT\nautoimage\n"
                    "trajout run%i-%i.nowat.nc netcdf remdtraj %s\n",
                    start_run, stop_run, REMD.TrajoutArgs().c_str());
       CPPIN.Close();
-    } else if (runMode == ARCHIVE) {
+    // -------------------------------------------
+    } else if (modeType == ARCHIVE) {
       // Set up input for archiving. This will be done in 2 separate runs. 
       // The first sorts and saves fully solvated trajectories of interest
       // (FULLARCHIVE). The second saves all stripped trajs.
@@ -203,7 +211,7 @@ int main(int argc, char** argv) {
         Mkdir( ARDIR );
       std::string TRAJINARGS;
       // If HREMD, need nosort keyword
-      if (REMD.RunType() == "HREMD")
+      if (REMD.RunType().empty() || REMD.RunType() == "HREMD")
         TRAJINARGS.assign("nosort");
       std::string TOP = REMD.Topology();
       if ( REMD.FullArchive() != "NONE") {
@@ -212,9 +220,9 @@ int main(int argc, char** argv) {
           TextFile ARIN;
           if (ARIN.OpenWrite(ARDIR + "/ar1." + integerToString(run) + ".cpptraj.in")) return 1;
           std::string RUNDIR = "../run." + integerToString(run, runWidth);
-          ARIN.Printf("parm %s\nensemble %s/TRAJ/rem.crd.001 %s\n"
+          ARIN.Printf("parm %s\nensemble %s%s %s\n"
                       "trajout %s/TRAJ/wat.nc netcdf remdtraj onlymembers %s\n",
-                      TOP.c_str(), RUNDIR.c_str(), TRAJINARGS.c_str(),
+                      TOP.c_str(), RUNDIR.c_str(), traj_prefix.c_str(), TRAJINARGS.c_str(),
                       RUNDIR.c_str(), REMD.FullArchive().c_str());
           ARIN.Close();
         }
@@ -224,9 +232,9 @@ int main(int argc, char** argv) {
         TextFile ARIN;
         if (ARIN.OpenWrite(ARDIR + "/ar2." + integerToString(run) + ".cpptraj.in")) return 1;
         std::string RUNDIR = "../run." + integerToString(run, runWidth);
-        ARIN.Printf("parm %s\nensemble %s/TRAJ/rem.crd.001 %s\n"
+        ARIN.Printf("parm %s\nensemble %s%s %s\n"
                     "strip :WAT\nautoimage\ntrajout %s/TRAJ/nowat.nc netcdf remdtraj\n",
-                    TOP.c_str(), RUNDIR.c_str(), TRAJINARGS.c_str(), RUNDIR.c_str());
+                    TOP.c_str(), RUNDIR.c_str(), traj_prefix.c_str(), TRAJINARGS.c_str(), RUNDIR.c_str());
         ARIN.Close();
       }
     } else {

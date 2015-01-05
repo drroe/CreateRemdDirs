@@ -416,7 +416,7 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
                  top_file_.c_str(), crd_dir_.c_str());
   else {
     for (int grp = 1; grp <= n_md_runs_; grp++) 
-      GROUP.Printf("-i md.in -p %s -c %s -x md.%0*i.nc -r %0*i.rst7\n",
+      GROUP.Printf("-i md.in -p %s -c %s -x md.nc.%0*i -r %0*i.rst7\n",
                    top_file_.c_str(), crd_files[grp-1].c_str(), width, grp, width, grp);
   }
   GROUP.Close();
