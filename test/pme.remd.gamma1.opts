@@ -1,0 +1,6 @@
+    timlim = 82800, mdinfo_flush_interval = 86400, 
+    ntwx = 5000, ioutfm = 1, ntwr = 100000, ntxo = 2, ntpr = 5000,
+    iwrap = 1, nscm = 1000, 
+    ntc = 2, ntf = 2, ntb = 1, cut = 8.0,
+    ntt = 3, gamma_ln = 1, 
+    ntp = 0,

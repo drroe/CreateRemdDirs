@@ -12,6 +12,7 @@ test.relative: mremd.opts ../../CreateRemdDirs
 	@echo "TEST DIFFS: " 
 	@diff mremd.dim.save run.000/remd.dim | wc -l
 	@diff relative.groupfile.save run.000/groupfile | wc -l
+	@diff in.001.save run.000/INPUT/in.001 | wc -l
 	@echo ""
 
 test.absolute: mremd.opts ../../CreateRemdDirs
@@ -22,6 +23,7 @@ test.absolute: mremd.opts ../../CreateRemdDirs
 	@echo "TEST DIFFS: "
 	@diff mremd.dim.save run.000/remd.dim | wc -l
 	@diff absolute.groupfile.save run.000/groupfile | wc -l
+	@diff in.001.save run.000/INPUT/in.001 | wc -l
 	@echo ""
 
 run.000/TRAJ: test.absolute
