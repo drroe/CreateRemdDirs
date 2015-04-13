@@ -47,8 +47,31 @@ test.archive: mremd.opts ../../CreateRemdDirs run.000/TRAJ
 	@diff ar2.0.cpptraj.in.save Archive.0.0/ar2.0.cpptraj.in | wc -l
 	@echo ""
 
+test.md.single: md.opts ../../CreateRemdDirs
+	@echo "----------------------------------------"
+	@echo "*** MD RELATIVE PATH TEST ***"
+	@/bin/rm -rf run.000
+	$(VALGRIND) ../../CreateRemdDirs -i md.opts -b 0 -e 0 >> output.txt
+	@echo "TEST DIFFS: "
+	@diff mdsingle.groupfile.save run.000/groupfile | wc -l
+	@diff mdsingle.in.save run.000/md.in | wc -l
+	@echo ""
+
+test.md.rst: mdrst.opts ../../CreateRemdDirs ConstF.rst
+	@echo "----------------------------------------"
+	@echo "*** MD W/RST RELATIVE PATH TEST ***"
+	@/bin/rm -rf run.000
+	$(VALGRIND) ../../CreateRemdDirs -i mdrst.opts -b 0 -e 0 >> output.txt
+	@echo "TEST DIFFS: "
+	@diff mdsingle.groupfile.save run.000/groupfile | wc -l
+	@diff mdrst.in.save run.000/md.in | wc -l
+	@echo ""
+
+ConstF.rst:
+	@touch ConstF.rst
+
 test.vg:
 	$(MAKE) test VALGRIND="valgrind --tool=memcheck --leak-check=yes --show-reachable=yes"
 
 clean:
-	/bin/rm -rf run.000 run.001 Analyze.0.0 Archive.0.0 output.txt
+	/bin/rm -rf run.000 run.001 Analyze.0.0 Archive.0.0 output.txt ConstF.rst
