@@ -1,0 +1,2 @@
+-i md.in -p ../AltDFC.01.PagF.TIP3P.ff14SB.parm7 -c ../CRD/001.rst7 -x md.nc.001 -r 001.rst7 -o md.out.001 -inf md.info.001
+-i md.in -p ../AltDFC.01.PagF.TIP3P.ff14SB.parm7 -c ../CRD/002.rst7 -x md.nc.002 -r 002.rst7 -o md.out.002 -inf md.info.002

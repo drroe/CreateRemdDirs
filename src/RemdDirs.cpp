@@ -410,7 +410,7 @@ int RemdDirs::MakeMdinForMD(std::string const& fname, int run_num,
       MDIN.Printf("&wt\n   TYPE=\"DUMPFREQ\", istep1 = %i,\n&end\n", umbrella_);
     MDIN.Printf("&wt\n   TYPE=\"END\",\n&end\nDISANG=%s\n", rf_name.c_str());
     if (umbrella_ > 0) // TODO: customize dumpave name?
-      MDIN.Printf("DUMPAVE=dumpave%s", EXT.c_str());
+      MDIN.Printf("DUMPAVE=dumpave%s\n", EXT.c_str());
     MDIN.Printf("/\n");
   }
   MDIN.Close();

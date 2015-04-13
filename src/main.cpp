@@ -116,6 +116,10 @@ int main(int argc, char** argv) {
       ErrorMsg("No MDIN_FILE specified and '--nomdin' not specified.\n");
       return 1;
     }
+    if (REMD.UmbrellaFreq() > 0 && REMD.N_MD_Runs() < 2) {
+      ErrorMsg("If UMBRELLA is specified MDRUNS must be > 1.\n");
+      return 1;
+    }
   }
   if (start_run < 0 ) {
     ErrorMsg("Negative value for START_RUN\n");

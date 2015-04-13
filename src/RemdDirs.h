@@ -22,6 +22,8 @@ class RemdDirs {
     int Numexchg()                 const { return numexchg_; }
     unsigned int Ndims()           const { return DimFileNames_.size(); }
     std::string const& RunType()   const { return run_type_; }
+    int N_MD_Runs()                const { return n_md_runs_; }
+    int UmbrellaFreq()             const { return umbrella_; }
     /// \return Foremost topology for analysis/archiving
     std::string const& Topology() const {
       if (top_dim_ == -1) return top_file_;

@@ -2,9 +2,10 @@
 
 all: test
 
-test: clean test.relative test.absolute test.analyze test.archive
+test: clean test.relative test.absolute test.analyze test.archive \
+      test.md.single test.md.rst test.md.multi.rst test.umbrella
 
-test.relative: mremd.opts ../../CreateRemdDirs
+test.relative: mremd.opts ../../CreateRemdDirs CRD/001.rst7
 	@echo "----------------------------------------"
 	@echo "*** RELATIVE PATH TEST ***"
 	@/bin/rm -rf run.000
@@ -15,7 +16,7 @@ test.relative: mremd.opts ../../CreateRemdDirs
 	@diff in.001.save run.000/INPUT/in.001 | wc -l
 	@echo ""
 
-test.absolute: mremd.opts ../../CreateRemdDirs
+test.absolute: mremd.opts ../../CreateRemdDirs CRD/001.rst7
 	@echo "----------------------------------------"
 	@echo "*** ABSOLUTE PATH TEST ***"
 	@/bin/rm -rf run.000
@@ -47,7 +48,7 @@ test.archive: mremd.opts ../../CreateRemdDirs run.000/TRAJ
 	@diff ar2.0.cpptraj.in.save Archive.0.0/ar2.0.cpptraj.in | wc -l
 	@echo ""
 
-test.md.single: md.opts ../../CreateRemdDirs
+test.md.single: md.opts ../../CreateRemdDirs CRD/004.rst7
 	@echo "----------------------------------------"
 	@echo "*** MD RELATIVE PATH TEST ***"
 	@/bin/rm -rf run.000
@@ -57,7 +58,7 @@ test.md.single: md.opts ../../CreateRemdDirs
 	@diff mdsingle.in.save run.000/md.in | wc -l
 	@echo ""
 
-test.md.rst: mdrst.opts ../../CreateRemdDirs ConstF.rst
+test.md.rst: mdrst.opts ../../CreateRemdDirs ConstF.rst CRD/004.rst7
 	@echo "----------------------------------------"
 	@echo "*** MD W/RST RELATIVE PATH TEST ***"
 	@/bin/rm -rf run.000
@@ -67,11 +68,37 @@ test.md.rst: mdrst.opts ../../CreateRemdDirs ConstF.rst
 	@diff mdrst.in.save run.000/md.in | wc -l
 	@echo ""
 
+test.md.multi.rst: multi.mdrst.opts ../../CreateRemdDirs ConstF.rst CRD/001.rst7
+	@echo "----------------------------------------"
+	@echo "*** MULTI MD W/RST RELATIVE PATH TEST ***"
+	@/bin/rm -rf run.000
+	$(VALGRIND) ../../CreateRemdDirs -i multi.mdrst.opts -b 0 -e 0 -c ../CRD >> output.txt
+	@echo "TEST DIFFS: "
+	@diff mdmulti.groupfile.save run.000/groupfile | wc -l
+	@diff mdrst.in.save run.000/md.in | wc -l
+	@echo ""
+
+test.umbrella: umbrella.opts ../../CreateRemdDirs ConstF.rst.001 ConstF.rst.002 CRD/001.rst7
+	@echo "----------------------------------------"
+	@echo "*** UMBRELLA MD RELATIVE PATH TEST ***"
+	@/bin/rm -rf run.000
+	$(VALGRIND) ../../CreateRemdDirs -i umbrella.opts -b 0 -e 0 -c ../CRD >> output.txt
+	@echo "TEST DIFFS: "
+	@diff umbrella.groupfile.save run.000/groupfile | wc -l
+	@diff umbrella.mdin.2.save run.000/md.in.002 | wc -l
+	@echo ""
+
 ConstF.rst:
 	@touch ConstF.rst
+
+ConstF.rst.001:
+	@touch ConstF.rst.001
+
+ConstF.rst.002:
+	@touch ConstF.rst.002
 
 test.vg:
 	$(MAKE) test VALGRIND="valgrind --tool=memcheck --leak-check=yes --show-reachable=yes"
 
 clean:
-	/bin/rm -rf run.000 run.001 Analyze.0.0 Archive.0.0 output.txt ConstF.rst
+	/bin/rm -rf run.000 run.001 Analyze.0.0 Archive.0.0 output.txt ConstF.rst*
