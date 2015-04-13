@@ -7,7 +7,7 @@
 
 RemdDirs::RemdDirs() : nstlim_(-1), ig_(-1), numexchg_(-1),
    dt_(-1.0), temp0_(-1.0), totalReplicas_(0), top_dim_(-1),
-   temp0_dim_(-1), debug_(0), n_md_runs_(0)
+   temp0_dim_(-1), debug_(0), n_md_runs_(0), umbrella_(0)
 {}
 
 // DESTRUCTOR
@@ -32,7 +32,8 @@ void RemdDirs::OptHelp() {
       "  DT <step>              : Input file; time step. Required.\n"
       "  IG <seed>              : Input file; random seed.\n"
       "  MDRUNS <#>             : Number of MD runs when not REMD (default 1).\n"
-      "  NUMEXCHG <#>           : Input file; number of exchanges. Required for REMD.\n\n");
+      "  NUMEXCHG <#>           : Input file; number of exchanges. Required for REMD.\n"
+      "  UMBRELLA <#>           : Indicates MD umbrella sampling with write frequency <#>.\n\n");
 }
 
 // RemdDirs::ReadOptions()
@@ -84,6 +85,8 @@ int RemdDirs::ReadOptions(std::string const& input_file) {
         ig_ = atoi( VAR.c_str() );
       else if (OPT == "NUMEXCHG")
         numexchg_ = atoi( VAR.c_str() );
+      else if (OPT == "UMBRELLA")
+        umbrella_ = atoi( VAR.c_str() );
       else if (OPT == "TOPOLOGY")
       {
         top_file_ = VAR;
@@ -362,6 +365,58 @@ int RemdDirs::CreateRun(int start_run, int run_num, std::string const& run_dir) 
 }
 
 // =============================================================================
+/** Create input file for MD.
+  * \param fname Name of MDIN file.
+  * \param run_num Run number, for setting irest/ntx.
+  * \param EXT Extension for restraint/dumpave files when umbrella sampling.
+  */
+int RemdDirs::MakeMdinForMD(std::string const& fname, int run_num, 
+                            std::string const& EXT, std::string const& run_dir) const
+{
+  // Create input
+  double total_time = dt_ * (double)nstlim_;
+  int irest = 1;
+  int ntx = 5;
+  if (run_num == 0) {
+    Msg("    Run 0: irest=0, ntx=1\n");
+    irest = 0;
+    ntx = 1;
+  }
+  TextFile MDIN;
+  if (MDIN.OpenWrite(fname)) return 1;
+  MDIN.Printf("%s %g ps\n"
+              " &cntrl\n"
+              "    imin = 0, nstlim = %i, dt = %f,\n"
+              "    irest = %i, ntx = %i, ig = %i,\n"
+              "    temp0 = %f, tempi = %f,\n%s",
+              run_type_.c_str(), total_time,
+              nstlim_, dt_, irest, ntx, ig_,
+              temp0_, temp0_, additionalInput_.c_str());
+  if (!rst_file_.empty()) {
+    MDIN.Printf("    nmropt=1,\n");
+    Msg("    Using NMR restraints.\n");
+  }
+  MDIN.Printf(" &end\n");
+  if (!rst_file_.empty()) {
+    // Restraints
+    std::string rf_name(rst_file_ + EXT);
+    // Ensure restraint file exists if specified.
+    if (!fileExists( rf_name )) {
+      ErrorMsg("Restraint file '%s' not found. Must specify absolute path"
+               " or path relative to '%s'\n", rf_name.c_str(), run_dir.c_str());
+      return 1;
+    }
+    if (umbrella_ > 0)
+      MDIN.Printf("&wt\n   TYPE=\"DUMPFREQ\", istep1 = %i,\n&end\n", umbrella_);
+    MDIN.Printf("&wt\n   TYPE=\"END\",\n&end\nDISANG=%s\n", rf_name.c_str());
+    if (umbrella_ > 0) // TODO: customize dumpave name?
+      MDIN.Printf("DUMPAVE=dumpave%s", EXT.c_str());
+    MDIN.Printf("/\n");
+  }
+  MDIN.Close();
+  return 0;
+}
+
 // RemdDirs::CreateMD()
 int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
   run_type_.assign("MD");
@@ -402,55 +457,34 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
              " or path relative to '%s'\n", top_file_.c_str(), run_dir.c_str());
     return 1;
   }
-  // Ensure restraint file exists if specified.
-  if (!rst_file_.empty() && !fileExists( rst_file_ )) {
-    ErrorMsg("Restraint file '%s' not found. Must specify absolute path"
-             " or path relative to '%s'\n", rst_file_.c_str(), run_dir.c_str());
-    return 1;
-  }
   // Groupfile will be used by MasterQsub.sh for command-line flags.
   TextFile GROUP;
   if (GROUP.OpenWrite("groupfile")) return 1;
   if (n_md_runs_ < 2)
-    GROUP.Printf("-i md.in -p %s -c %s -x mdcrd.nc -r mdrst.rst7\n", 
+    GROUP.Printf("-i md.in -p %s -c %s -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info\n", 
                  top_file_.c_str(), crd_dir_.c_str());
   else {
-    for (int grp = 1; grp <= n_md_runs_; grp++) 
-      GROUP.Printf("-i md.in -p %s -c %s -x md.nc.%0*i -r %0*i.rst7\n",
-                   top_file_.c_str(), crd_files[grp-1].c_str(), width, grp, width, grp);
+    for (int grp = 1; grp <= n_md_runs_; grp++) {
+      std::string EXT = "." + integerToString(grp, width);
+      std::string mdin_name("md.in");
+      if (umbrella_ > 0) {
+        // Create input for umbrella runs
+        mdin_name.append(EXT);
+        if (MakeMdinForMD(mdin_name, run_num, EXT, run_dir)) return 1;
+      }
+      GROUP.Printf("-i %s -p %s -c %s -x md.nc%s -r %0*i.rst7 -o md.out%s -inf md.info%s\n",
+                   mdin_name.c_str(), top_file_.c_str(), crd_files[grp-1].c_str(), EXT.c_str(),
+                   width, grp, EXT.c_str(), EXT.c_str());
+    } 
   }
   GROUP.Close();
   // Info for this run.
   if (debug_ >= 0) // 1 
       Msg("\tMD: top=%s  temp0=%f\n", top_file_.c_str(), temp0_);
-  // Create input
-  double total_time = dt_ * (double)nstlim_;
-  int irest = 1;
-  int ntx = 5;
-  if (run_num == 0) {
-    Msg("    Run 0: irest=0, ntx=1\n");
-    irest = 0;
-    ntx = 1;
+  // Create input for non-umbrella runs.
+  if (umbrella_ == 0) {
+    if (MakeMdinForMD("md.in", run_num, "",run_dir)) return 1;
   }
-  TextFile MDIN;
-  if (MDIN.OpenWrite("md.in")) return 1;
-  MDIN.Printf("%s %g ps\n"
-              " &cntrl\n"
-              "    imin = 0, nstlim = %i, dt = %f,\n"
-              "    irest = %i, ntx = %i, ig = %i,\n"
-              "    temp0 = %f, tempi = %f,\n%s",
-              run_type_.c_str(), total_time,
-              nstlim_, dt_, irest, ntx, ig_,
-              temp0_, temp0_, additionalInput_.c_str());
-  if (!rst_file_.empty()) {
-    MDIN.Printf("    nmropt=1,\n");
-    Msg("    Using NMR restraints.\n");
-  }
-  MDIN.Printf(" &end\n");
-  if (!rst_file_.empty())
-    // Restraints
-    MDIN.Printf("&wt\n   TYPE=\"END\",\n&end\nDISANG=%s\n/\n", rst_file_.c_str());
-  MDIN.Close();
   // Input coordinates for next run will be restarts of this
   crd_dir_ = "../" + run_dir + "/";
   if (n_md_runs_ < 2) crd_dir_.append("mdrst.rst7");
