@@ -1,9 +1,9 @@
 #include <cstdlib> // atoi, atof
-#include <cstring> // strtok
 #include "RemdDirs.h"
 #include "Messages.h"
 #include "FileRoutines.h"
 #include "TextFile.h"
+#include "StringRoutines.h"
 
 RemdDirs::RemdDirs() : nstlim_(-1), ig_(-1), numexchg_(-1),
    dt_(-1.0), temp0_(-1.0), totalReplicas_(0), top_dim_(-1),
@@ -45,27 +45,20 @@ int RemdDirs::ReadOptions(std::string const& input_file) {
   if (infile.OpenRead(input_file)) return 1;
   int err = 0;
   const char* SEP = " \n";
-  char* buffer;
-  while ( (buffer = infile.Gets()) != 0) {
-    Sarray tokens;
-    char* ptr = strtok(buffer, SEP);
-    while ( ptr != 0 ) {
-      tokens.push_back( std::string(ptr) );
-      ptr = strtok(0, SEP);
-    }
-    if (!tokens.empty()) {
-      if (tokens.size() < 2) {
-        ErrorMsg("Malformed input: %s\n", buffer);
+  int ncols = infile.GetColumns(SEP);
+  while (ncols > -1) {
+    // Skip comment lines
+    if (ncols > 0 && infile.Token(0)[0] != '#') {
+      if (ncols < 2) {
+        ErrorMsg("Malformed input: %s\n", infile.Buffer());
         err = 1;
         OptHelp();
         break;
       }
-      std::string OPT = tokens[0];
-      // Skip comment lines
-      if (OPT[0]=='#') continue;
-      std::string VAR = tokens[1];
-      for (unsigned int i = 2; i < tokens.size(); i++)
-        VAR += (" " + tokens[i]);
+      std::string OPT = infile.Token(0);
+      std::string VAR = infile.Token(1);
+      for (int i = 2; i < ncols; i++)
+        VAR += (" " + infile.Token(i));
       if (debug_ > 0)
         Msg("    Option: %s  Variable: %s\n", OPT.c_str(), VAR.c_str());
       if (OPT == "CRD_FILE")
@@ -120,6 +113,7 @@ int RemdDirs::ReadOptions(std::string const& input_file) {
         break;
       }
     }
+    ncols = infile.GetColumns(SEP);
   }
   infile.Close();
   // If MDIN file specified, store it in a string.
@@ -127,7 +121,7 @@ int RemdDirs::ReadOptions(std::string const& input_file) {
   if (!mdin_file_.empty()) {
     TextFile MDIN;
     if (MDIN.OpenRead(mdin_file_)) return 1;
-    char* buffer;
+    const char* buffer;
     while ( (buffer = MDIN.Gets()) != 0)
       additionalInput_.append( buffer );
     MDIN.Close();

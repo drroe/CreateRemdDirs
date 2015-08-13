@@ -13,7 +13,7 @@ const char* ReplicaDimension::exchString_[] = { "NONE", "TEMPERATURE", "HAMILTON
 int TemperatureDim::LoadDim(std::string const& fname) {
   TextFile infile;
   if (infile.OpenRead(fname)) return 1;
-  char* buffer = infile.Gets(); // Scan past first line.
+  const char* buffer = infile.Gets(); // Scan past first line.
   double temp0;
   while ( (buffer = infile.Gets()) != 0 ) {
     if (sscanf(buffer, "%lf", &temp0) != 1) {
@@ -50,7 +50,7 @@ int TopologyDim::LoadDim(std::string const& fname) {
 int AmdDihedralDim::LoadDim(std::string const& fname) {
   TextFile infile;
   if (infile.OpenRead(fname)) return 1;
-  char* buffer = infile.Gets(); // Scan past first line.
+  const char* buffer = infile.Gets(); // Scan past first line.
   int ncols = -1;
   char topname[1024];
   double alpha, thresh;
@@ -94,7 +94,7 @@ std::string AmdDihedralDim::Groupline(std::string const& EXT) const {
 int SgldDim::LoadDim(std::string const& fname) {
   TextFile infile;
   if (infile.OpenRead(fname)) return 1;
-  char* buffer = infile.Gets(); // Scan past first line.
+  const char* buffer = infile.Gets(); // Scan past first line.
   double tempsg;
   while ( (buffer = infile.Gets()) != 0 ) {
     if (sscanf(buffer, "%lf", &tempsg) != 1) {

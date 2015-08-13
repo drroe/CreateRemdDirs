@@ -1,7 +1,5 @@
 #ifndef INC_REPLICADIMENSION_H
 #define INC_REPLICADIMENSION_H
-#include <vector>
-#include <string>
 #include "TextFile.h"
 /// Abstract base class for replica dimension type.
 class ReplicaDimension {

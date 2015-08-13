@@ -31,9 +31,9 @@ void TextFile::Close() {
   file_ = 0;
 }
 
-char* TextFile::Gets() {
+const char* TextFile::Gets() {
   if (file_ == 0) return 0;
-  return fgets(buffer_, BUF_SIZE-1, (FILE*)file_);
+  return (const char*)fgets(buffer_, BUF_SIZE-1, (FILE*)file_);
 }
 
 std::string TextFile::GetString() {
@@ -49,6 +49,19 @@ std::string TextFile::GetString() {
     }
   }
   return std::string(buffer_);
+}
+
+int TextFile::GetColumns( const char* SEP ) {
+  if (file_ == 0) return -1;
+  char* ptr = fgets(buffer_, BUF_SIZE-1, (FILE*)file_);
+  if (ptr == 0) return -1;
+  tokens_.clear();
+  ptr = strtok(buffer_, SEP);
+  while (ptr != 0) {
+    tokens_.push_back( std::string(ptr) );
+    ptr = strtok(0, SEP);
+  }
+  return (int)tokens_.size();
 }
 
 int TextFile::Printf(const char *format, ...) {
