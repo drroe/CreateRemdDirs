@@ -32,7 +32,9 @@ int main(int argc, char** argv) {
   bool hasMdin = true;
   bool overwrite = false;
   enum RunType { REPLICA=0, MD };
-  enum ModeType { CREATE=0, ANALYZE, ARCHIVE, CHECK };
+  enum ModeType { CREATE=0, ANALYZE_ARCHIVE, CHECK };
+  bool analyzeEnabled = false;
+  bool archiveEnabled = false;
   RunType runType = REPLICA;
   ModeType modeType = CREATE;
   // Get command line options
@@ -55,11 +57,13 @@ int main(int argc, char** argv) {
       overwrite = true;
     else if (Arg == "--nomdin")
       hasMdin = false;
-    else if (Arg == "--analyze")
-      modeType = ANALYZE;
-    else if (Arg == "--archive")
-      modeType = ARCHIVE;
-    else if (Arg == "--check")
+    else if (Arg == "--analyze") {
+      modeType = ANALYZE_ARCHIVE;
+      analyzeEnabled = true;
+    } else if (Arg == "--archive") {
+      modeType = ANALYZE_ARCHIVE;
+      archiveEnabled = true;
+    } else if (Arg == "--check")
       modeType = CHECK;
     else {
       ErrorMsg("Unrecognized CMD line opt: %s\n", argv[iarg]);
@@ -163,7 +167,7 @@ int main(int argc, char** argv) {
         if (REMD.CreateMD(start_run, run, RUNDIR)) return 1;
       }
     }
-  } else {
+  } else if (modeType == ANALYZE_ARCHIVE) {
     std::string traj_prefix;
     if (runType == REPLICA)
       traj_prefix.assign("/TRAJ/rem.crd.001");
@@ -177,7 +181,7 @@ int main(int argc, char** argv) {
     }
     if (CheckRuns( TopDir, start_run, stop_run )) return 1;
     // -------------------------------------------
-    if (modeType == ANALYZE) {
+    if (analyzeEnabled) {
       // Set up input for analysis
       std::string CPPDIR = "Analyze." + integerToString(start_run) + "." + 
                                         integerToString(stop_run);
@@ -202,8 +206,9 @@ int main(int argc, char** argv) {
                    "trajout run%i-%i.nowat.nc netcdf remdtraj %s\n",
                    start_run, stop_run, REMD.TrajoutArgs().c_str());
       CPPIN.Close();
+    }
     // -------------------------------------------
-    } else if (modeType == ARCHIVE) {
+    if (archiveEnabled) {
       // Set up input for archiving. This will be done in 2 separate runs. 
       // The first sorts and saves fully solvated trajectories of interest
       // (FULLARCHIVE). The second saves all stripped trajs.
@@ -249,10 +254,6 @@ int main(int argc, char** argv) {
                     TOP.c_str(), RUNDIR.c_str(), traj_prefix.c_str(), TRAJINARGS.c_str(), RUNDIR.c_str());
         ARIN.Close();
       }
-    } else {
-      // Sanity check
-      ErrorMsg("Unrecognized mode.\n");
-      return 1;
     } 
   }
   Msg("\n");
