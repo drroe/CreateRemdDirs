@@ -5,8 +5,11 @@
 #include "Messages.h"
 #include "TextFile.h"
 
-int CheckRuns(std::string const& TopDir, StrArray const& RunDirs) {
-  Msg("Checking runs.\n");
+int CheckRuns(std::string const& TopDir, StrArray const& RunDirs, bool firstOnly) {
+  if (firstOnly)
+    Msg("Checking only first output/traj for all runs.\n");
+  else
+    Msg("Checking all output/traj for all runs.\n");
   int debug = 0;
   for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir) {
     if (ChangeDir( TopDir )) return 1;
@@ -103,6 +106,7 @@ int CheckRuns(std::string const& TopDir, StrArray const& RunDirs) {
         } else {
           if (debug > 0) Msg("\tOK.\n");
         }
+        if (firstOnly) break;
       } // END loop over output files for run
       if (check_restarts) {
         StrArray restart_files = ExpandToFilenames("RST/*.rst7");

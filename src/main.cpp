@@ -35,6 +35,7 @@ int main(int argc, char** argv) {
   enum ModeType { CREATE=0, ANALYZE_ARCHIVE, CHECK };
   bool analyzeEnabled = false;
   bool archiveEnabled = false;
+  bool checkFirst = true;
   RunType runType = REPLICA;
   ModeType modeType = CREATE;
   // Get command line options
@@ -65,7 +66,10 @@ int main(int argc, char** argv) {
       archiveEnabled = true;
     } else if (Arg == "--check")
       modeType = CHECK;
-    else {
+    else if (Arg == "--checkall") {
+      modeType = CHECK;
+      checkFirst = false;
+    } else {
       ErrorMsg("Unrecognized CMD line opt: %s\n", argv[iarg]);
       CmdLineHelp();
       return 1;
@@ -150,7 +154,7 @@ int main(int argc, char** argv) {
     RunDirs.push_back( "run." + integerToString(run, runWidth) );
 
   if (modeType == CHECK) {
-    if (CheckRuns( TopDir, RunDirs )) return 1;
+    if (CheckRuns( TopDir, RunDirs, checkFirst )) return 1;
   } else if (modeType == CREATE) {
     Msg("Creating %i runs from %i to %i\n", stop_run - start_run + 1, start_run, stop_run);
     // Create runs
@@ -194,7 +198,7 @@ int main(int argc, char** argv) {
       std::string TRAJ1(*rdir + traj_prefix);
       if (CheckExists("Trajectory", TRAJ1)) return 1;
     }
-    if (CheckRuns( TopDir, RunDirs )) return 1;
+    if (CheckRuns( TopDir, RunDirs, checkFirst )) return 1;
     // -------------------------------------------
     if (analyzeEnabled) {
       // Set up input for analysis
