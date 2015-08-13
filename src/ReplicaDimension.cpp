@@ -36,8 +36,11 @@ int TopologyDim::LoadDim(std::string const& fname) {
   std::string topname = infile.GetString(); // Scan past first line.
   topname = infile.GetString(); // Get second line. 
   while ( !topname.empty() ) {
-    if (CheckExists("Topology from dim", topname)) return 1;
-    tops_.push_back( tildeExpansion(topname) );
+    //if (CheckExists("Topology from dim", topname)) return 1;
+    if ( topname[0] == '~' )
+      tops_.push_back( tildeExpansion(topname) );
+    else
+      tops_.push_back( topname );
     topname = infile.GetString();
   }
   infile.Close();
