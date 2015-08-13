@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
   bool hasMdin = true;
   bool overwrite = false;
   enum RunType { REPLICA=0, MD };
-  enum ModeType { CREATE, ANALYZE, ARCHIVE, CHECK };
+  enum ModeType { CREATE=0, ANALYZE, ARCHIVE, CHECK };
   RunType runType = REPLICA;
   ModeType modeType = CREATE;
   // Get command line options
@@ -67,6 +67,8 @@ int main(int argc, char** argv) {
       return 1;
     }
   }
+  if (stop_run == -1)
+    stop_run = start_run;
 
   // Read options from input file
   RemdDirs REMD;
@@ -173,6 +175,7 @@ int main(int argc, char** argv) {
       std::string TRAJ1("run." + integerToString(run, runWidth) + traj_prefix);
       if (CheckExists("Trajectory", TRAJ1)) return 1;
     }
+    if (CheckRuns( TopDir, start_run, stop_run )) return 1;
     // -------------------------------------------
     if (modeType == ANALYZE) {
       // Set up input for analysis
