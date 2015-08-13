@@ -1,4 +1,4 @@
-#include <cstdio>    // fprintf, fopen, fclose, sprintf
+#include <cstdio>    // fopen, fclose
 #include <cerrno>
 #include <cstring>
 #include <sys/stat.h> // mkdir
@@ -57,19 +57,19 @@ StrArray ExpandToFilenames(std::string const& fnameArg) {
   //       for PGI and return a copy of filenameIn.
   // Check for any wildcards in fnameArg
   if ( fnameArg.find_first_of("*?[]") != std::string::npos )
-    fprintf(stdout,"Warning: Currently wildcards in filenames not supported with PGI compilers.\n");
+    Msg("Warning: Currently wildcards in filenames not supported with PGI compilers.\n");
   fnames.push_back( fnameArg );
 # else
   glob_t globbuf;
   int err = glob(fnameArg.c_str(), GLOB_TILDE, NULL, &globbuf );
-  //printf("DEBUG: %s matches %zu files.\n", fnameArg.c_str(), (size_t)globbuf.gl_pathc);
+  //Msg("DEBUG: %s matches %zu files.\n", fnameArg.c_str(), (size_t)globbuf.gl_pathc);
   if ( err == 0 ) {
     for (unsigned int i = 0; i < (size_t)globbuf.gl_pathc; i++)
       fnames.push_back( globbuf.gl_pathv[i] );
   } else if (err == GLOB_NOMATCH )
-    fprintf(stderr,"Error: %s matches no files.\n", fnameArg.c_str());
+    Msg("Warning: %s matches no files.\n", fnameArg.c_str());
   else
-    fprintf(stderr,"Error: occurred trying to find %s\n", fnameArg.c_str());
+    ErrorMsg("Problem occurred trying to find %s\n", fnameArg.c_str());
   if ( globbuf.gl_pathc > 0 ) globfree(&globbuf);
 # endif
   return fnames;

@@ -4,6 +4,7 @@ SOURCES=main.cpp FileRoutines.cpp Messages.cpp RemdDirs.cpp TextFile.cpp Replica
 OBJECTS=$(SOURCES:.cpp=.o)
 
 CXXFLAGS=-Wall
+LDFLAGS=-lnetcdf
 
 install: CreateRemdDirs
 	/bin/mv CreateRemdDirs ../../
@@ -14,7 +15,7 @@ uninstall: clean
 all: CreateRemdDirs
 
 CreateRemdDirs: $(OBJECTS)
-	$(CXX) -o CreateRemdDirs $(OBJECTS)
+	$(CXX) -o CreateRemdDirs $(OBJECTS) $(LDFLAGS)
 
 .cpp.o:
 	$(CXX) -c $(CXXFLAGS) -o $@ $<

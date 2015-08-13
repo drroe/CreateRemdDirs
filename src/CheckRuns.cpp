@@ -1,4 +1,6 @@
+#include <cmath>
 #include <cstdlib>
+#include "netcdf.h"
 #include "CheckRuns.h"
 #include "StringRoutines.h"
 #include "FileRoutines.h"
@@ -6,13 +8,14 @@
 #include "TextFile.h"
 
 int CheckRuns(std::string const& TopDir, int start_run, int stop_run) {
+  int debug = 0;
   for (int run = start_run; run <= stop_run; run++) {
     if (ChangeDir( TopDir )) return 1;
     std::string dir = "run." + integerToString(run, 3);
     if (!fileExists( dir ))
       Msg("Warning: '%s' does not exist.\n", dir.c_str());
     else {
-      Msg("  %s\n", dir.c_str());
+      Msg("  %s:", dir.c_str());
       ChangeDir( dir );
       bool is_md = false;
       // Determine where the output file(s) are.
@@ -21,7 +24,7 @@ int CheckRuns(std::string const& TopDir, int start_run, int stop_run) {
         output_files = ExpandToFilenames("md.out.*");
         is_md = true;
       }
-      Msg("\t%zu output files.\n", output_files.size());
+      Msg(" %zu output files.\n", output_files.size());
       // Determine where the trajectory files are.
       StrArray traj_files;
       if (!is_md)
@@ -34,12 +37,13 @@ int CheckRuns(std::string const& TopDir, int start_run, int stop_run) {
         return 1;
       }
       // Loop over output and trajectory files.
+      bool check_restarts = false;
       StrArray::const_iterator tname = traj_files.begin();
       for (StrArray::const_iterator fname = output_files.begin();
                                     fname != output_files.end();
                                   ++fname, ++tname)
       {
-        Msg("    '%s'\n", fname->c_str());
+        if (debug > 0) Msg("    '%s'\n", fname->c_str());
         // Determine how many frames should be written by the output file.
         TextFile mdout;
         if (mdout.OpenRead( *fname )) return 1;
@@ -72,16 +76,66 @@ int CheckRuns(std::string const& TopDir, int start_run, int stop_run) {
           ncols = mdout.GetColumns(SEP);
         }
         mdout.Close();
-        Msg("\tnstlim= %i\n", nstlim);
-        Msg("\tdt= %g\n", dt);
-        Msg("\tnumexchg= %i\n", numexchg);
-        Msg("\tntwx= %i\n", ntwx);
+        //Msg("\tnstlim= %i\n", nstlim);
+        //Msg("\tdt= %g\n", dt);
+        //Msg("\tnumexchg= %i\n", numexchg);
+        //Msg("\tntwx= %i\n", ntwx);
         if (numexchg == 0) numexchg = 1;
-        Msg("\tTotal: %g\n", ((double)nstlim * dt) * (double)numexchg);
+        double totalTime = ((double)nstlim * dt) * (double)numexchg;
         expectedFrames = (nstlim * numexchg) / ntwx;
-        Msg("\tFrames: %i\n", expectedFrames);
+        if (debug > 0) {
+          Msg("\tTotal time: %g ps\n", totalTime);
+          Msg("\tFrames: %i\n", expectedFrames);
+        }
+        // Get actual number of frames from NetCDF file.
+        int ncid = -1;
+        if ( nc_open(tname->c_str(), NC_NOWRITE, &ncid) != NC_NOERR ) return 1;
+        int dimID;
+        size_t slength = 0;
+        if ( nc_inq_dimid(ncid, "frame", &dimID) != NC_NOERR ) return 1;
+        if ( nc_inq_dimlen(ncid, dimID, &slength) != NC_NOERR ) return 1;
+        int actualFrames = (int)slength;
+        nc_close( ncid );
+        if (debug > 0) Msg("\tActual Frames: %i\n", actualFrames);
+        // If run did not complete, check restart files if replica.
+        if (expectedFrames != actualFrames) {
+          Msg("Warning: # actual frames %i != # expected frames.\n",
+              actualFrames, expectedFrames);
+          if (!is_md) check_restarts = true; 
+        } else {
+          if (debug > 0) Msg("\tOK.\n");
+        }
+      } // END loop over output files for run
+      if (check_restarts) {
+        StrArray restart_files = ExpandToFilenames("RST/*.rst7");
+        if (restart_files.empty())
+          restart_files = ExpandToFilenames("RST/*.ncrst");
+        if (restart_files.size() != output_files.size()) {
+          ErrorMsg("Number of restart files %zu != # output files %zu\n",
+                   restart_files.size(), output_files.size());
+          return 1;
+        }
+        double rst_time0 = 0.0;
+        for (StrArray::const_iterator rfile = restart_files.begin();
+                                      rfile != restart_files.end(); ++rfile)
+        {
+          int ncid = -1, timeVID = -1;
+          double rsttime = -1.0;
+          if ( nc_open(rfile->c_str(), NC_NOWRITE, &ncid) != NC_NOERR ) return 1; // TODO Ascii
+          if ( nc_inq_varid(ncid, "time", &timeVID) != NC_NOERR ) return 1;
+          if ( nc_get_var_double(ncid, timeVID, &rsttime) != NC_NOERR ) return 1;
+          if (rfile == restart_files.begin()) {
+            rst_time0 = rsttime;
+            Msg("\tInitial restart time: %g\n", rst_time0);
+          } else if ( fabs(rst_time0 - rsttime) > 0.00000000000001 ) {
+            ErrorMsg("File %s time %g does not match initial restart time %g\n",
+                     rfile->c_str(), rsttime, rst_time0);
+            return 1;
+          }
+        }
       }
     }
-  }
+  } // END loop over runs
+  Msg("\tRun OK.\n");
   return 0;
 }

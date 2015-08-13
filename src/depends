@@ -1,4 +1,4 @@
-main.o : main.cpp CheckRuns.h FileRoutines.h Groups.h Messages.h RemdDirs.h ReplicaDimension.h TextFile.h
+main.o : main.cpp CheckRuns.h FileRoutines.h Groups.h Messages.h RemdDirs.h ReplicaDimension.h StringRoutines.h TextFile.h
 FileRoutines.o : FileRoutines.cpp FileRoutines.h Messages.h
 Messages.o : Messages.cpp
 RemdDirs.o : RemdDirs.cpp FileRoutines.h Groups.h Messages.h RemdDirs.h ReplicaDimension.h StringRoutines.h TextFile.h
