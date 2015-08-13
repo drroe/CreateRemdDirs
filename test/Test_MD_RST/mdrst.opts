@@ -1,0 +1,7 @@
+CRD_FILE ../../CRD/004.rst7
+TOPOLOGY ../../AltDFC.01.PagF.TIP3P.ff14SB.parm7
+RST_FILE ../ConstF.rst
+TEMPERATURE 330.0
+NSTLIM 3000
+DT 0.002
+MDIN_FILE ../pme.remd.gamma1.opts
