@@ -1,5 +1,6 @@
 #ifndef INC_CHECKRUNS_H
 #define INC_CHECKRUNS_H
 #include <string>
-int CheckRuns(std::string const&, int, int);
+#include "FileRoutines.h"
+int CheckRuns(std::string const&, StrArray const&);
 #endif

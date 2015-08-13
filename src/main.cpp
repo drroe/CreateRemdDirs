@@ -77,16 +77,17 @@ int main(int argc, char** argv) {
   // Read options from input file
   RemdDirs REMD;
   REMD.SetDebug(debug);
-  if (REMD.ReadOptions( input_file ) && modeType != CHECK) return 1;
-
-  // If no dimensions defined assume normal MD run.
-  if (REMD.Ndims() == 0) {
-    Msg("  No dimensions defined: assuming MD run.\n");
-    runType = MD;
-    // If no input coords specified on input line, use coords from file.
-    // First run only.
-    if (start_run == 0 && crd_dir.empty())
-      crd_dir = REMD.CrdFile();
+  if (modeType != CHECK) {
+    if (REMD.ReadOptions( input_file )) return 1;
+    // If no dimensions defined assume normal MD run.
+    if (REMD.Ndims() == 0) {
+      Msg("  No dimensions defined: assuming MD run.\n");
+      runType = MD;
+      // If no input coords specified on input line, use coords from file.
+      // First run only.
+      if (start_run == 0 && crd_dir.empty())
+        crd_dir = REMD.CrdFile();
+    }
   }
 
   // Write options
@@ -102,7 +103,7 @@ int main(int argc, char** argv) {
       Msg("  CRD              : %s\n", crd_dir.c_str());
   }
   // Load dimensions for REMD runs only.
-  if (runType != MD) {
+  if (modeType != CHECK && runType != MD) {
     Msg("  %u dimensions :\n", REMD.Ndims());
     if (REMD.LoadDimensions()) return 1;
   }
@@ -143,9 +144,13 @@ int main(int argc, char** argv) {
   if (TopDir.empty()) return 1;
   Msg("Working Dir: %s\n", TopDir.c_str());
   int runWidth = std::max( DigitWidth(stop_run), 3 );
+  // Create array of run directories
+  StrArray RunDirs;
+  for (int run = start_run; run <= stop_run; ++run)
+    RunDirs.push_back( "run." + integerToString(run, runWidth) );
 
   if (modeType == CHECK) {
-    if (CheckRuns( TopDir, start_run, stop_run )) return 1;
+    if (CheckRuns( TopDir, RunDirs )) return 1;
   } else if (modeType == CREATE) {
     Msg("Creating %i runs from %i to %i\n", stop_run - start_run + 1, start_run, stop_run);
     // Create runs
@@ -154,17 +159,16 @@ int main(int argc, char** argv) {
     {
       if (ChangeDir(TopDir)) return 1;
       // Determine run directory name, see if it is being overwritten.
-      std::string RUNDIR = "run." + integerToString(run, runWidth);
-      Msg("  RUNDIR: %s\n", RUNDIR.c_str());
-      if (fileExists(RUNDIR) && !overwrite) {
-        ErrorMsg("Directory '%s' exists and '-O' not specified.\n", RUNDIR.c_str());
+      Msg("  RUNDIR: %s\n", RunDirs[run].c_str());
+      if (fileExists(RunDirs[run]) && !overwrite) {
+        ErrorMsg("Directory '%s' exists and '-O' not specified.\n", RunDirs[run].c_str());
         return 1;
       }
       // Create run input
       if (runType == REPLICA) {
-        if (REMD.CreateRun(start_run, run, RUNDIR)) return 1;
+        if (REMD.CreateRun(start_run, run, RunDirs[run])) return 1;
       } else { // MD
-        if (REMD.CreateMD(start_run, run, RUNDIR)) return 1;
+        if (REMD.CreateMD(start_run, run, RunDirs[run])) return 1;
       }
     }
   } else if (modeType == ANALYZE_ARCHIVE) {
@@ -174,12 +178,12 @@ int main(int argc, char** argv) {
     else // MD
       traj_prefix.assign("/md.nc.001");
     // Ensure traj 1 for all runs between start and stop exist.
-    for (int run = start_run; run <= stop_run; run++)
+    for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
     {
-      std::string TRAJ1("run." + integerToString(run, runWidth) + traj_prefix);
+      std::string TRAJ1(*rdir + traj_prefix);
       if (CheckExists("Trajectory", TRAJ1)) return 1;
     }
-    if (CheckRuns( TopDir, start_run, stop_run )) return 1;
+    if (CheckRuns( TopDir, RunDirs )) return 1;
     // -------------------------------------------
     if (analyzeEnabled) {
       // Set up input for analysis

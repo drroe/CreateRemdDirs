@@ -2,21 +2,18 @@
 #include <cstdlib>
 #include "netcdf.h"
 #include "CheckRuns.h"
-#include "StringRoutines.h"
-#include "FileRoutines.h"
 #include "Messages.h"
 #include "TextFile.h"
 
-int CheckRuns(std::string const& TopDir, int start_run, int stop_run) {
+int CheckRuns(std::string const& TopDir, StrArray const& RunDirs) {
   int debug = 0;
-  for (int run = start_run; run <= stop_run; run++) {
+  for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir) {
     if (ChangeDir( TopDir )) return 1;
-    std::string dir = "run." + integerToString(run, 3);
-    if (!fileExists( dir ))
-      Msg("Warning: '%s' does not exist.\n", dir.c_str());
+    if (!fileExists( *rdir ))
+      Msg("Warning: '%s' does not exist.\n", rdir->c_str());
     else {
-      Msg("  %s:", dir.c_str());
-      ChangeDir( dir );
+      Msg("  %s:", rdir->c_str());
+      ChangeDir( *rdir );
       bool is_md = false;
       // Determine where the output file(s) are.
       StrArray output_files = ExpandToFilenames("OUTPUT/rem.out.*");

@@ -6,4 +6,4 @@ TextFile.o : TextFile.cpp Messages.h TextFile.h
 ReplicaDimension.o : ReplicaDimension.cpp FileRoutines.h Messages.h ReplicaDimension.h StringRoutines.h TextFile.h
 Groups.o : Groups.cpp Groups.h Messages.h TextFile.h
 StringRoutines.o : StringRoutines.cpp StringRoutines.h
-CheckRuns.o : CheckRuns.cpp CheckRuns.h FileRoutines.h Messages.h StringRoutines.h TextFile.h
+CheckRuns.o : CheckRuns.cpp CheckRuns.h FileRoutines.h Messages.h TextFile.h
