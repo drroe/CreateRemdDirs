@@ -1,1 +1,0 @@
--i md.in -p ../AltDFC.01.PagF.TIP3P.ff14SB.parm7 -c ../CRD/004.rst7 -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info
