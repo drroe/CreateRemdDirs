@@ -6,7 +6,7 @@ CleanFiles run.000 mremd.opts
 
 cat > mremd.opts <<EOF
 DIMENSION   ../Temperatures.dat
-DIMENSION   ../Hamiltonians.dat 
+DIMENSION   Hamiltonians.dat 
 DIMENSION   ../AmdDihedral.dat
 NSTLIM      500
 DT          0.002
@@ -16,6 +16,12 @@ TOPOLOGY    ../../full.parm7
 MDIN_FILE   ../pme.remd.gamma1.opts
 # Only fully archive lowest Hamiltonian
 FULLARCHIVE 0
+EOF
+
+cat > Hamiltonians.dat <<EOF
+#Hamiltonian
+../../AltDFC.01.PagF.TIP3P.ff14SB.parm7
+../../AltDFC.02.PagF.TIP3P.ff14SB.parm7
 EOF
 
 OPTLINE="-i mremd.opts -b 0 -e 0 -c ../../CRD"
