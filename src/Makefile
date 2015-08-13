@@ -1,5 +1,5 @@
 
-SOURCES=main.cpp FileRoutines.cpp Messages.cpp RemdDirs.cpp TextFile.cpp ReplicaDimension.cpp Groups.cpp
+SOURCES=main.cpp FileRoutines.cpp Messages.cpp RemdDirs.cpp TextFile.cpp ReplicaDimension.cpp Groups.cpp StringRoutines.cpp CheckRuns.cpp
 
 OBJECTS=$(SOURCES:.cpp=.o)
 
@@ -25,11 +25,11 @@ clean:
 debug: clean
 	$(MAKE) install CXXFLAGS='-Wall -g'
 
+findDepend: FindDepend.o
+	$(CXX) -o findDepend FindDepend.o
+
+depend: findDepend
+	./findDepend $(SOURCES) > depends
+
 # Dependencies
-main.o: main.cpp RemdDirs.h ReplicaDimension.h FileRoutines.h Messages.h TextFile.h
-FileRoutines.o: FileRoutines.cpp FileRoutines.h Messages.h
-Messages.o: Messages.cpp Messages.h
-RemdDirs.o: RemdDirs.cpp RemdDirs.h ReplicaDimension.h Messages.h FileRoutines.h TextFile.h Groups.h
-TextFile.o: TextFile.cpp TextFile.h Messages.h
-ReplicaDimension.o: ReplicaDimension.cpp ReplicaDimension.h TextFile.h FileRoutines.h Messages.h
-Groups.o: Groups.cpp Groups.h Messages.h TextFile.h
+include depends

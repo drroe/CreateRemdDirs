@@ -3,10 +3,6 @@
 #include <vector>
 #include <string>
 #include "TextFile.h"
-// Functions for creating fixed-width digit strings.
-int DigitWidth(long int);
-std::string integerToString(int);
-std::string integerToString(int,int);
 /// Abstract base class for replica dimension type.
 class ReplicaDimension {
   public:
@@ -138,13 +134,6 @@ namespace ReplicaAllocator {
     { "#SGLD",         SgldDim::Alloc        },
     { 0,               0                     }
   };
-  static ReplicaDimension* Allocate(std::string const& key) {
-    const Token* ptr = AllocArray;
-    while ( ptr->Key != 0 ) {
-      if (key.compare( ptr->Key )==0) return ptr->Alloc();
-      ++ptr;
-    }
-    return 0;
-  }
+  ReplicaDimension* Allocate(std::string const&);
 }
 #endif

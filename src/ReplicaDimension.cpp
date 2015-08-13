@@ -1,39 +1,10 @@
-#include <cstdio>
+#include <cstdio> // sscanf
 #include <sstream>   // istringstream, ostringstream
-#include <cmath> // log10
 #include "ReplicaDimension.h"
 #include "FileRoutines.h"
 #include "Messages.h"
+#include "StringRoutines.h"
 
-// DigitWidth()
-/** \return the number of characters necessary to express the given digit. */
-int DigitWidth(long int numberIn) {
-  if (numberIn == 0L) return 1;
-  double numf = (double) numberIn;
-  numf = log10( numf );
-  ++numf;
-  // The cast back to long int implicitly rounds down
-  int numi = (int)numf;
-  return numi;
-}
-
-// integerToString()
-std::string integerToString(int i) {
-  std::ostringstream oss;
-  oss << i;
-  return oss.str();
-}
-
-// integerToString()
-std::string integerToString(int i, int width) {
-  std::ostringstream oss;
-  oss.fill('0');
-  oss.width( width );
-  oss << std::right << i;
-  return oss.str();
-}
-
-// -----------------------------------------------------------------------------
 const std::string ReplicaDimension::emptystring_ = "";
 
 // Should correspong to ExchType
@@ -141,4 +112,14 @@ int SgldDim::LoadDim(std::string const& fname) {
 
 int SgldDim::WriteMdin(int idx, TextFile& mdin) const {
   return mdin.Printf("    isgld=1, tsgavg=0.2, tempsg=%f\n", sgtemps_[idx]);
+}
+
+// -----------------------------------------------------------------------------
+ReplicaDimension* ReplicaAllocator::Allocate(std::string const& key) {
+  const Token* ptr = AllocArray;
+  while ( ptr->Key != 0 ) {
+    if (key.compare( ptr->Key )==0) return ptr->Alloc();
+    ++ptr;
+  }
+  return 0;
 }
