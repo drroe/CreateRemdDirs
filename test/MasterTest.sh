@@ -23,7 +23,7 @@ RunTest() {
   fi
   echo "  Test: $1"
   echo "  Test: $1" >> $TEST_RESULTS
-  $BIN $OPTLINE >> $OUTPUT 2>> $ERROR
+  $VALGRIND $BIN $OPTLINE >> $OUTPUT 2>> $ERROR
   if [[ $? -ne 0 ]] ; then
     echo "Program error." > $TEST_ERROR
     exit 1
@@ -80,9 +80,19 @@ EndTest() {
 ERR=0
 NUMTEST=0
 BIN=../../../CreateRemdDirs
+VALGRIND=""
+ERROR=/dev/stderr
 while [[ ! -z $1 ]] ; do
   case "$1" in
     "clean" ) CLEANONLY=1 ;;
+    "vg"    )
+      echo "Using valgrind."
+      VALGRIND="valgrind --tool=memcheck --leak-check=yes --show-reachable=yes"
+      ERROR="valgrind.out"
+      if [[ -e $ERROR ]] ; then
+        rm $ERROR
+      fi
+      ;;
     *       ) echo "Unrecognized option: $1" 2> /dev/stderr ; exit 1 ;;
   esac
   shift
@@ -113,4 +123,3 @@ OUTPUT=test.out
 if [[ -e $OUTPUT ]] ; then
   rm $OUTPUT
 fi
-ERROR=/dev/stderr
