@@ -207,6 +207,7 @@ int main(int argc, char** argv) {
       Msg("Warning: Not running check on run directories.\n");
     // -------------------------------------------
     if (analyzeEnabled) {
+      ChangeDir( TopDir );
       // Set up input for analysis
       std::string CPPDIR = "Analyze." + integerToString(start_run) + "." + 
                                         integerToString(stop_run);
@@ -234,6 +235,7 @@ int main(int argc, char** argv) {
     }
     // -------------------------------------------
     if (archiveEnabled) {
+      ChangeDir( TopDir );
       // Set up input for archiving. This will be done in 2 separate runs. 
       // The first sorts and saves fully solvated trajectories of interest
       // (FULLARCHIVE). The second saves all stripped trajs.
