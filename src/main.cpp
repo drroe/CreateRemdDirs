@@ -2,7 +2,8 @@
 #include "RemdDirs.h"
 #include "Messages.h"
 #include "FileRoutines.h"
-#include "TextFile.h"
+#include "StringRoutines.h"
+#include "CheckRuns.h"
 
 static void CmdLineHelp() {
   Msg("Command line options:\n"
@@ -31,7 +32,7 @@ int main(int argc, char** argv) {
   bool hasMdin = true;
   bool overwrite = false;
   enum RunType { REPLICA=0, MD };
-  enum ModeType { CREATE, ANALYZE, ARCHIVE };
+  enum ModeType { CREATE, ANALYZE, ARCHIVE, CHECK };
   RunType runType = REPLICA;
   ModeType modeType = CREATE;
   // Get command line options
@@ -58,6 +59,8 @@ int main(int argc, char** argv) {
       modeType = ANALYZE;
     else if (Arg == "--archive")
       modeType = ARCHIVE;
+    else if (Arg == "--check")
+      modeType = CHECK;
     else {
       ErrorMsg("Unrecognized CMD line opt: %s\n", argv[iarg]);
       CmdLineHelp();
@@ -68,7 +71,7 @@ int main(int argc, char** argv) {
   // Read options from input file
   RemdDirs REMD;
   REMD.SetDebug(debug);
-  if (REMD.ReadOptions( input_file )) return 1;
+  if (REMD.ReadOptions( input_file ) && modeType != CHECK) return 1;
 
   // If no dimensions defined assume normal MD run.
   if (REMD.Ndims() == 0) {
@@ -135,7 +138,9 @@ int main(int argc, char** argv) {
   Msg("Working Dir: %s\n", TopDir.c_str());
   int runWidth = std::max( DigitWidth(stop_run), 3 );
 
-  if (modeType == CREATE) {
+  if (modeType == CHECK) {
+    if (CheckRuns( TopDir, start_run, stop_run )) return 1;
+  } else if (modeType == CREATE) {
     Msg("Creating %i runs from %i to %i\n", stop_run - start_run + 1, start_run, stop_run);
     // Create runs
     REMD.SetCrdDir( crd_dir );
