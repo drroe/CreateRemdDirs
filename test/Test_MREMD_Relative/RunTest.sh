@@ -2,7 +2,7 @@
 
 . ../MasterTest.sh
 
-CleanFiles run.000 mremd.opts
+CleanFiles run.000 mremd.opts Hamiltonians.dat
 
 cat > mremd.opts <<EOF
 DIMENSION   ../Temperatures.dat
@@ -12,7 +12,6 @@ NSTLIM      500
 DT          0.002
 NUMEXCHG    100
 TEMPERATURE 300.0
-TOPOLOGY    ../../full.parm7
 MDIN_FILE   ../pme.remd.gamma1.opts
 # Only fully archive lowest Hamiltonian
 FULLARCHIVE 0
