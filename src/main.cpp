@@ -36,6 +36,7 @@ int main(int argc, char** argv) {
   bool analyzeEnabled = false;
   bool archiveEnabled = false;
   bool checkFirst = true;
+  bool runCheck = true; // For ANALYZE_ARCHIVE
   RunType runType = REPLICA;
   ModeType modeType = CREATE;
   // Get command line options
@@ -58,6 +59,8 @@ int main(int argc, char** argv) {
       overwrite = true;
     else if (Arg == "--nomdin")
       hasMdin = false;
+    else if (Arg == "--nocheck")
+      runCheck = false;
     else if (Arg == "--analyze") {
       modeType = ANALYZE_ARCHIVE;
       analyzeEnabled = true;
@@ -198,7 +201,10 @@ int main(int argc, char** argv) {
       std::string TRAJ1(*rdir + traj_prefix);
       if (CheckExists("Trajectory", TRAJ1)) return 1;
     }
-    if (CheckRuns( TopDir, RunDirs, checkFirst )) return 1;
+    if (runCheck) {
+      if (CheckRuns( TopDir, RunDirs, checkFirst )) return 1;
+    } else
+      Msg("Warning: Not running check on run directories.\n");
     // -------------------------------------------
     if (analyzeEnabled) {
       // Set up input for analysis
