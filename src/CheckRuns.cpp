@@ -6,6 +6,7 @@
 #include "TextFile.h"
 
 int CheckRuns(std::string const& TopDir, StrArray const& RunDirs) {
+  Msg("Checking runs.\n");
   int debug = 0;
   for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir) {
     if (ChangeDir( TopDir )) return 1;

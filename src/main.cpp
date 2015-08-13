@@ -172,11 +172,22 @@ int main(int argc, char** argv) {
       }
     }
   } else if (modeType == ANALYZE_ARCHIVE) {
-    std::string traj_prefix;
+    Msg("Creating input for");
+    if (analyzeEnabled) Msg(" analysis");
+    if (archiveEnabled) Msg(" archive");
+    Msg("\n");
+    ChangeDir( RunDirs.front() );
+    StrArray TrajFiles;
     if (runType == REPLICA)
-      traj_prefix.assign("/TRAJ/rem.crd.001");
+      TrajFiles = ExpandToFilenames("TRAJ/rem.crd.*");
     else // MD
-      traj_prefix.assign("/md.nc.001");
+      TrajFiles = ExpandToFilenames("md.nc.*");
+    if (TrajFiles.empty()) {
+      ErrorMsg("No trajectory files found.\n");
+      return 1;
+    }
+    std::string traj_prefix("/" + TrajFiles.front());
+    ChangeDir( TopDir );
     // Ensure traj 1 for all runs between start and stop exist.
     for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
     {
