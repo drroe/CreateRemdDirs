@@ -47,9 +47,9 @@ DoTest() {
     cat temp.diff >> $TEST_ERROR
     ((ERR++))
   else
-    rm temp.diff
     echo "  $2 OK." >> $TEST_RESULTS
   fi
+  rm temp.diff
 }
 
 EndTest() {
