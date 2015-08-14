@@ -27,12 +27,25 @@ NUMEXCHG    100
 TEMPERATURE 300.0
 MDIN_FILE   pme.remd.in
 ```
-Runs are set up in subdirectories named run.XXX, where XXX is a 3 digit number. Each
-run after the first is automatically set up to continue from the previous run.
 
+## Creating Input
+Basic usage is `CreateRemdDirs -b <start run #> -e <end run #>`. If only one run is desired
+only `-b` need be specified.`Runs are set up in subdirectories named run.XXX, where XXX is a
+3 digit number corresponding to the run number. Input coordinates can be either specified
+in the remd.opts file or on the command line with `-c` (path must be relative to inside
+the run.XXX directories). Each run after the first is automatically set up to continue from
+the previous run. Run #0 is special in that it will not be set up as a restart (irest = 0).
+
+Each REMD run directory will contain a groupfile, input files (in an INPUT subdirectory),
+and a remd.dim file for M-REMD runs. It is expected that output will also be into
+subdirectories, namely INFO for mdinfo files, LOG for log files (PMEMD only),
+OUTPUT for mdout files, RST for restart files, and TRAJ for trajectory files. An aMD
+directory will be created for aMD output files. 
+
+## Dimensions
 The DIMENSION files describe what each dimension looks like. CreateRemdDirs currently
-supports Temperature, Hamiltonian (Topology), and AMD Dihedral. A dimension file has
-one header line which describes what kind of dimension it is followed by lines
+supports Temperature, Hamiltonian (Topology), and accelerated MD (aMD) Dihedral.
+A dimension file has one header line which describes what kind of dimension it is followed by lines
  describing how the dimension is set up. For example, a Temperature dimension looks like so:
 ```
 #Temperature
@@ -52,7 +65,7 @@ Note that the paths in a Hamiltonian dimension need to be either absolute or rel
 the run directories, i.e. if you 'ls' the file from inside a run.XXX directory it will
 show up. 
 
-An AMD dihedral boost dimension looks like so:
+An aMD dihedral boost dimension looks like so:
 ```
 #amd_dihedral
 0.0 0.0
@@ -60,6 +73,4 @@ An AMD dihedral boost dimension looks like so:
 ```
 where the first number corresponds to alpha and the second to the threshhold.
 
-Each REMD run directory will contain a groupfile, input files (in an INPUT subdirectory),
-and a remd.dim file for M-REMD runs. It is expected that output will also be into
-subdirectories, namely  
+
