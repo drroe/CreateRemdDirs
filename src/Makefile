@@ -1,10 +1,8 @@
+include ../config.h
 
 SOURCES=main.cpp FileRoutines.cpp Messages.cpp RemdDirs.cpp TextFile.cpp ReplicaDimension.cpp Groups.cpp StringRoutines.cpp CheckRuns.cpp
 
 OBJECTS=$(SOURCES:.cpp=.o)
-
-CXXFLAGS=-Wall
-LDFLAGS=-lnetcdf
 
 install: CreateRemdDirs ../bin
 	/bin/mv CreateRemdDirs ../bin/

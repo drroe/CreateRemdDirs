@@ -1,0 +1,181 @@
+#!/bin/bash
+
+# Configure script for CreateRemdDirs
+
+Usage() {
+  echo "Usage: ./configure <OPTIONS> [gnu | intel | pgi | clang | cray]"
+  echo "  OPTIONS:"
+  echo "    --help             : Display this message."
+  echo "    -cray              : Use cray compiler wrappers (cc/CC/ftn)."
+  echo "    --with-netcdf=<DIR>: Use NetCDF in <DIR>"
+  echo "    -no-netcdf         : Disable NetCDF (disables check functionality)."
+  echo "    -nolfs             : Disable large file support."
+  echo ""
+}
+# ------------------------------------------------------------------------------
+# If arg is Key=Value, separate into Key and Value
+ParseArg() {
+  KEY=`echo "$1" | awk 'BEGIN{FS = "=";}{print $1;}'`
+  VALUE=`echo "$1" | awk 'BEGIN{FS = "=";}{print $2;}'`
+  eval VALUE=$VALUE
+  if [[ $VALUE = $KEY ]] ; then
+    VALUE=""
+  fi
+}
+
+# TestCxxProgram "TestName" "Lib"
+# Test compile test program testp.cpp
+TestCxxProgram() {
+  echo "$1"
+  COMPILELINE="$CXX $CXXFLAGS -o testp testp.cpp $2"
+  $COMPILELINE > /dev/null 2> compile.err
+  if [[ $? -ne 0 ]] ; then
+    echo "Compile error:" > /dev/stderr
+    cat compile.err > /dev/stderr
+    exit 1
+  fi
+  ./testp | grep "Testing" > /dev/null
+  status=$?
+  if [[ $status -gt 0 ]] ; then
+      CompileError "$COMPILELINE"
+  fi
+  /bin/rm -f testp.cpp testp
+  echo "  OK"
+}
+
+TestNetcdf() {
+  if [[ ! -z $NETCDFLIB ]] ; then
+    cat > testp.cpp <<EOF
+#include <cstdio>
+#include "netcdf.h"
+int main() { printf("Testing\n"); printf("%s\n",nc_strerror(0)); return 0; }
+EOF
+    TestCxxProgram "Checking NetCDF" "$NETCDFLIB"
+  fi
+}
+
+TestCompile() {
+  cat > testp.cpp <<EOF
+#include <cstdio>
+int main() { printf("Testing\n"); return 0; }
+EOF
+  TestCxxProgram "Testing C++ compiler"
+}
+
+# ------------------------------------------------------------------------------
+if [[ $1 = "--help"  || $1 = "-h" ]] ; then
+  Usage
+  exit 0
+fi
+
+CONFIGURECMD="./configure $*"
+
+KEY=""
+VALUE=""
+echo ""
+
+# Process options
+if [[ ! -z $CXX ]] ; then
+  COMPILER=$CXX
+else
+  COMPILER=g++
+fi
+NETCDFLIB=-lnetcdf
+NETCDF_HOME=""
+DIRECTIVES=""
+INCLUDE=""
+LFS="-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+
+while [[ ! -z $1 ]] ; do
+  ParseArg $1
+  case "$KEY" in
+    "gnu"    ) COMPILER=g++ ;;
+    "clang"  ) COMPILER=clang++ ;;
+    "intel"  ) COMPILER=icpc ;;
+    "pgi"    ) COMPILER=pgc++ ;;
+    "cray"   ) COMPILER=CC ;;
+    "-cray"     ) echo "Using cray compiler wrapper (CC)." ; USECRAY=1 ;;
+    "-nonetcdf" ) echo "Not using netcdf." ;  NETCDFLIB="" ;;
+    "-nolfs"    ) echo "Disabling large file support." ; LFS="" ;;
+    "--with-netcdf" )
+      INCLUDE="$INCLUDE -I$VALUE/include"
+      NETCDF_HOME="$VALUE"
+      echo "Using NETCDF in $NETCDF_HOME"
+      ;;
+    * ) echo "Error: Unrecognized option $KEY" > /dev/stderr ; exit 1 ;;
+  esac
+  shift
+done
+
+# Determine compile flags
+case "$COMPILER" in
+    "g++" )
+      echo "Using gnu compilers"
+      CXX=g++
+      OPTFLAGS="-O3 -Wall"
+      PICFLAG="-fPIC"
+      ;;
+    "clang++" )
+      echo "Using clang compilers"
+      CXX=clang++
+      OPTFLAGS="-O3 -Weverything"
+      PICFLAG="-fPIC"
+      ;;
+    "icpc" )
+      echo "Using intel compilers"
+      CXX=icpc
+      OPTFLAGS="-O3 -Wall"
+      PICFLAG="-fpic"
+      ;;
+    "pgc++" )
+      echo "Using PGI compilers"
+      CXX=pgc++
+      OPTFLAGS="-O2"
+      PICFLAG="-fpic"
+      ;;
+    "CC" )
+      echo "Using Cray compilers"
+      CXX=CC
+      OPTFLAGS=""
+      PICFLAG="-fpic"
+      ;;
+    * ) echo "Error: No compiler." > /dev/stderr ; exit 1 ;;
+esac
+
+# Use cray wrappers
+if [[ $USECRAY -eq 1 ]] ; then
+  CXX=CC
+fi
+
+# Set up directives
+if [[ ! -z $NETCDFLIB ]] ; then
+  DIRECTIVES="$DIRECTIVES -DHAS_NETCDF"
+fi
+
+# Set up NETCDF linking
+if [[ ! -z $NETCDF_HOME && ! -z $NETCDFLIB ]] ; then
+  NETCDFLIB="-L$NETCDF_HOME/lib $NETCDFLIB"
+fi
+
+# Set up compiler flags
+CXXFLAGS="$OPTFLAGS $DIRECTIVES $LFS $INCLUDE"
+
+# Set up linking flags
+LDFLAGS="$NETCDFLIB"
+
+# Test compilers
+TestCompile
+TestNetcdf
+
+# Write config.h
+cat > config.h <<EOF
+# config.h for CreateRemdDirs
+# configured using: $CONFIGURECMD
+
+CXX=$CXX
+CXXFLAGS=$CXXFLAGS
+LDFLAGS=$LDFLAGS
+EOF
+
+echo ""
+exit 0
