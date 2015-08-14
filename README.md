@@ -36,6 +36,18 @@ in the remd.opts file or on the command line with `-c` (path must be relative to
 the run.XXX directories). Each run after the first is automatically set up to continue from
 the previous run. Run #0 is special in that it will not be set up as a restart (irest = 0).
 
+The MDIN_FILE should contain Amber MD input flags that belong in the &cntrl namelist. The
+following flags are set from the remd.opts file and/or automatically: imin (always 0), 
+nstlim, dt, irest, ntx, ig, numexchg, temp0, tempi. All other necessary flags should be
+in MDIN_FILE. For example:
+```
+    ntwx = 5000, ioutfm = 1, ntwr = 100000, ntxo = 2, ntpr = 5000,
+    iwrap = 1, nscm = 1000, 
+    ntc = 2, ntf = 2, ntb = 1, cut = 8.0,
+    ntt = 3, gamma_ln = 1, 
+    ntp = 0,
+```
+
 Each REMD run directory will contain a groupfile, input files (in an INPUT subdirectory),
 and a remd.dim file for M-REMD runs. It is expected that output will also be into
 subdirectories, namely INFO for mdinfo files, LOG for log files (PMEMD only),
