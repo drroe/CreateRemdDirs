@@ -1,11 +1,14 @@
 #include <cmath>
 #include <cstdlib>
-#include "netcdf.h"
+#ifdef HAS_NETCDF
+# include "netcdf.h"
+#endif
 #include "CheckRuns.h"
 #include "Messages.h"
 #include "TextFile.h"
 
 int CheckRuns(std::string const& TopDir, StrArray const& RunDirs, bool firstOnly) {
+#ifdef HAS_NETCDF
   if (firstOnly)
     Msg("Checking only first output/traj for all runs.\n");
   else
@@ -139,5 +142,8 @@ int CheckRuns(std::string const& TopDir, StrArray const& RunDirs, bool firstOnly
     }
   } // END loop over runs
   Msg("\tRun OK.\n");
+# else
+  Msg("Warning: Compiled without NetCDF. Checking of runs is disabled.\n");
+# endif
   return 0;
 }
