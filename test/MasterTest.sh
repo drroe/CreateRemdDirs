@@ -79,7 +79,7 @@ EndTest() {
 # ------------------------------------------------------------------------------
 ERR=0
 NUMTEST=0
-BIN=../../../CreateRemdDirs
+BIN=../../bin/CreateRemdDirs
 VALGRIND=""
 ERROR=/dev/stderr
 while [[ ! -z $1 ]] ; do
