@@ -241,10 +241,8 @@ int RemdDirs::CreateRun(int start_run, int run_num, std::string const& run_dir) 
   int width = std::max(DigitWidth( totalReplicas_ ), 3);
   // Hold current indices in each dimension.
   Iarray Indices( Dims_.size(), 0 );
-  std::string currentTop;
-  double currentTemp0;
-  if (top_dim_ == -1) currentTop = top_file_;
-  if (temp0_dim_ == -1) currentTemp0 = temp0_;
+  std::string currentTop = top_file_;
+  double currentTemp0 = temp0_;
   for (unsigned int rep = 0; rep != totalReplicas_; rep++)
   {
     // Get topology/temperature for this replica if necessary.
