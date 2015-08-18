@@ -4,6 +4,7 @@
 #include "FileRoutines.h"
 #include "StringRoutines.h"
 #include "CheckRuns.h"
+#include "Submit.h"
 
 static void CmdLineHelp() {
   Msg("Command line options:\n"
@@ -11,10 +12,15 @@ static void CmdLineHelp() {
       "  -b <start run>\n"
       "  -e <stop run>\n"
       "  -c <start coords dir>\n"
-      "  -O : Overwrite\n"
-      "  --nomdin (no extra MD input, overridden by MDIN_FILE)\n"
-      "  --analyze (no need for -c)\n"
-      "  --archive (no need for -c)\n\n");
+      "  -O            : Overwrite\n"
+      "  --nomdin      : No extra MD input; overridden by MDIN_FILE\n"
+      "  --analyze     : Set up analysis instead of run (no need for -c)\n"
+      "  --archive     : Set up archiving instead of run (no need for -c)\n"
+      "  --check       : Check specified jobs only (requires NetCDF compilation).\n"
+      "  --nocheck     : Do not check jobs before creating analyze/archive input.\n"
+      "  --checkall    : When multiple replicas present, check all (default only first)\n"
+      "  -s | --submit : Submit jobs to queue\n"
+      "  -q <file>     : Queue options file (qsub.opts)\n\n");
 }
 
 static void Help() {
@@ -37,6 +43,8 @@ int main(int argc, char** argv) {
   bool archiveEnabled = false;
   bool checkFirst = true;
   bool runCheck = true; // For ANALYZE_ARCHIVE
+  bool submitJobs = false;
+  std::string qfile = "qsub.opts";
   RunType runType = REPLICA;
   ModeType modeType = CREATE;
   // Get command line options
@@ -72,6 +80,10 @@ int main(int argc, char** argv) {
     else if (Arg == "--checkall") {
       modeType = CHECK;
       checkFirst = false;
+    } else if (Arg == "-q" && iarg+1 != argc) {
+      qfile.assign( argv[++iarg] );
+    } else if (Arg == "-s" || Arg == "--submit") {
+      submitJobs = true;
     } else {
       ErrorMsg("Unrecognized CMD line opt: %s\n", argv[iarg]);
       CmdLineHelp();
@@ -284,6 +296,18 @@ int main(int argc, char** argv) {
       }
     } 
   }
+
+  // TEST - Job submission
+  if (submitJobs) {
+    ChangeDir( TopDir );
+    Submit submit;
+    std::string defaultName("~/default.qsub.opts");
+    if (fileExists(defaultName)) {
+      if (submit.ReadOptions(defaultName)) return 1;
+    }
+    if (submit.ReadOptions( qfile )) return 1;
+  }
+
   Msg("\n");
   return 0;
 }
