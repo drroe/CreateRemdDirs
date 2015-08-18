@@ -42,7 +42,38 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
         continue;
     }
     Msg("  %s\n", rdir->c_str());
+    ChangeDir( *rdir );
+    // Run-specific sanity checks. For MREMD make sure groupfile and remd.dim
+    // exist. For HREMD/TREMD make sure groupfile exists. For MD groupfile is
+    // used to get command line options only.
+    if (Run_->RunType() == TREMD || Run_->RunType() == HREMD) {
+      if (CheckExists("groupfile", "groupfile")) return 1;
+    } else if (Run_->RunType() == MREMD) {
+      if (CheckExists("groupfile", "groupfile")) return 1;
+      if (CheckExists("remd.dim", "remd.dim")) return 1;
+    } else if (Run_->RunType() == MD) {
+      if (!fileExists("groupfile")) {
+        ErrorMsg("groupfile does not exist for '%s'\n", rdir->c_str());
+        if (!Run_->SetupDepend())
+          return 1;
+        else
+          continue;
+      }
+      int nlines = 0;
+      TextFile groupfile;
+      if (groupfile.OpenRead("gropufile")) return 1;
+      const char* ptr = groupfile.Gets();
+      while (ptr != 0) {
+        nlines++;
+        cmd_opts.assign( ptr );
+        ptr = groupfile.Gets();
+      }
+      groupfile.Close();
+      if (nlines > 1)
+        cmd_opts.assign("-ng $NG -groupfile groupfile");
+    }
   }
+  Msg("CmdOpts: %s\n", cmd_opts.c_str());
 
   return 0; 
 }
