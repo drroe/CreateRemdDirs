@@ -23,6 +23,15 @@ ParseArg() {
   fi
 }
 
+CompileError() {
+  echo "Compile error: $1" > /dev/stderr
+  if [[ -f "compile.err" ]] ; then
+    cat compile.err > /dev/stderr
+    rm compile.err
+  fi
+  exit 1
+}
+
 # TestCxxProgram "TestName" "Lib"
 # Test compile test program testp.cpp
 TestCxxProgram() {
@@ -30,16 +39,13 @@ TestCxxProgram() {
   COMPILELINE="$CXX $CXXFLAGS -o testp testp.cpp $2"
   $COMPILELINE > /dev/null 2> compile.err
   if [[ $? -ne 0 ]] ; then
-    echo "Compile error:" > /dev/stderr
-    cat compile.err > /dev/stderr
-    exit 1
+    CompileError "$COMPILELINE"
   fi
   ./testp | grep "Testing" > /dev/null
-  status=$?
-  if [[ $status -gt 0 ]] ; then
-      CompileError "$COMPILELINE"
+  if [[ $? -ne 0 ]] ; then
+    CompileError "$COMPILELINE"
   fi
-  /bin/rm -f testp.cpp testp
+  /bin/rm -f testp.cpp testp compile.err
   echo "  OK"
 }
 
