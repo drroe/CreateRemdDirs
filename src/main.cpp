@@ -162,20 +162,21 @@ int main(int argc, char** argv) {
     Msg("Creating %i runs from %i to %i\n", stop_run - start_run + 1, start_run, stop_run);
     // Create runs
     REMD.SetCrdDir( crd_dir );
-    for (int run = start_run; run <= stop_run; run++)
+    StrArray::const_iterator runDir = RunDirs.begin();
+    for (int run = start_run; run <= stop_run; run++, ++runDir)
     {
       if (ChangeDir(TopDir)) return 1;
       // Determine run directory name, see if it is being overwritten.
-      Msg("  RUNDIR: %s\n", RunDirs[run].c_str());
-      if (fileExists(RunDirs[run]) && !overwrite) {
-        ErrorMsg("Directory '%s' exists and '-O' not specified.\n", RunDirs[run].c_str());
+      Msg("  RUNDIR: %s\n", runDir->c_str());
+      if (fileExists(*runDir) && !overwrite) {
+        ErrorMsg("Directory '%s' exists and '-O' not specified.\n", runDir->c_str());
         return 1;
       }
       // Create run input
       if (runType == REPLICA) {
-        if (REMD.CreateRun(start_run, run, RunDirs[run])) return 1;
+        if (REMD.CreateRun(start_run, run, *runDir)) return 1;
       } else { // MD
-        if (REMD.CreateMD(start_run, run, RunDirs[run])) return 1;
+        if (REMD.CreateMD(start_run, run, *runDir)) return 1;
       }
     }
   } else if (modeType == ANALYZE_ARCHIVE) {
