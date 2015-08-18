@@ -9,13 +9,14 @@ class Submit {
    ~Submit();
 
    int ReadOptions(std::string const&);
+   int WriteRuns(std::string const&) const;
   private:
     class QueueOpts;
     int ReadOptions(std::string const&, QueueOpts&);
 
-    enum RunType { MD=0, TREMD, HREMD, MREMD, ANALYSIS, ARCHIVE };
-    enum QueueType { PBS = 0, SLURM };
-    enum DependType { BATCH = 0, SUBMIT };
+    enum RunType { MD=0, TREMD, HREMD, MREMD, ANALYSIS, ARCHIVE, NO_RUN };
+    enum QueueType { PBS = 0, SLURM, NO_QUEUE };
+    enum DependType { BATCH = 0, SUBMIT, NO_DEP };
     typedef std::vector<std::string> Sarray;
 
     QueueOpts *Run_; ///< Run queue options
@@ -29,7 +30,13 @@ class Submit::QueueOpts {
     QueueOpts();
 
     int ProcessOption(std::string const&, std::string const&);
+    int Check() const;
+    int Write(std::string const&) const;
   private:
+    static const char* RunTypeStr[];
+    static const char* QueueTypeStr[];
+    //static const char* DependTypeStr[];
+
     std::string job_name_; ///< Unique job name
     int nodes_; ///< Number of nodes
     int ng_; ///< Number of groups (-ng command line flag).

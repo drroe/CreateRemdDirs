@@ -1,3 +1,4 @@
+#include <cstdlib> // atoi
 #include "Submit.h"
 #include "Messages.h"
 #include "TextFile.h"
@@ -10,13 +11,19 @@ Submit::~Submit() {
   if (Archive_ != 0) delete Archive_;
 }
 
+int Submit::WriteRuns(std::string const& top) const { return Run_->Write(top); }
+
 int Submit::ReadOptions(std::string const& fn) {
   if (Run_ != 0) {
     ErrorMsg("Only one queue input allowed.\n");
     return 1;
   }
   Run_ = new QueueOpts();
-  return ReadOptions( fn, *Run_ );
+  if (ReadOptions( fn, *Run_ )) return 1;
+  if (Run_->Check()) return 1;
+  if (Analyze_ != 0 && Analyze_->Check()) return 1;
+  if (Archive_ != 0 && Archive_->Check()) return 1;
+  return 0;
 }
 
 int Submit::ReadOptions(std::string const& fnameIn, QueueOpts& Qopt) {
@@ -100,7 +107,100 @@ Submit::QueueOpts::QueueOpts() :
   setupDepend_(true)
 {}
 
+const char* Submit::QueueOpts::RunTypeStr[] = {
+  "MD", "TREMD", "HREMD", "MREMD", "ANALYSIS", "ARCHIVE"
+};
+
+const char* Submit::QueueOpts::QueueTypeStr[] = {
+  "PBS", "SBATCH"
+};
+
+static inline int RetrieveOpt(const char** Str, int end, std::string const& VAR) {
+  for (int i = 0; i != end; i++)
+    if ( VAR.compare( Str[i] )==0 )
+      return i;
+  return end;
+}
+
 int Submit::QueueOpts::ProcessOption(std::string const& OPT, std::string const& VAR) {
   Msg("Processing '%s' '%s'\n", OPT.c_str(), VAR.c_str()); // DEBUG
+
+  if      (OPT == "JOBNAME") job_name_ = VAR;
+  else if (OPT == "NODES"  ) nodes_ = atoi( VAR.c_str() );
+  else if (OPT == "NG"     ) ng_ = atoi( VAR.c_str() );
+  else if (OPT == "PPN"    ) ppn_ = atoi( VAR.c_str() );
+  else if (OPT == "THREADS") threads_ = atoi( VAR.c_str() );
+  else if (OPT == "RUNTYPE") {
+    runType_ = (RunType)RetrieveOpt(RunTypeStr, NO_RUN, VAR);
+    if (runType_ == NO_RUN) {
+      ErrorMsg("Unrecognized run type: %s\n", VAR.c_str());
+      return 1;
+    }
+  }
+  else if (OPT == "AMBERHOME") {
+    if ( CheckExists("AMBERHOME", VAR) ) return 1;
+    amberhome_ = tildeExpansion( VAR );
+  }
+  else if (OPT == "PROGRAM"  ) program_ = VAR;
+  else if (OPT == "QSUB"     ) {
+    queueType_ = (QueueType) RetrieveOpt(QueueTypeStr, NO_QUEUE, VAR);
+    if (queueType_ == NO_QUEUE) {
+      ErrorMsg("Unrecognized QSUB: %s\n", VAR.c_str());
+      return 1;
+    }
+  }
+  else if (OPT == "WALLTIME"  ) walltime_ = VAR;
+  else if (OPT == "NODEARGS"  ) nodeargs_ = VAR;
+  else if (OPT == "MPIRUN"    ) mpirun_ = VAR;
+  else if (OPT == "MODULEFILE") {
+    if ( CheckExists( "Module file", VAR ) ) return 1;
+    TextFile modfile;
+    if (modfile.OpenRead( tildeExpansion(VAR) )) return 1;
+    const char* ptr = modfile.Gets();
+    while (ptr != 0) {
+      additionalCommands_.append( std::string(ptr) );
+      ptr = modfile.Gets();
+    }
+    modfile.Close();
+  }
+  else if (OPT == "ACCOUNT") account_ = VAR;
+  else if (OPT == "EMAIL"  ) email_ = VAR;
+  else if (OPT == "QUEUE"  ) queueName_ = VAR;
+  else if (OPT == "SERIAL" ) isSerial_ = (bool)atoi( VAR.c_str() );
+  else if (OPT == "CHAIN"  ) {
+    // TODO modify if more chain options introduced
+    int ival = atoi( VAR.c_str() );
+    if (ival == 1) dependType_ = SUBMIT;
+  }
+  else if (OPT == "NO_DEPEND") setupDepend_ = !((bool)atoi( VAR.c_str() ));
+  else if (OPT == "FLAG"     ) Flags_.push_back( VAR );
+  else {
+    ErrorMsg("Unrecognized option '%s' in input file.\n", OPT.c_str());
+    return 1;
+  }
   return 0;
 }
+
+int Submit::QueueOpts::Check() const {
+  if (job_name_.empty()) {
+    ErrorMsg("No job name\n");
+    return 1;
+  }
+  if (program_.empty()) { // TODO check AMBERHOME ?
+    ErrorMsg("PROGRAM not specified.\n");
+    return 1;
+  }
+  if (!isSerial_ && mpirun_.empty()) {
+    ErrorMsg("MPI run command MPIRUN not set.\n");
+    return 1;
+  }
+  return 0;
+}
+
+int Submit::QueueOpts::Write(std::string const& WorkDir) const {
+  // Get user name from whoami command
+  std::string user = UserName();
+  Msg("User: %s\n", user.c_str());
+  return 0;
+}
+  

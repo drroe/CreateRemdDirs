@@ -130,3 +130,13 @@ int ChangeDir(std::string const& dname) {
   }
   return 0;
 }
+
+std::string UserName() {
+  char buffer[1024];
+  FILE* fp = popen("whoami", "r");
+  if (fp == 0) return std::string();
+  char* ptr = fgets(buffer, 1023, fp);
+  pclose( fp );
+  if (ptr == 0) return std::string();
+  return std::string(ptr);
+}
