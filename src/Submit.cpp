@@ -2,8 +2,6 @@
 #include "Submit.h"
 #include "Messages.h"
 #include "TextFile.h"
-#include "FileRoutines.h"
-
 
 Submit::~Submit() {
   if (Run_ != 0) delete Run_;
@@ -11,7 +9,53 @@ Submit::~Submit() {
   if (Archive_ != 0) delete Archive_;
 }
 
-int Submit::WriteRuns(std::string const& top) const { return Run_->Write(top); }
+int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int start) const {
+  Run_->Info();
+  std::string user = UserName();
+  Msg("User: %s\n", user.c_str());
+  std::string submit( Run_->SubmitCmd() );
+  // Set RUNTYPE-specific command line options
+  std::string cmd_opts;
+  switch (Run_->RunType()) {
+    case MREMD : cmd_opts.assign("-ng $NG -groupfile groupfile -remd-file remd.dim"); break;
+    case HREMD : cmd_opts.assign("-ng $NG -groupfile groupfile -rem 3"); break;
+    case TREMD : cmd_opts.assign("-ng $NG -groupfile groupfile -rem 1"); break;
+  }
+  // Create run script for each run directory
+  std::string previous_jobid;
+  int run_num;
+  if (start != -1)
+    run_num = start;
+  else
+    run_num = 0;
+  Msg("Submitting %zu runs.\n", RunDirs.size());
+  for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
+  {
+    ChangeDir( top );
+    // Check if run directories already contain scripts
+    if ( !Run_->OverWrite() && fileExists( *rdir + "/" + submit + ".sh") ) {
+      ErrorMsg("Not overwriting (-O) and %s already contains %s.sh\n",
+               rdir->c_str(), submit.c_str());
+      if (!Run_->SetupDepend())
+        return 1;
+      else
+        continue;
+    }
+    Msg("  %s\n", rdir->c_str());
+  }
+
+  return 0; 
+}
+
+int Submit::SubmitAnalysis(std::string const& top) {
+  if (Analyze_ == 0) {
+    ErrorMsg("No ANALYSIS_FILE set.\n");
+    return 1;
+  }
+  Analyze_->SetRunType( ANALYSIS );
+  Analyze_->Info();
+  return Analyze_->Submit( top );
+}
 
 int Submit::ReadOptions(std::string const& fn) {
   if (Run_ != 0) {
@@ -55,7 +99,7 @@ int Submit::ReadOptions(std::string const& fnameIn, QueueOpts& Qopt) {
     if (found1 != std::string::npos) Args.resize(found1);
     // Reduce line to option
     line.resize(found);
-    Msg("Opt: '%s'   Args: '%s'\n", line.c_str(), Args.c_str());
+    //Msg("Opt: '%s'   Args: '%s'\n", line.c_str(), Args.c_str());
 
     // Process options
     if (line == "ANALYZE_FILE") {
@@ -115,6 +159,10 @@ const char* Submit::QueueOpts::QueueTypeStr[] = {
   "PBS", "SBATCH"
 };
 
+const char* Submit::QueueOpts::SubmitCmdStr[] = {
+  "qsub", "sbatch"
+};
+
 static inline int RetrieveOpt(const char** Str, int end, std::string const& VAR) {
   for (int i = 0; i != end; i++)
     if ( VAR.compare( Str[i] )==0 )
@@ -123,7 +171,7 @@ static inline int RetrieveOpt(const char** Str, int end, std::string const& VAR)
 }
 
 int Submit::QueueOpts::ProcessOption(std::string const& OPT, std::string const& VAR) {
-  Msg("Processing '%s' '%s'\n", OPT.c_str(), VAR.c_str()); // DEBUG
+  //Msg("Processing '%s' '%s'\n", OPT.c_str(), VAR.c_str()); // DEBUG
 
   if      (OPT == "JOBNAME") job_name_ = VAR;
   else if (OPT == "NODES"  ) nodes_ = atoi( VAR.c_str() );
@@ -131,7 +179,7 @@ int Submit::QueueOpts::ProcessOption(std::string const& OPT, std::string const& 
   else if (OPT == "PPN"    ) ppn_ = atoi( VAR.c_str() );
   else if (OPT == "THREADS") threads_ = atoi( VAR.c_str() );
   else if (OPT == "RUNTYPE") {
-    runType_ = (RunType)RetrieveOpt(RunTypeStr, NO_RUN, VAR);
+    runType_ = (RUNTYPE)RetrieveOpt(RunTypeStr, NO_RUN, VAR);
     if (runType_ == NO_RUN) {
       ErrorMsg("Unrecognized run type: %s\n", VAR.c_str());
       return 1;
@@ -143,7 +191,7 @@ int Submit::QueueOpts::ProcessOption(std::string const& OPT, std::string const& 
   }
   else if (OPT == "PROGRAM"  ) program_ = VAR;
   else if (OPT == "QSUB"     ) {
-    queueType_ = (QueueType) RetrieveOpt(QueueTypeStr, NO_QUEUE, VAR);
+    queueType_ = (QUEUETYPE) RetrieveOpt(QueueTypeStr, NO_QUEUE, VAR);
     if (queueType_ == NO_QUEUE) {
       ErrorMsg("Unrecognized QSUB: %s\n", VAR.c_str());
       return 1;
@@ -197,10 +245,30 @@ int Submit::QueueOpts::Check() const {
   return 0;
 }
 
-int Submit::QueueOpts::Write(std::string const& WorkDir) const {
+int Submit::QueueOpts::Submit(std::string const& WorkDir) const {
   // Get user name from whoami command
   std::string user = UserName();
   Msg("User: %s\n", user.c_str());
   return 0;
 }
-  
+
+void Submit::QueueOpts::Info() const {
+  Msg("\n---=== Job Submission ===---\n");
+  Msg("  RUNTYPE   : %s\n", RunTypeStr[runType_]);
+  Msg("  JOBNAME   : %s\n", job_name_.c_str());
+  if (nodes_ > 0  ) Msg("  NODES     : %i\n", nodes_);
+  if (ng_ > 0     ) Msg("  NG        : %i\n", ng_);
+  if (ppn_ > 0    ) Msg("  PPN       : %i\n", ppn_);
+  if (threads_ > 0) Msg("  THREADS   : %i\n", threads_);
+  if (!amberhome_.empty()) Msg("  AMBERHOME : %s\n", amberhome_.c_str());
+  Msg("  PROGRAM   : %s\n", program_.c_str());
+  Msg("  QSUB      : %s\n", QueueTypeStr[queueType_]);
+  if (!walltime_.empty())  Msg("  WALLTIME  : %s\n", walltime_.c_str());
+  if (!mpirun_.empty())    Msg("  MPIRUN    : %s\n", mpirun_.c_str());
+  if (!nodeargs_.empty())  Msg("  NODEARGS  : %s\n", nodeargs_.c_str());
+  if (!account_.empty())   Msg("  ACCOUNT   : %s\n", account_.c_str());
+  if (!email_.empty())     Msg("  EMAIL     : %s\n", email_.c_str());
+  if (!queueName_.empty()) Msg("  QUEUE     : %s\n", queueName_.c_str());
+  Msg("  CHAIN     : %i\n", (int)dependType_);
+  Msg("  NO_DEPEND : %i\n", (int)(!setupDepend_));
+}

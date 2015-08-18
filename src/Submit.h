@@ -1,7 +1,6 @@
 #ifndef INC_SUBMIT_H
 #define INC_SUBMIT_H
-#include <string>
-#include <vector>
+#include "FileRoutines.h"
 /// Class used to submit jobs via a queuing system.
 class Submit {
   public:
@@ -9,14 +8,15 @@ class Submit {
    ~Submit();
 
    int ReadOptions(std::string const&);
-   int WriteRuns(std::string const&) const;
+   int SubmitRuns(std::string const&, StrArray const&, int) const;
+   int SubmitAnalysis(std::string const&);
   private:
     class QueueOpts;
     int ReadOptions(std::string const&, QueueOpts&);
 
-    enum RunType { MD=0, TREMD, HREMD, MREMD, ANALYSIS, ARCHIVE, NO_RUN };
-    enum QueueType { PBS = 0, SLURM, NO_QUEUE };
-    enum DependType { BATCH = 0, SUBMIT, NO_DEP };
+    enum RUNTYPE { MD=0, TREMD, HREMD, MREMD, ANALYSIS, ARCHIVE, NO_RUN };
+    enum QUEUETYPE { PBS = 0, SLURM, NO_QUEUE };
+    enum DEPENDTYPE { BATCH = 0, SUBMIT, NO_DEP };
     typedef std::vector<std::string> Sarray;
 
     QueueOpts *Run_; ///< Run queue options
@@ -28,21 +28,29 @@ class Submit {
 class Submit::QueueOpts {
   public:
     QueueOpts();
+    void SetRunType(RUNTYPE r) { runType_ = r; }
 
     int ProcessOption(std::string const&, std::string const&);
     int Check() const;
-    int Write(std::string const&) const;
+    int Submit(std::string const&) const;
+    void Info() const;
+
+    RUNTYPE RunType() const { return runType_; }
+    bool OverWrite()  const { return overWrite_; }
+    bool SetupDepend() const { return setupDepend_; }
+    const char* SubmitCmd() const { return SubmitCmdStr[runType_]; }
   private:
     static const char* RunTypeStr[];
     static const char* QueueTypeStr[];
     //static const char* DependTypeStr[];
+    static const char* SubmitCmdStr[];
 
     std::string job_name_; ///< Unique job name
     int nodes_; ///< Number of nodes
     int ng_; ///< Number of groups (-ng command line flag).
     int ppn_; ///< Processors per node
     int threads_; ///< Total number of threads required.
-    RunType runType_; ///< Run type
+    RUNTYPE runType_; ///< Run type
     bool overWrite_; ///< If true overwrite existing scripts.
     bool testing_; ///< If true do not actually submit scripts.
     std::string walltime_; ///< Wallclock time for queuing system
@@ -50,13 +58,13 @@ class Submit::QueueOpts {
     std::string account_; ///< Account for running jobs
     std::string amberhome_; ///< Location of amber
     std::string program_; ///< Program name
-    QueueType queueType_; ///< PBS or SBATCH
+    QUEUETYPE queueType_; ///< PBS or SBATCH
     std::string mpirun_; ///< MPI run command
     std::string nodeargs_; ///< Any additional node arguments
     std::string additionalCommands_; ///< Any additional script commands.
     std::string queueName_; ///< Name of queue to submit to.
     bool isSerial_; ///< If true MPI run command not required.
-    DependType dependType_; ///< 0: Use batch. 1: Chain via submit.
+    DEPENDTYPE dependType_; ///< 0: Use batch. 1: Chain via submit.
     bool setupDepend_; ///< If true set up job dependencies.
     Sarray Flags_; ///< Additional queue flags.
 };
