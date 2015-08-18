@@ -91,6 +91,8 @@ NETCDF_HOME=""
 DIRECTIVES=""
 INCLUDE=""
 LFS="-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+NO_OPT=0
+DBG_FLAG=""
 
 while [[ ! -z $1 ]] ; do
   ParseArg $1
@@ -103,6 +105,13 @@ while [[ ! -z $1 ]] ; do
     "-cray"     ) echo "Using cray compiler wrapper (CC)." ; USECRAY=1 ;;
     "-nonetcdf" ) echo "Not using netcdf." ;  NETCDFLIB="" ;;
     "-nolfs"    ) echo "Disabling large file support." ; LFS="" ;;
+    "-noopt"    ) echo "Disabling optimization." ; NO_OPT=1 ;;
+    "-debug"    ) echo "Enabling compile debug." ; DBG_FLAG=-g ;;
+    "-d"        )
+      echo "Disabling optimization and enabling compile debug."
+      NO_OPT=1
+      DBG_FLAG=-g
+      ;;
     "--with-netcdf" )
       INCLUDE="$INCLUDE -I$VALUE/include"
       NETCDF_HOME="$VALUE"
@@ -153,6 +162,11 @@ if [[ $USECRAY -eq 1 ]] ; then
   CXX=CC
 fi
 
+# Remove optimizations
+if [[ $NO_OPT -eq 1 ]] ; then
+  OPTFLAGS=""
+fi
+
 # Set up directives
 if [[ ! -z $NETCDFLIB ]] ; then
   DIRECTIVES="$DIRECTIVES -DHAS_NETCDF"
@@ -164,7 +178,7 @@ if [[ ! -z $NETCDF_HOME && ! -z $NETCDFLIB ]] ; then
 fi
 
 # Set up compiler flags
-CXXFLAGS="$OPTFLAGS $DIRECTIVES $LFS $INCLUDE"
+CXXFLAGS="$DBG_FLAG $OPTFLAGS $DIRECTIVES $LFS $INCLUDE"
 
 # Set up linking flags
 LDFLAGS="$NETCDFLIB"
