@@ -18,7 +18,7 @@ class Submit {
 
     enum RUNTYPE { MD=0, TREMD, HREMD, MREMD, ANALYSIS, ARCHIVE, NO_RUN };
     enum QUEUETYPE { PBS = 0, SLURM, NO_QUEUE };
-    enum DEPENDTYPE { BATCH = 0, SUBMIT, NO_DEP };
+    enum DEPENDTYPE { BATCH = 0, SUBMIT, NONE, NO_DEP };
     typedef std::vector<std::string> Sarray;
 
     QueueOpts *Run_; ///< Run queue options
@@ -39,39 +39,38 @@ class Submit::QueueOpts {
     void CalcThreads();
     int QsubHeader(TextFile&, int, std::string const&);
 
-    RUNTYPE RunType() const { return runType_; }
-    bool OverWrite()  const { return overWrite_; }
-    bool SetupDepend() const { return setupDepend_; }
+    RUNTYPE RunType()       const { return runType_; }
+    DEPENDTYPE DependType() const { return dependType_; }
+    bool OverWrite()        const { return overWrite_; }
     const char* SubmitCmd() const { return SubmitCmdStr[queueType_]; }
   private:
     void AdditionalFlags(TextFile&) const;
 
     static const char* RunTypeStr[];
     static const char* QueueTypeStr[];
-    //static const char* DependTypeStr[];
+    static const char* DependTypeStr[];
     static const char* SubmitCmdStr[];
-
-    std::string job_name_; ///< Unique job name
-    int nodes_; ///< Number of nodes
-    int ng_; ///< Number of groups (-ng command line flag).
-    int ppn_; ///< Processors per node
-    int threads_; ///< Total number of threads required.
-    RUNTYPE runType_; ///< Run type
-    bool overWrite_; ///< If true overwrite existing scripts.
-    bool testing_; ///< If true do not actually submit scripts.
-    std::string walltime_; ///< Wallclock time for queuing system
-    std::string email_; ///< User email address
-    std::string account_; ///< Account for running jobs
-    std::string amberhome_; ///< Location of amber
-    std::string program_; ///< Program name
-    QUEUETYPE queueType_; ///< PBS or SBATCH
-    std::string mpirun_; ///< MPI run command
-    std::string nodeargs_; ///< Any additional node arguments
+    // TODO reorganize
+    std::string job_name_;           ///< Unique job name
+    int nodes_;                      ///< Number of nodes
+    int ng_;                         ///< Number of groups (-ng command line flag).
+    int ppn_;                        ///< Processors per node
+    int threads_;                    ///< Total number of threads required.
+    RUNTYPE runType_;                ///< Run type TODO handle in RemdDirs
+    bool overWrite_;                 ///< If true overwrite existing scripts.
+    bool testing_;                   ///< If true do not actually submit scripts.
+    std::string walltime_;           ///< Wallclock time for queuing system
+    std::string email_;              ///< User email address
+    std::string account_;            ///< Account for running jobs
+    std::string amberhome_;          ///< Location of amber
+    std::string program_;            ///< Program name
+    QUEUETYPE queueType_;            ///< PBS or SBATCH
+    std::string mpirun_;             ///< MPI run command
+    std::string nodeargs_;           ///< Any additional node arguments
     std::string additionalCommands_; ///< Any additional script commands.
-    std::string queueName_; ///< Name of queue to submit to.
-    bool isSerial_; ///< If true MPI run command not required.
-    DEPENDTYPE dependType_; ///< 0: Use batch. 1: Chain via submit.
-    bool setupDepend_; ///< If true set up job dependencies.
-    Sarray Flags_; ///< Additional queue flags.
+    std::string queueName_;          ///< Name of queue to submit to.
+    bool isSerial_;                  ///< If true MPI run command not required.
+    DEPENDTYPE dependType_;          ///< How to handle dependencies 
+    Sarray Flags_;                   ///< Additional queue flags.
 };
 #endif

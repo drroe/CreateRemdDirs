@@ -10,8 +10,8 @@ Submit::~Submit() {
 }
 
 int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int start) const {
-  Run_->Info();
   Run_->CalcThreads();
+  Run_->Info();
   std::string user = UserName();
   Msg("User: %s\n", user.c_str());
   std::string submitScript( std::string(Run_->SubmitCmd()) + ".sh" );
@@ -40,7 +40,7 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
     if ( !Run_->OverWrite() && fileExists( *rdir + "/" + submitScript) ) {
       ErrorMsg("Not overwriting (-O) and %s already contains %s\n",
                rdir->c_str(), submitScript.c_str());
-      if (!Run_->SetupDepend())
+      if (Run_->DependType() != NONE) // Exit if dependencies exist
         return 1;
       else
         continue;
@@ -58,7 +58,7 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
     } else if (Run_->RunType() == MD) {
       if (!fileExists(groupfileName)) {
         ErrorMsg("groupfile does not exist for '%s'\n", rdir->c_str());
-        if (!Run_->SetupDepend())
+        if (Run_->DependType() != NONE) // Exit if dependencies exist
           return 1;
         else
           continue;
@@ -93,6 +93,7 @@ int Submit::SubmitAnalysis(std::string const& top) {
     return 1;
   }
   Analyze_->SetRunType( ANALYSIS );
+  Analyze_->CalcThreads();
   Analyze_->Info();
   return Analyze_->Submit( top );
 }
@@ -131,13 +132,12 @@ int Submit::ReadOptions(std::string const& fnameIn, QueueOpts& Qopt) {
       ErrorMsg("malformed option: %s\n", ptr);
       return 1;
     }
+    // Find first non-whitespace character
     size_t found1 = found;
     while (found1 < line.size() && line[found1] == ' ') ++found1;
+    // Remove any newline chars and trailing whitespace
     std::string Args = NoTrailingWhitespace( line.substr(found1) );
-    // Remove any newline chars
-    //found1 = Args.find_first_of("\r\n");
-    //if (found1 != std::string::npos) Args.resize(found1);
-    // Reduce line to option
+    // Reduce line to option only
     line.resize(found);
     //Msg("Opt: '%s'   Args: '%s'\n", line.c_str(), Args.c_str());
 
@@ -187,8 +187,7 @@ Submit::QueueOpts::QueueOpts() :
   testing_(false),
   queueType_(PBS),
   isSerial_(false),
-  dependType_(BATCH),
-  setupDepend_(true)
+  dependType_(BATCH)
 {}
 
 const char* Submit::QueueOpts::RunTypeStr[] = {
@@ -197,6 +196,10 @@ const char* Submit::QueueOpts::RunTypeStr[] = {
 
 const char* Submit::QueueOpts::QueueTypeStr[] = {
   "PBS", "SBATCH"
+};
+
+const char* Submit::QueueOpts::DependTypeStr[] = {
+  "BATCH", "SUBMIT", "NONE"
 };
 
 const char* Submit::QueueOpts::SubmitCmdStr[] = {
@@ -211,7 +214,7 @@ static inline int RetrieveOpt(const char** Str, int end, std::string const& VAR)
 }
 
 int Submit::QueueOpts::ProcessOption(std::string const& OPT, std::string const& VAR) {
-  Msg("Processing '%s' '%s'\n", OPT.c_str(), VAR.c_str()); // DEBUG
+  //Msg("Processing '%s' '%s'\n", OPT.c_str(), VAR.c_str()); // DEBUG
 
   if      (OPT == "JOBNAME") job_name_ = VAR;
   else if (OPT == "NODES"  ) nodes_ = atoi( VAR.c_str() );
@@ -255,12 +258,21 @@ int Submit::QueueOpts::ProcessOption(std::string const& OPT, std::string const& 
   else if (OPT == "EMAIL"  ) email_ = VAR;
   else if (OPT == "QUEUE"  ) queueName_ = VAR;
   else if (OPT == "SERIAL" ) isSerial_ = (bool)atoi( VAR.c_str() );
-  else if (OPT == "CHAIN"  ) {
-    // TODO modify if more chain options introduced
+  else if (OPT == "DEPEND" ) {
+    dependType_ = (DEPENDTYPE) RetrieveOpt(DependTypeStr, NO_DEP, VAR);
+    if (dependType_ == NO_DEP) {
+      ErrorMsg("Unrecognized DEPEND: %s\n", VAR.c_str());
+      return 1;
+    }
+  }
+/*  else if (OPT == "CHAIN"  ) {
     int ival = atoi( VAR.c_str() );
     if (ival == 1) dependType_ = SUBMIT;
   }
-  else if (OPT == "NO_DEPEND") setupDepend_ = !((bool)atoi( VAR.c_str() ));
+  else if (OPT == "NO_DEPEND") {
+    if (atoi( VAR.c_str()) == 1)
+      dependType_ = NO_DEPEND;
+  }*/ 
   else if (OPT == "FLAG"     ) Flags_.push_back( VAR );
   else {
     ErrorMsg("Unrecognized option '%s' in input file.\n", OPT.c_str());
@@ -309,12 +321,18 @@ void Submit::QueueOpts::Info() const {
   if (!account_.empty())   Msg("  ACCOUNT   : %s\n", account_.c_str());
   if (!email_.empty())     Msg("  EMAIL     : %s\n", email_.c_str());
   if (!queueName_.empty()) Msg("  QUEUE     : %s\n", queueName_.c_str());
-  Msg("  CHAIN     : %i\n", (int)dependType_);
-  Msg("  NO_DEPEND : %i\n", (int)(!setupDepend_));
+  Msg("  DEPEND    : %s\n", DependTypeStr[dependType_]);
 }
 
 void Submit::QueueOpts::CalcThreads() {
-  if (threads_ < 1) threads_ = nodes_ * ppn_;
+  if (threads_ < 1) {
+    if (nodes_ > 0 || ppn_ > 0) {
+      int N = 1, P = 1;
+      if (nodes_ > 0) N = nodes_;
+      if (ppn_ > 0) P = ppn_;
+      threads_ = N * P;
+    }
+  }
   if (threads_ < 1)
     Msg("Warning: Less than 1 thread specified.\n");
 }
