@@ -307,7 +307,7 @@ int main(int argc, char** argv) {
     }
     if (submit.ReadOptions( qfile )) return 1;
     // DEBUG
-    submit.SubmitRuns(TopDir, RunDirs, start_run);
+    if (submit.SubmitRuns(TopDir, RunDirs, start_run)) return 1;
   }
 
   Msg("\n");

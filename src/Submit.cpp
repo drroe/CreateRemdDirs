@@ -79,7 +79,7 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
     // Set options specific to queuing system, node info, and Amber env.
     TextFile qout;
     if (qout.OpenWrite( submitScript )) return 1;
-    Run_->QsubHeader(qout, run_num, previous_jobid);
+    if (Run_->QsubHeader(qout, run_num, previous_jobid)) return 1;
     qout.Close();
   }
   Msg("CmdOpts: %s\n", cmd_opts.c_str());
@@ -347,7 +347,7 @@ int Submit::QueueOpts::QsubHeader(TextFile& qout, int run_num, std::string const
     if (!previous_job.empty()) qout.Printf("#PBS -W depend=afterok:%s\n", previous_job.c_str());  
     if (!queueName_.empty()) qout.Printf("#PBS -q %s\n", queueName_.c_str());
     AdditionalFlags( qout );
-    qout.Printf("\ncd $PBS_O_WORKDIR\n");
+    qout.Printf("\ncd $PBS_O_WORKDIR\n\n");
   }
   // ----- SLURM ---------------------------------
   else if (queueType_ == SLURM) {
@@ -361,12 +361,25 @@ int Submit::QueueOpts::QsubHeader(TextFile& qout, int run_num, std::string const
     if (!previous_job.empty()) qout.Printf("#SBATCH -d afterok:%s\n", previous_job.c_str());
     if (!queueName_.empty()) qout.Printf("#SBATCH -p %s\n", queueName_.c_str());
     AdditionalFlags( qout );
-    qout.Printf("echo \"JobID: $SLURM_JOB_ID\"\necho \"NodeList: $SLURM_NODELIST\"\n"
-                "cd $SLURM_SUBMIT_DIR\n");
+    qout.Printf("\necho \"JobID: $SLURM_JOB_ID\"\necho \"NodeList: $SLURM_NODELIST\"\n"
+                "cd $SLURM_SUBMIT_DIR\n\n");
   }
-  
-  // Additional Flags and finish.
-  //QW->Finish(Flags_);
+  // Set thread info, Amber environment
+  if (ppn_ > 0) qout.Printf("PPN=%i\n", ppn_);
+  if (nodes_ > 0) qout.Printf("NODES=%i\n", nodes_);
+  if (threads_ > 0) qout.Printf("THREADS=%i\n", threads_);
+  if (!amberhome_.empty()) {
+    qout.Printf("export AMBERHOME=%s\n", amberhome_.c_str());
+    if (fileExists(amberhome_ + "/amber.sh"))
+      qout.Printf("source $AMBERHOME/amber.sh\n");
+    else
+      qout.Printf("export PATH=$AMBERHOME/bin:$PATH\n"); // TODO LD_LIBRARY_PATH?
+    // Check if program exists
+    std::string exepath = amberhome_ + "/bin/" + program_;
+    if (CheckExists("Full program path", exepath)) return 1;
+    qout.Printf("EXEPATH=%s\nls -l $EXEPATH\n", exepath.c_str());
+  } else
+    qout.Printf("EXEPATH=%s\nls -l `which $EXEPATH`\n", program_.c_str());
 
   return 0;
 }
