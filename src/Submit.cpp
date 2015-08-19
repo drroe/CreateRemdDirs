@@ -77,7 +77,10 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
         cmd_opts.assign("-ng $NG -groupfile " + groupfileName);
     }
     // Set options specific to queuing system, node info, and Amber env.
-    Run_->QsubHeader(submitScript, run_num, previous_jobid);
+    TextFile qout;
+    if (qout.OpenWrite( submitScript )) return 1;
+    Run_->QsubHeader(qout, run_num, previous_jobid);
+    qout.Close();
   }
   Msg("CmdOpts: %s\n", cmd_opts.c_str());
 
@@ -130,10 +133,10 @@ int Submit::ReadOptions(std::string const& fnameIn, QueueOpts& Qopt) {
     }
     size_t found1 = found;
     while (found1 < line.size() && line[found1] == ' ') ++found1;
-    std::string Args = line.substr(found1);
+    std::string Args = NoTrailingWhitespace( line.substr(found1) );
     // Remove any newline chars
-    found1 = Args.find_first_of("\r\n");
-    if (found1 != std::string::npos) Args.resize(found1);
+    //found1 = Args.find_first_of("\r\n");
+    //if (found1 != std::string::npos) Args.resize(found1);
     // Reduce line to option
     line.resize(found);
     //Msg("Opt: '%s'   Args: '%s'\n", line.c_str(), Args.c_str());
@@ -208,7 +211,7 @@ static inline int RetrieveOpt(const char** Str, int end, std::string const& VAR)
 }
 
 int Submit::QueueOpts::ProcessOption(std::string const& OPT, std::string const& VAR) {
-  //Msg("Processing '%s' '%s'\n", OPT.c_str(), VAR.c_str()); // DEBUG
+  Msg("Processing '%s' '%s'\n", OPT.c_str(), VAR.c_str()); // DEBUG
 
   if      (OPT == "JOBNAME") job_name_ = VAR;
   else if (OPT == "NODES"  ) nodes_ = atoi( VAR.c_str() );
@@ -321,13 +324,8 @@ void Submit::QueueOpts::AdditionalFlags(TextFile& qout) const {
     qout.Printf("#%s %s\n", QueueTypeStr[queueType_], flag->c_str());
 }
 
-int Submit::QueueOpts::QsubHeader(std::string const& script, int run_num, std::string const& jobID)
+int Submit::QueueOpts::QsubHeader(TextFile& qout, int run_num, std::string const& jobID)
 {
-  if (script.empty()) {
-    ErrorMsg("QsubHeader: No script name.\n");
-    return 1;
-  }
-  Msg("Writing %s\n", script.c_str());
   std::string job_title, previous_job;
   if (run_num > -1)
     job_title = job_name_ + "." + integerToString(run_num);
@@ -336,8 +334,7 @@ int Submit::QueueOpts::QsubHeader(std::string const& script, int run_num, std::s
   if (dependType_ != SUBMIT)
     previous_job = jobID;
   // Queue specific options.
-  TextFile qout;
-  if (qout.OpenWrite(script)) return 1;
+  // ----- PBS -----------------------------------
   if (queueType_ == PBS) {
     std::string resources("nodes=" + integerToString(nodes_));
     if (ppn_ > 0)
@@ -351,11 +348,25 @@ int Submit::QueueOpts::QsubHeader(std::string const& script, int run_num, std::s
     if (!queueName_.empty()) qout.Printf("#PBS -q %s\n", queueName_.c_str());
     AdditionalFlags( qout );
     qout.Printf("\ncd $PBS_O_WORKDIR\n");
-  } 
+  }
+  // ----- SLURM ---------------------------------
+  else if (queueType_ == SLURM) {
+    qout.Printf("#!/bin/bash\n#SBATCH -J %s\n#SBATCH -N %i\n#SBATCH -t %s\n",
+                job_title.c_str(), nodes_, walltime_.c_str()); 
+    if (threads_ > 0) qout.Printf("#SBATCH -n %i\n", threads_);
+    if (!email_.empty())
+      qout.Printf("#SBATCH --mail-user=%s\n#SBATCH --mail-type=all\n", email_.c_str());
+    if (!account_.empty())
+      qout.Printf("#SBATCH -A %s\n", account_.c_str());
+    if (!previous_job.empty()) qout.Printf("#SBATCH -d afterok:%s\n", previous_job.c_str());
+    if (!queueName_.empty()) qout.Printf("#SBATCH -p %s\n", queueName_.c_str());
+    AdditionalFlags( qout );
+    qout.Printf("echo \"JobID: $SLURM_JOB_ID\"\necho \"NodeList: $SLURM_NODELIST\"\n"
+                "cd $SLURM_SUBMIT_DIR\n");
+  }
   
   // Additional Flags and finish.
   //QW->Finish(Flags_);
 
-  qout.Close();
   return 0;
 }

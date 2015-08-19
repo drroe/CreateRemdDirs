@@ -37,7 +37,7 @@ class Submit::QueueOpts {
     int Submit(std::string const&) const;
     void Info() const;
     void CalcThreads();
-    int QsubHeader(std::string const&, int, std::string const&);
+    int QsubHeader(TextFile&, int, std::string const&);
 
     RUNTYPE RunType() const { return runType_; }
     bool OverWrite()  const { return overWrite_; }
