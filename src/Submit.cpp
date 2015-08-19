@@ -341,14 +341,11 @@ int Submit::QueueOpts::QsubHeader(std::string const& script, int run_num, std::s
     resources.append(nodeargs_);
     qout.Printf("#PBS -S /bin/bash\n#PBS -l walltime=%s,%s\n#PBS -N %s\n#PBS -j oe\n",
                 walltime_.c_str(), resources.c_str(), job_title.c_str());
-  // Email
-  //if (!email_.empty()) QW->Email(email_);
-  // Account
-  //if (!account_.empty()) QW->Account(account_);
-  // Dependency
-  //if (!previous_job.empty()) QW->Depend(previous_job);
-  // Queue
-  //if (!queueName_.empty()) QW->Queue(queueName_);
+  if (!email_.empty()) qout.Printf("#PBS -m abe\n#PBS -M %s\n", email_.c_str()); 
+  if (!account_.empty()) qout.Printf("#PBS -A %s\n", account_.c_str());
+  if (!previous_job.empty()) qout.Printf("#PBS -W depend=afterok:%s\n", previous_job.c_str());  
+  if (!queueName_.empty()) qout.Printf("#PBS -q %s\n", queueName_.c_str());
+  
   // Additional Flags and finish.
   //QW->Finish(Flags_);
   }
