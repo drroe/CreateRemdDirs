@@ -15,7 +15,10 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
   Run_->Info();
   std::string user = UserName();
   Msg("User: %s\n", user.c_str());
+  std::string jobIdFilename(top + "/temp.jobid");
   std::string submitScript( std::string(Run_->SubmitCmd()) + ".sh" );
+  std::string submitCommand( std::string(Run_->SubmitCmd()) + " " +
+                             submitScript + " > " + jobIdFilename);
   // Set RUNTYPE-specific command line options
   std::string groupfileName("groupfile"); // TODO make these filenames options
   std::string remddimName("remd.dim");
@@ -94,6 +97,32 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
     }
     qout.Printf("exit 0\n");
     qout.Close();
+    ChangePermissions( submitScript );
+    // Peform job submission if not testing
+    if (Run_->Testing())
+      Msg("Just testing. Skipping script submission.\n");
+    else {
+      Msg("%s\n", submitCommand.c_str()); 
+      if ( system( submitCommand.c_str() ) ) {
+        ErrorMsg("Job submission failed.\n");
+        return 1;
+      }
+      // Get job ID of submitted job
+      TextFile jobid;
+      if (Run_->QueueType() == PBS) {
+        if (jobid.OpenRead( jobIdFilename )) return 1;
+        const char* ptr = jobid.Gets();
+        if (ptr == 0) return 1;
+        previous_jobid.assign(ptr);
+      } else if (Run_->QueueType() == SLURM) {
+        if (jobid.OpenPipe("squeue -u " + user + " --sort=i")) return 1;
+        int cols = jobid.GetColumns(" \t");
+        if (cols < 1) return 1;
+        previous_jobid.assign( jobid.Token(0) );
+      } else return 1; // sanity check
+      jobid.Close();
+
+    }
   }
   Msg("CmdOpts: %s\n", cmd_opts.c_str());
 

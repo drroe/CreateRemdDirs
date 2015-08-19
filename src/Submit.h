@@ -41,7 +41,9 @@ class Submit::QueueOpts {
 
     RUNTYPE RunType()       const { return runType_; }
     DEPENDTYPE DependType() const { return dependType_; }
+    QUEUETYPE QueueType()   const { return queueType_; }
     bool OverWrite()        const { return overWrite_; }
+    bool Testing()          const { return testing_; }
     const char* SubmitCmd() const { return SubmitCmdStr[queueType_]; }
   private:
     void AdditionalFlags(TextFile&) const;

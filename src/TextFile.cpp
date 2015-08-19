@@ -16,6 +16,17 @@ int TextFile::OpenRead(std::string const& fname) {
   return 0;
 }
 
+int TextFile::OpenPipe(std::string const& cmd) {
+  FILE* pipe = popen(cmd.c_str(), "r");
+  if (pipe == 0) {
+    ErrorMsg("Opening pipe: '%s'\n", cmd.c_str());
+    return 1;
+  }
+  file_ = (void*)pipe;
+  isPipe_ = true;
+  return 0;
+}
+
 int TextFile::OpenWrite(std::string const& fname) {
   FILE* outfile = fopen(fname.c_str(), "wb");
   if (outfile == 0) {
@@ -27,7 +38,13 @@ int TextFile::OpenWrite(std::string const& fname) {
 }
 
 void TextFile::Close() {
-  if (file_ != 0) fclose((FILE*)file_);
+  if (file_ != 0) {
+    if (isPipe_) {
+      pclose((FILE*)file_);
+      isPipe_ = false;
+    } else
+      fclose((FILE*)file_);
+  }
   file_ = 0;
 }
 

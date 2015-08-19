@@ -10,5 +10,6 @@ int CheckExists(const char*, std::string const&);
 int Mkdir(std::string const&);
 std::string GetWorkingDir();
 int ChangeDir(std::string const&);
+int ChangePermissions(std::string const&);
 std::string UserName();
 #endif
