@@ -1,6 +1,7 @@
 #ifndef INC_SUBMIT_H
 #define INC_SUBMIT_H
 #include "FileRoutines.h"
+#include "TextFile.h"
 /// Class used to submit jobs via a queuing system.
 class Submit {
   public:
@@ -43,6 +44,8 @@ class Submit::QueueOpts {
     bool SetupDepend() const { return setupDepend_; }
     const char* SubmitCmd() const { return SubmitCmdStr[queueType_]; }
   private:
+    void AdditionalFlags(TextFile&) const;
+
     static const char* RunTypeStr[];
     static const char* QueueTypeStr[];
     //static const char* DependTypeStr[];
