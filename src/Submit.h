@@ -11,6 +11,7 @@ class Submit {
    int SubmitRuns(std::string const&, StrArray const&, int) const;
    int SubmitAnalysis(std::string const&);
   private:
+ 
     class QueueOpts;
     int ReadOptions(std::string const&, QueueOpts&);
 
@@ -34,11 +35,13 @@ class Submit::QueueOpts {
     int Check() const;
     int Submit(std::string const&) const;
     void Info() const;
+    void CalcThreads();
+    int QsubHeader(std::string const&, int, std::string const&);
 
     RUNTYPE RunType() const { return runType_; }
     bool OverWrite()  const { return overWrite_; }
     bool SetupDepend() const { return setupDepend_; }
-    const char* SubmitCmd() const { return SubmitCmdStr[runType_]; }
+    const char* SubmitCmd() const { return SubmitCmdStr[queueType_]; }
   private:
     static const char* RunTypeStr[];
     static const char* QueueTypeStr[];

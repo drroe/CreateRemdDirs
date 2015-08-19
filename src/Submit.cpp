@@ -2,6 +2,7 @@
 #include "Submit.h"
 #include "Messages.h"
 #include "TextFile.h"
+#include "StringRoutines.h"
 
 Submit::~Submit() {
   if (Run_ != 0) delete Run_;
@@ -11,16 +12,20 @@ Submit::~Submit() {
 
 int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int start) const {
   Run_->Info();
+  Run_->CalcThreads();
   std::string user = UserName();
   Msg("User: %s\n", user.c_str());
-  std::string submit( Run_->SubmitCmd() );
+  std::string submitScript( std::string(Run_->SubmitCmd()) + ".sh" );
   // Set RUNTYPE-specific command line options
+  std::string groupfileName("groupfile"); // TODO make these filenames options
+  std::string remddimName("remd.dim");
   std::string cmd_opts;
-  switch (Run_->RunType()) {
-    case MREMD : cmd_opts.assign("-ng $NG -groupfile groupfile -remd-file remd.dim"); break;
-    case HREMD : cmd_opts.assign("-ng $NG -groupfile groupfile -rem 3"); break;
-    case TREMD : cmd_opts.assign("-ng $NG -groupfile groupfile -rem 1"); break;
-  }
+  if (Run_->RunType() == MREMD)
+    cmd_opts.assign("-ng $NG -groupfile " + groupfileName + " -remd-file " + remddimName);
+  else if (Run_->RunType() == HREMD )
+    cmd_opts.assign("-ng $NG -groupfile " + groupfileName + " -rem 3");
+  else if (Run_->RunType() == TREMD )
+    cmd_opts.assign("-ng $NG -groupfile " + groupfileName + " -rem 1");
   // Create run script for each run directory
   std::string previous_jobid;
   int run_num;
@@ -33,9 +38,9 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
   {
     ChangeDir( top );
     // Check if run directories already contain scripts
-    if ( !Run_->OverWrite() && fileExists( *rdir + "/" + submit + ".sh") ) {
-      ErrorMsg("Not overwriting (-O) and %s already contains %s.sh\n",
-               rdir->c_str(), submit.c_str());
+    if ( !Run_->OverWrite() && fileExists( *rdir + "/" + submitScript) ) {
+      ErrorMsg("Not overwriting (-O) and %s already contains %s\n",
+               rdir->c_str(), submitScript.c_str());
       if (!Run_->SetupDepend())
         return 1;
       else
@@ -47,12 +52,12 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
     // exist. For HREMD/TREMD make sure groupfile exists. For MD groupfile is
     // used to get command line options only.
     if (Run_->RunType() == TREMD || Run_->RunType() == HREMD) {
-      if (CheckExists("groupfile", "groupfile")) return 1;
+      if (CheckExists("groupfile", groupfileName)) return 1;
     } else if (Run_->RunType() == MREMD) {
-      if (CheckExists("groupfile", "groupfile")) return 1;
+      if (CheckExists("groupfile", groupfileName)) return 1;
       if (CheckExists("remd.dim", "remd.dim")) return 1;
     } else if (Run_->RunType() == MD) {
-      if (!fileExists("groupfile")) {
+      if (!fileExists(groupfileName)) {
         ErrorMsg("groupfile does not exist for '%s'\n", rdir->c_str());
         if (!Run_->SetupDepend())
           return 1;
@@ -61,7 +66,7 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
       }
       int nlines = 0;
       TextFile groupfile;
-      if (groupfile.OpenRead("gropufile")) return 1;
+      if (groupfile.OpenRead(groupfileName)) return 1;
       const char* ptr = groupfile.Gets();
       while (ptr != 0) {
         nlines++;
@@ -70,8 +75,10 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
       }
       groupfile.Close();
       if (nlines > 1)
-        cmd_opts.assign("-ng $NG -groupfile groupfile");
+        cmd_opts.assign("-ng $NG -groupfile " + groupfileName);
     }
+    // Set options specific to queuing system, node info, and Amber env.
+    Run_->QsubHeader(submitScript, run_num, previous_jobid);
   }
   Msg("CmdOpts: %s\n", cmd_opts.c_str());
 
@@ -302,4 +309,50 @@ void Submit::QueueOpts::Info() const {
   if (!queueName_.empty()) Msg("  QUEUE     : %s\n", queueName_.c_str());
   Msg("  CHAIN     : %i\n", (int)dependType_);
   Msg("  NO_DEPEND : %i\n", (int)(!setupDepend_));
+}
+
+void Submit::QueueOpts::CalcThreads() {
+  if (threads_ < 1) threads_ = nodes_ * ppn_;
+  if (threads_ < 1)
+    Msg("Warning: Less than 1 thread specified.\n");
+}
+
+int Submit::QueueOpts::QsubHeader(std::string const& script, int run_num, std::string const& jobID)
+{
+  if (script.empty()) {
+    ErrorMsg("QsubHeader: No script name.\n");
+    return 1;
+  }
+  Msg("Writing %s\n", script.c_str());
+  std::string job_title, previous_job;
+  if (run_num > -1)
+    job_title = job_name_ + "." + integerToString(run_num);
+  else
+    job_title = job_name_;
+  if (dependType_ != SUBMIT)
+    previous_job = jobID;
+  // Queue specific options.
+  TextFile qout;
+  if (qout.OpenWrite(script)) return 1;
+  if (queueType_ == PBS) {
+    std::string resources("nodes=" + integerToString(nodes_));
+    if (ppn_ > 0)
+      resources.append(":ppn=" + integerToString(ppn_));
+    resources.append(nodeargs_);
+    qout.Printf("#PBS -S /bin/bash\n#PBS -l walltime=%s,%s\n#PBS -N %s\n#PBS -j oe\n",
+                walltime_.c_str(), resources.c_str(), job_title.c_str());
+  // Email
+  //if (!email_.empty()) QW->Email(email_);
+  // Account
+  //if (!account_.empty()) QW->Account(account_);
+  // Dependency
+  //if (!previous_job.empty()) QW->Depend(previous_job);
+  // Queue
+  //if (!queueName_.empty()) QW->Queue(queueName_);
+  // Additional Flags and finish.
+  //QW->Finish(Flags_);
+  }
+
+  qout.Close();
+  return 0;
 }
