@@ -9,7 +9,8 @@ Submit::~Submit() {
   if (Archive_ != 0) delete Archive_;
 }
 
-int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int start) const {
+int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int start) const
+{
   Run_->CalcThreads();
   Run_->Info();
   std::string user = UserName();
@@ -33,6 +34,7 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
   else
     run_num = 0;
   Msg("Submitting %zu runs.\n", RunDirs.size());
+  StrArray::const_iterator finaldir = RunDirs.end() - 1;
   for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
   {
     ChangeDir( top );
@@ -80,6 +82,17 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
     TextFile qout;
     if (qout.OpenWrite( submitScript )) return 1;
     if (Run_->QsubHeader(qout, run_num, previous_jobid)) return 1;
+    // Set up run command TODO should be in Creation phase
+    qout.Printf("\n# Run executable\nTIME0=`date +%%s`\n$MPIRUN $EXEPATH -O %s\n"
+                "TIME1=`date +%%s`\n"
+                "((TOTAL = $TIME1 - $TIME0))\necho \"$TOTAL seconds.\"\n\n",
+                cmd_opts.c_str());
+    // Set up script dependency if necessary
+    if (Run_->DependType() == SUBMIT && rdir != finaldir) {
+      std::string next_dir("../run." + integerToString(run_num+1, 3));
+      qout.Printf("%s %s/%s\n", Run_->SubmitCmd(), next_dir.c_str(), submitScript.c_str());
+    }
+    qout.Printf("exit 0\n");
     qout.Close();
   }
   Msg("CmdOpts: %s\n", cmd_opts.c_str());
@@ -398,6 +411,10 @@ int Submit::QueueOpts::QsubHeader(TextFile& qout, int run_num, std::string const
     qout.Printf("EXEPATH=%s\nls -l $EXEPATH\n", exepath.c_str());
   } else
     qout.Printf("EXEPATH=%s\nls -l `which $EXEPATH`\n", program_.c_str());
+  // Add any additional input
+  if (!additionalCommands_.empty())
+    qout.Printf("\n%s\n\n", additionalCommands_.c_str());
+  qout.Printf("MPIRUN=\"%s\"\n", mpirun_.c_str()); // TODO Combine with EXEPATH
 
   return 0;
 }
