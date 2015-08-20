@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
       testOnly = true;
     else if (Arg == "-O")                         // Overwrite existing files
       overwrite = true;
-    else if (Arg == "--nomdin")                   // Run has no MDIN
+    else if (Arg == "--nomdin")                   // Run does not need MDIN
       needsMdin = false;
     else if (Arg == "--nocheck")                  // Do not check for Analyze/Archive create
       runCheck = false;

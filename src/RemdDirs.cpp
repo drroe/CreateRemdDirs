@@ -248,6 +248,7 @@ void RemdDirs::Info() const {
   }
 }
 
+// RemdDirs::CreateRuns()
 int RemdDirs::CreateRuns(std::string const& TopDir, StrArray const& RunDirs,
                          int start, bool overwrite)
 {
@@ -277,6 +278,7 @@ int RemdDirs::CreateRuns(std::string const& TopDir, StrArray const& RunDirs,
   return 0;
 }
 
+// RemdDirs::CreateAnalyzeArchive()
 int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& RunDirs,
                                    int start, int stop, bool overwrite,
                                    bool analyzeEnabled, bool archiveEnabled)
@@ -394,6 +396,8 @@ int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Ru
 // RemdDirs::CreateRemd()
 int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir) {
   typedef std::vector<unsigned int> Iarray;
+  const std::string groupfileName( "groupfile" ); // TODO make these options
+  const std::string remddimName("remd.dim");
   // Create and change to run directory.
   if (Mkdir(run_dir)) return 1;
   if (ChangeDir(run_dir)) return 1;
@@ -414,7 +418,7 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
   if (Mkdir(input_dir)) return 1;
   // Open GROUPFILE
   TextFile GROUPFILE;
-  if (GROUPFILE.OpenWrite("groupfile")) return 1; 
+  if (GROUPFILE.OpenWrite(groupfileName)) return 1; 
   // Figure out max width of replica extension
   int width = std::max(DigitWidth( totalReplicas_ ), 3);
   // Hold current indices in each dimension.
@@ -512,11 +516,26 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
   // Create remd.dim if necessary.
   if (Dims_.size() > 1) {
     TextFile REMDDIM;
-    if (REMDDIM.OpenWrite("remd.dim")) return 1;
+    if (REMDDIM.OpenWrite(remddimName)) return 1;
     for (unsigned int id = 0; id != Dims_.size(); id++)
       groups_.WriteRemdDim(REMDDIM, id, Dims_[id]->exch_type(), Dims_[id]->description());
     REMDDIM.Close();
   }
+  // Create Run script
+  std::string cmd_opts;
+  if (runType_ == MREMD)
+    cmd_opts.assign("-ng $NG -groupfile " + groupfileName + " -remd-file " + remddimName);
+  else if (runType_ == HREMD)
+    cmd_opts.assign("-ng $NG -groupfile " + groupfileName + " -rem 3");
+  else
+    cmd_opts.assign("-ng $NG -groupfile " + groupfileName + " -rem 1");
+  TextFile RunMD;
+  if (RunMD.OpenWrite("RunMD.sh")) return 1;
+  RunMD.Printf("#!/bin/bash\n\n# Run executable\nTIME0=`date +%%s`\n$MPIRUN $EXEPATH -O %s\n"
+                "TIME1=`date +%%s`\n"
+                "((TOTAL = $TIME1 - $TIME0))\necho \"$TOTAL seconds.\"\n\nexit 0\n",
+                cmd_opts.c_str());
+  RunMD.Close();
   // Create output directories
   if (Mkdir( "OUTPUT" )) return 1;
   if (Mkdir( "TRAJ"   )) return 1;
