@@ -121,8 +121,14 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
         previous_jobid.assign( jobid.Token(0) );
       } else return 1; // sanity check
       jobid.Close();
-
+      Msg("  Submitted: %s\n", previous_jobid.c_str());
+      if (previous_jobid.empty() || previous_jobid == "JOBID") {
+        ErrorMsg("Job not submitted.\n");
+        return 1;
+      }
+      if (Run_->DependType() != BATCH) previous_jobid.clear();
     }
+    ++run_num;
   }
   Msg("CmdOpts: %s\n", cmd_opts.c_str());
 
