@@ -29,7 +29,21 @@ static void Help() {
 }
 
 // =============================================================================
+/** There are three types of modes available:
+  * 1) Creation: Input is created for MD runs, analysis, and/or archiving.
+  * 2) Submission: Jobs are submitted for MD runs, analysis, and/or archiving.
+  * 3) Check: MD runs that have already run are checked. A check is also 
+  *    performed when input is created for analysis or archiving unless
+  *     disabled.
+  * For now make all modes mutually exclusive.
+  */
 int main(int argc, char** argv) {
+  enum ModeType { CREATE = 0, SUBMIT, CHECK };
+  enum InputType { RUNS = 0, ANALYSIS, ARCHIVE };
+  std::vector<bool> Enabled( 3, false );
+  // By default enable RUNS
+  Enabled[RUNS] = true;
+  // Command line option defaults.
   std::string input_file = "remd.opts";
   int debug = 0;
   int start_run = -1;
@@ -37,17 +51,12 @@ int main(int argc, char** argv) {
   std::string crd_dir;
   bool hasMdin = true;
   bool overwrite = false;
-  enum RunType { REPLICA=0, MD };
-  enum ModeType { CREATE=0, ANALYZE_ARCHIVE, CHECK };
-  bool analyzeEnabled = false;
-  bool archiveEnabled = false;
   bool checkFirst = true;
   bool runCheck = true; // For ANALYZE_ARCHIVE
-  bool submitJobs = false;
   bool testOnly = false;
   std::string qfile = "qsub.opts";
+  enum RunType { REPLICA=0, MD };
   RunType runType = REPLICA;
-  ModeType modeType = CREATE;
   // Get command line options
   for (int iarg = 1; iarg < argc; iarg++) {
     std::string Arg( argv[iarg] );
@@ -78,9 +87,11 @@ int main(int argc, char** argv) {
     } else if (Arg == "--archive") {
       modeType = ANALYZE_ARCHIVE;
       archiveEnabled = true;
-    } else if (Arg == "--check")
-      modeType = CHECK;
-    else if (Arg == "--checkall") {
+    } else if (Arg == "--check") {
+      Enabled[CHECK] = true;
+      Enabled[CREATE] = false;
+      Enabled[SUBMIT] = false;
+    } else if (Arg == "--checkall") {
       modeType = CHECK;
       checkFirst = false;
     } else if (Arg == "-q" && iarg+1 != argc) {
