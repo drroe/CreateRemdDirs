@@ -13,11 +13,10 @@ class Submit {
    int SubmitAnalysis(std::string const&);
    void SetTesting(bool t) { testing_ = t; }
   private:
- 
     class QueueOpts;
     int ReadOptions(std::string const&, QueueOpts&);
 
-    enum RUNTYPE { MD=0, TREMD, HREMD, MREMD, ANALYSIS, ARCHIVE, NO_RUN };
+    enum RUNTYPE { MD=0, TREMD, HREMD, MREMD, ANALYSIS, ARCHIVE, NO_RUN }; //TODO remove
     enum QUEUETYPE { PBS = 0, SLURM, NO_QUEUE };
     enum DEPENDTYPE { BATCH = 0, SUBMIT, NONE, NO_DEP };
     typedef std::vector<std::string> Sarray;

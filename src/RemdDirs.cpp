@@ -1,7 +1,6 @@
 #include <cstdlib> // atoi, atof
 #include "RemdDirs.h"
 #include "Messages.h"
-#include "FileRoutines.h"
 #include "TextFile.h"
 #include "StringRoutines.h"
 
@@ -66,7 +65,7 @@ int RemdDirs::ReadOptions(std::string const& input_file) {
       else if (OPT == "DIMENSION")
       {
         if (CheckExists("Dimension file", VAR)) { err = 1; break; }
-        DimFileNames_.push_back( tildeExpansion(VAR) );
+        if (LoadDimension( tildeExpansion(VAR) )) { err = 1; break; }
       }
       else if (OPT == "MDRUNS")
         n_md_runs_ = atoi( VAR.c_str() );
@@ -129,92 +128,271 @@ int RemdDirs::ReadOptions(std::string const& input_file) {
   return err;
 }
 
-// RemdDirs::LoadDimensions()
-int RemdDirs::LoadDimensions() {
+// RemdDirs::LoadDimension()
+int RemdDirs::LoadDimension(std::string const& dfile) {
   TextFile infile;
-  int err = 0;
-  totalReplicas_ = 1;
-  for (Sarray::const_iterator dfile = DimFileNames_.begin();
-                              dfile != DimFileNames_.end(); ++dfile)
-  {
-    // File existence already checked.
-    if (infile.OpenRead(*dfile)) return 1;
-    // Determine dimension type from first line.
-    std::string firstLine = infile.GetString();
-    if (firstLine.empty()) {
-      ErrorMsg("Could not read first line of dimension file '%s'\n", dfile->c_str());
-      err = 1;
-      break;
-    }
-    infile.Close(); 
-    // Allocate proper dimension type and load.
-    ReplicaDimension* dim = ReplicaAllocator::Allocate( firstLine );
-    if (dim == 0) {
-      ErrorMsg("Unrecognized dimension type: %s\n", firstLine.c_str());
-      err = 2;
-      break;
-    }
-    // Push it here so it will be deallocated if there is an error
-    Dims_.push_back( dim ); 
-    if (dim->LoadDim( *dfile )) {
-      ErrorMsg("Loading info from dimension file '%s'\n", dfile->c_str());
-      err = 3;
-      break;
-    }
-    Msg("\t%u: %s (%u)\n", Dims_.size(), dim->description(), dim->Size());
-    totalReplicas_ *= dim->Size();
+  // File existence already checked.
+  if (infile.OpenRead(dfile)) return 1;
+  // Determine dimension type from first line.
+  std::string firstLine = infile.GetString();
+  if (firstLine.empty()) {
+    ErrorMsg("Could not read first line of dimension file '%s'\n", dfile.c_str());
+    return 1;
   }
-  if (err != 0) return err;
-  Msg("    %u total replicas.\n", totalReplicas_);
+  infile.Close(); 
+  // Allocate proper dimension type and load.
+  ReplicaDimension* dim = ReplicaAllocator::Allocate( firstLine );
+  if (dim == 0) {
+    ErrorMsg("Unrecognized dimension type: %s\n", firstLine.c_str());
+    return 2;
+  }
+  // Push it here so it will be deallocated if there is an error
+  Dims_.push_back( dim ); 
+  if (dim->LoadDim( dfile )) {
+    ErrorMsg("Loading info from dimension file '%s'\n", dfile.c_str());
+    return 1;
+  }
+  Msg("    Dim %u: %s (%u)\n", Dims_.size(), dim->description(), dim->Size());
+  return 0;
+}
+
+// RemdDirs::Setup()
+int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
+  // Command line input coordinates override any in options file.
+  if (!crdDirIn.empty())
+    crd_dir_.assign(crdDirIn);
+  // Perform tilde expansion on coords if necessary.
+  if (crd_dir_[0] == '~')
+    crd_dir_ = tildeExpansion(crd_dir_);
+  // Figure out what type of run this is.
+  runDescription_.clear();
   if (Dims_.empty()) {
-    ErrorMsg("No dimensions defined.\n");
+    Msg("  No dimensions defined: assuming MD run.\n");
+    runType_ = MD;
+    runDescription_.assign("MD");
+  } else {
+    if (Dims_.size() == 1) {
+      if (Dims_[0]->Type() == ReplicaDimension::TEMP ||
+          Dims_[0]->Type() == ReplicaDimension::SGLD)
+        runType_ = TREMD;
+      else
+        runType_ = HREMD;
+      runDescription_.assign( Dims_[0]->name() );
+    } else {
+      runType_ = MREMD;
+      DimArray::const_iterator dim = Dims_.begin();
+      runDescription_.assign( "MREMD" );
+    }
+    // Count total # of replicas, Do some error checking.
+    totalReplicas_ = 1;
+    temp0_dim_ = -1;
+    top_dim_ = -1;
+    int providesTemp0 = 0;
+    int providesTopFiles = 0;
+    for (DimArray::const_iterator dim = Dims_.begin(); dim != Dims_.end(); ++dim)
+    {
+      totalReplicas_ *= (*dim)->Size();
+      if ((*dim)->ProvidesTemp0()) {
+        temp0_dim_ = (int)(dim - Dims_.begin());
+        providesTemp0++;
+      }
+      if ((*dim)->ProvidesTopFiles()) {
+        top_dim_ = (int)(dim - Dims_.begin());
+        providesTopFiles++;
+      }
+    }
+    if (providesTemp0 > 1) {
+      ErrorMsg("At most one dimension that provides temperatures should be specified.\n");
+      return 1;
+    } else if (providesTemp0 == 0 && temp0_ < 0.0) {
+      ErrorMsg("No dimension provides temperature and TEMPERATURE not specified.\n");
+      return 1;
+    }
+    if (providesTopFiles > 1) {
+      ErrorMsg("At most one dimension that provides topology files should be specified.\n");
+      return 1;
+    } else if (providesTopFiles == 0 && top_file_.empty()) {
+      ErrorMsg("No dimension provides topology files and TOPOLOGY not specified.\n");
+      return 1;
+    }
+    if (debug_ > 0)
+      Msg("    Topology dimension: %i\n    Temp0 dimension: %i\n", top_dim_, temp0_dim_);
+  }
+  // Perform some more error checking
+  if (nstlim_ < 1 || (runType_ != MD && numexchg_ < 1)) {
+    ErrorMsg("NSTLIM or NUMEXCHG < 1\n");
     return 1;
   }
-  // Do some error checking.
-  temp0_dim_ = -1;
-  top_dim_ = -1;
-  int providesTemp0 = 0;
-  int providesTopFiles = 0;
-  for (DimArray::const_iterator dim = Dims_.begin(); dim != Dims_.end(); ++dim)
+  if (needsMdin && mdin_file_.empty()) {
+    ErrorMsg("No MDIN_FILE specified and '--nomdin' not specified.\n");
+    return 1;
+  }
+  if (umbrella_ > 0 && n_md_runs_ < 2) {
+    ErrorMsg("If UMBRELLA is specified MDRUNS must be > 1.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+// RemdDirs::Info()
+void RemdDirs::Info() const {
+  Msg("  MDIN_FILE        : %s\n", mdin_file_.c_str());
+  Msg("  NSTLIM=%i, DT=%f\n", nstlim_, dt_);
+  if (runType_ == MD)
+    Msg("  CRD              : %s\n", crd_dir_.c_str());
+  else { // Some type of replica run
+    Msg("  NUMEXCHG=%i\n", numexchg_);
+    Msg("  CRD_DIR          : %s\n", crd_dir_.c_str());
+    Msg("  %u dimensions, %u total replicas.\n", Dims_.size(), totalReplicas_);
+  }
+}
+
+int RemdDirs::CreateRuns(std::string const& TopDir, StrArray const& RunDirs,
+                         int start, bool overwrite)
+{
+  if (crd_dir_.empty()) {
+    ErrorMsg("No starting coords directory/file specified.\n");
+    return 1;
+  }
+  int run = start;
+  for (StrArray::const_iterator runDir = RunDirs.begin();
+                                runDir != RunDirs.end(); ++runDir, ++run)
   {
-    if ((*dim)->ProvidesTemp0()) {
-      temp0_dim_ = (int)(dim - Dims_.begin());
-      providesTemp0++;
+    if (ChangeDir(TopDir)) return 1;
+    // Determine run directory name, see if it is being overwritten.
+    Msg("  RUNDIR: %s\n", runDir->c_str());
+    if (fileExists(*runDir) && !overwrite) {
+      ErrorMsg("Directory '%s' exists and '-O' not specified.\n", runDir->c_str());
+      return 1;
     }
-    if ((*dim)->ProvidesTopFiles()) {
-      top_dim_ = (int)(dim - Dims_.begin());
-      providesTopFiles++;
+    // Create run input
+    int err;
+    if (runType_ == MD)
+      err = CreateMD(start, run, *runDir);
+    else
+      err = CreateRemd(start, run, *runDir);
+    if (err) return 1;
+  }
+  return 0;
+}
+
+int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& RunDirs,
+                                   int start, int stop, bool overwrite,
+                                   bool analyzeEnabled, bool archiveEnabled)
+{
+  // Find trajectory files
+  ChangeDir( TopDir + "/" + RunDirs.front() );
+  StrArray TrajFiles;
+  if (runType_ == MD)
+    TrajFiles = ExpandToFilenames("md.nc.*");
+  else
+    TrajFiles = ExpandToFilenames("TRAJ/rem.crd.*");
+  if (TrajFiles.empty()) {
+    ErrorMsg("No trajectory files found.\n");
+    return 1;
+  }
+  std::string traj_prefix("/" + TrajFiles.front());
+
+  // Ensure traj 1 for all runs between start and stop exist.
+  ChangeDir( TopDir );
+  for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
+  {
+    std::string TRAJ1(*rdir + traj_prefix);
+    if (CheckExists("Trajectory", TRAJ1)) return 1;
+  }
+
+  // Set up input for analysis -------------------
+  if (analyzeEnabled) {
+    ChangeDir( TopDir );
+    Msg("Creating input for analysis.\n");
+    std::string CPPDIR = "Analyze." + integerToString(start) + "." +
+                                      integerToString(stop);
+    if ( fileExists(CPPDIR) ) {
+      if (!overwrite) {
+        ErrorMsg("Directory '%s' exists and '-O' not specified.\n", CPPDIR.c_str());
+        return 1;
+      }
+    } else
+      Mkdir( CPPDIR );
+    TextFile CPPIN;
+    if (CPPIN.OpenWrite( CPPDIR + "/batch.cpptraj.in" )) return 1;
+    std::string TRAJINARGS;
+    // If HREMD, need nosort keyword
+    if (runType_ == MD || runType_ == HREMD)
+      TRAJINARGS.assign("nosort");
+    CPPIN.Printf("parm %s\n", Topology().c_str());
+    for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
+      CPPIN.Printf("ensemble ../%s%s %s\n",
+                   rdir->c_str(), traj_prefix.c_str(), TRAJINARGS.c_str());
+    CPPIN.Printf("strip :WAT\nautoimage\n"
+                 "trajout run%i-%i.nowat.nc netcdf remdtraj %s\n",
+                 start, stop, trajoutargs_.c_str());
+    CPPIN.Close();
+  }
+  // Set up input for archiving ------------------
+  if (archiveEnabled) {
+    ChangeDir( TopDir );
+    Msg("Creating input for archiving.\n");
+    // Set up input for archiving. This will be done in 2 separate runs. 
+    // The first sorts and saves fully solvated trajectories of interest
+    // (FULLARCHIVE). The second saves all stripped trajs.
+    if (fullarchive_.empty()) {
+      ErrorMsg("FULLARCHIVE must contain a comma-separated list of ensemble members to"
+               " save full coordinates, or NONE to skip this step.\n");
+      return 1;
+    }
+    std::string ARDIR="Archive." + integerToString(start) + "." +
+                                   integerToString(stop);
+    if ( fileExists(ARDIR) ) {
+      if (!overwrite) {
+        ErrorMsg("Directory '%s' exists and '-O' not specified.\n", ARDIR.c_str());
+        return 1;
+      }
+    } else
+      Mkdir( ARDIR );
+    std::string TRAJINARGS;
+    // If HREMD, need nosort keyword
+    if (runType_ == MD || runType_ == HREMD)
+      TRAJINARGS.assign("nosort");
+    std::string TOP = Topology();
+    int run;
+    if ( fullarchive_ != "NONE") {
+      // Create input for fully archiving selected members of each run
+      run = start; 
+      for (StrArray::const_iterator rdir = RunDirs.begin();
+                                    rdir != RunDirs.end(); ++rdir, ++run)
+      {
+        TextFile ARIN;
+        if (ARIN.OpenWrite(ARDIR + "/ar1." + integerToString(run) + ".cpptraj.in")) return 1;
+        ARIN.Printf("parm %s\nensemble ../%s%s %s\n"
+                    "trajout ../%s/TRAJ/wat.nc netcdf remdtraj onlymembers %s\n",
+                    TOP.c_str(), rdir->c_str(), traj_prefix.c_str(), TRAJINARGS.c_str(),
+                    rdir->c_str(), fullarchive_.c_str());
+        ARIN.Close();
+      }
+    }
+    // Create input for saving all stripped trajs
+    run = start;
+    for (StrArray::const_iterator rdir = RunDirs.begin();
+                                  rdir != RunDirs.end(); ++rdir, ++run)
+    {
+      TextFile ARIN;
+      if (ARIN.OpenWrite(ARDIR + "/ar2." + integerToString(run) + ".cpptraj.in")) return 1;
+      ARIN.Printf("parm %s\nensemble ../%s%s %s\n"
+                  "strip :WAT\nautoimage\ntrajout ../%s/TRAJ/nowat.nc netcdf remdtraj\n",
+                  TOP.c_str(), rdir->c_str(), traj_prefix.c_str(), TRAJINARGS.c_str(),
+                  rdir->c_str());
+      ARIN.Close();
     }
   }
-  if (providesTemp0 > 1) {
-    ErrorMsg("At most one dimension that provides temperatures should be specified.\n");
-    return 1;
-  } else if (providesTemp0 == 0 && temp0_ < 0.0) {
-    ErrorMsg("No dimension provides temperature and TEMPERATURE not specified.\n");
-    return 1;
-  }
-  if (providesTopFiles > 1) {
-    ErrorMsg("At most one dimension that provides topology files should be specified.\n");
-    return 1;
-  } else if (providesTopFiles == 0 && top_file_.empty()) {
-    ErrorMsg("No dimension provides topology files and TOPOLOGY not specified.\n");
-    return 1;
-  }
-  // Determine run type
-  run_type_.clear();
-  if (Dims_.size() == 1)
-    run_type_.assign( Dims_[0]->name() );
-  else // Must be > 1
-    run_type_ = "MREMD";
-  Msg("Run type: %s\n", run_type_.c_str());
-  if (debug_ > 0)
-    Msg("    Topology dimension: %i\n    Temp0 dimension: %i\n", top_dim_, temp0_dim_);
+
   return 0;
 }
 
 // =============================================================================
-// RemdDirs::CreateRun()
-int RemdDirs::CreateRun(int start_run, int run_num, std::string const& run_dir) {
+// RemdDirs::CreateRemd()
+int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir) {
   typedef std::vector<unsigned int> Iarray;
   // Create and change to run directory.
   if (Mkdir(run_dir)) return 1;
@@ -281,7 +459,7 @@ int RemdDirs::CreateRun(int start_run, int run_num, std::string const& run_dir) 
       Msg("\t\tMDIN: %s\n", mdin_name.c_str());
     TextFile MDIN;
     if (MDIN.OpenWrite(mdin_name)) return 1;
-    MDIN.Printf("%s", run_type_.c_str());
+    MDIN.Printf("%s", runDescription_.c_str());
     // Write indices to mdin for MREMD
     if (Dims_.size() > 1) {
       MDIN.Printf(" {");
@@ -381,7 +559,7 @@ int RemdDirs::MakeMdinForMD(std::string const& fname, int run_num,
               "    imin = 0, nstlim = %i, dt = %f,\n"
               "    irest = %i, ntx = %i, ig = %i,\n"
               "    temp0 = %f, tempi = %f,\n%s",
-              run_type_.c_str(), total_time,
+              runDescription_.c_str(), total_time,
               nstlim_, dt_, irest, ntx, ig_,
               temp0_, temp0_, additionalInput_.c_str());
   if (!rst_file_.empty()) {
@@ -411,7 +589,6 @@ int RemdDirs::MakeMdinForMD(std::string const& fname, int run_num,
 
 // RemdDirs::CreateMD()
 int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
-  run_type_.assign("MD");
   // Create and change to run directory.
   if (Mkdir(run_dir)) return 1;
   if (ChangeDir(run_dir)) return 1;
