@@ -5,12 +5,13 @@
 /// Class used to submit jobs via a queuing system.
 class Submit {
   public:
-    Submit() : Run_(0), Analyze_(0), Archive_(0), n_input_read_(0) {}
+    Submit() : Run_(0), Analyze_(0), Archive_(0), n_input_read_(0), testing_(false) {}
    ~Submit();
 
    int ReadOptions(std::string const&);
    int SubmitRuns(std::string const&, StrArray const&, int) const;
    int SubmitAnalysis(std::string const&);
+   void SetTesting(bool t) { testing_ = t; }
   private:
  
     class QueueOpts;
@@ -21,10 +22,11 @@ class Submit {
     enum DEPENDTYPE { BATCH = 0, SUBMIT, NONE, NO_DEP };
     typedef std::vector<std::string> Sarray;
 
-    QueueOpts *Run_; ///< Run queue options
+    QueueOpts *Run_;     ///< Run queue options
     QueueOpts *Analyze_; ///< Analysis queue options
     QueueOpts *Archive_; ///< Archive queue options
-    int n_input_read_; ///< # of times ReadOptions has been called.
+    int n_input_read_;   ///< # of times ReadOptions has been called.
+    bool testing_;       ///< If true do not actually submit scripts.
 };
 
 class Submit::QueueOpts {
@@ -43,7 +45,6 @@ class Submit::QueueOpts {
     DEPENDTYPE DependType() const { return dependType_; }
     QUEUETYPE QueueType()   const { return queueType_; }
     bool OverWrite()        const { return overWrite_; }
-    bool Testing()          const { return testing_; }
     const char* SubmitCmd() const { return SubmitCmdStr[queueType_]; }
   private:
     void AdditionalFlags(TextFile&) const;
@@ -60,7 +61,6 @@ class Submit::QueueOpts {
     int threads_;                    ///< Total number of threads required.
     RUNTYPE runType_;                ///< Run type TODO handle in RemdDirs
     bool overWrite_;                 ///< If true overwrite existing scripts.
-    bool testing_;                   ///< If true do not actually submit scripts.
     std::string walltime_;           ///< Wallclock time for queuing system
     std::string email_;              ///< User email address
     std::string account_;            ///< Account for running jobs

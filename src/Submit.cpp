@@ -99,7 +99,7 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
     qout.Close();
     ChangePermissions( submitScript );
     // Peform job submission if not testing
-    if (Run_->Testing())
+    if (testing_)
       Msg("Just testing. Skipping script submission.\n");
     else {
       Msg("%s\n", submitCommand.c_str()); 
@@ -226,7 +226,6 @@ Submit::QueueOpts::QueueOpts() :
   threads_(0),
   runType_(MD),
   overWrite_(false),
-  testing_(false),
   queueType_(PBS),
   isSerial_(false),
   dependType_(BATCH)
@@ -391,7 +390,7 @@ int Submit::QueueOpts::QsubHeader(TextFile& qout, int run_num, std::string const
     job_title = job_name_ + "." + integerToString(run_num);
   else
     job_title = job_name_;
-  if (dependType_ != SUBMIT)
+  if (dependType_ == BATCH )
     previous_job = jobID;
   // Queue specific options.
   // ----- PBS -----------------------------------

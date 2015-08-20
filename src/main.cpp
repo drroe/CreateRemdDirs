@@ -44,6 +44,7 @@ int main(int argc, char** argv) {
   bool checkFirst = true;
   bool runCheck = true; // For ANALYZE_ARCHIVE
   bool submitJobs = false;
+  bool testOnly = false;
   std::string qfile = "qsub.opts";
   RunType runType = REPLICA;
   ModeType modeType = CREATE;
@@ -63,6 +64,8 @@ int main(int argc, char** argv) {
     else if (Arg == "-h" || Arg == "--help") {
       Help();
       return 0;
+    } else if (Arg == "-t" || Arg == "--test") {
+      testOnly = true;
     } else if (Arg == "-O")
       overwrite = true;
     else if (Arg == "--nomdin")
@@ -301,6 +304,7 @@ int main(int argc, char** argv) {
   if (submitJobs) {
     ChangeDir( TopDir );
     Submit submit;
+    submit.SetTesting( testOnly );
     std::string defaultName("~/default.qsub.opts");
     if (fileExists(defaultName)) {
       if (submit.ReadOptions(defaultName)) return 1;
