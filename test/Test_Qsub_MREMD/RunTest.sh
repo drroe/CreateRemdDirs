@@ -47,7 +47,7 @@ MPIRUN mpiexec -n \$THREADS
 AMBERHOME /home/droe/Amber/GIT/amber
 EOF
 OPTLINE="-i ../relative.mremd.opts --analyze --archive -b 0 -e 1 -s --nocheck -t"
-RunTest "MREMD analysis job submission test (PBS)"
+RunTest "MREMD analysis/archive job submission test (PBS)"
 DoTest RunAnalysis.sh.save Analyze.0.1/RunAnalysis.sh
 DoTest batch.cpptraj.in.save Analyze.0.1/batch.cpptraj.in
 DoTest analyze.sbatch.sh.save Analyze.0.1/sbatch.sh
