@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH -J ar.test
+#SBATCH -N 16
+#SBATCH -t 6:00:00
+#SBATCH -n 16
+#SBATCH --mail-user=me@fake.com
+#SBATCH --mail-type=all
+#SBATCH -A testaccount
+
+echo "JobID: $SLURM_JOB_ID"
+echo "NodeList: $SLURM_NODELIST"
+cd $SLURM_SUBMIT_DIR
+
+PPN=1
+NODES=16
+THREADS=16
+export AMBERHOME=/home/droe/Amber/GIT/amber
+source $AMBERHOME/amber.sh
+export EXEPATH=/home/droe/Amber/GIT/amber/bin/cpptraj
+ls -l $EXEPATH
+export MPIRUN="mpiexec -n $THREADS"
+
+# Run script
+./RunArchive.0.1.sh
+exit $?
