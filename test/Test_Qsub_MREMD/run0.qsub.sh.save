@@ -1,0 +1,23 @@
+#PBS -S /bin/bash
+#PBS -l walltime=24:00:00,nodes=16:ppn=8
+#PBS -N test.0
+#PBS -j oe
+#PBS -m abe
+#PBS -M invalid@fake.com
+#PBS -A testaccount
+
+cd $PBS_O_WORKDIR
+
+PPN=8
+NODES=16
+THREADS=128
+export AMBERHOME=/home/droe/Amber/GIT/amber
+source $AMBERHOME/amber.sh
+export EXEPATH=/home/droe/Amber/GIT/amber/bin/pmemd
+ls -l $EXEPATH
+export MPIRUN="mpiexec -n $THREADS"
+
+# Run executable
+./RunMD.sh
+
+exit 0
