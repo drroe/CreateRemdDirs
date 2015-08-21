@@ -19,16 +19,7 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
   std::string submitScript( std::string(Run_->SubmitCmd()) + ".sh" );
   std::string submitCommand( std::string(Run_->SubmitCmd()) + " " +
                              submitScript + " > " + jobIdFilename);
-  // Set RUNTYPE-specific command line options
-  std::string groupfileName("groupfile"); // TODO make these filenames options
-  std::string remddimName("remd.dim");
-  std::string cmd_opts;
-  if (Run_->RunType() == MREMD)
-    cmd_opts.assign("-ng $NG -groupfile " + groupfileName + " -remd-file " + remddimName);
-  else if (Run_->RunType() == HREMD )
-    cmd_opts.assign("-ng $NG -groupfile " + groupfileName + " -rem 3");
-  else if (Run_->RunType() == TREMD )
-    cmd_opts.assign("-ng $NG -groupfile " + groupfileName + " -rem 1");
+  std::string runScriptName("RunMD.sh");
   // Create run script for each run directory
   std::string previous_jobid;
   int run_num;
@@ -52,44 +43,14 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
     }
     Msg("  %s\n", rdir->c_str());
     ChangeDir( *rdir );
-    // Run-specific sanity checks. For MREMD make sure groupfile and remd.dim
-    // exist. For HREMD/TREMD make sure groupfile exists. For MD groupfile is
-    // used to get command line options only.
-    if (Run_->RunType() == TREMD || Run_->RunType() == HREMD) {
-      if (CheckExists("groupfile", groupfileName)) return 1;
-    } else if (Run_->RunType() == MREMD) {
-      if (CheckExists("groupfile", groupfileName)) return 1;
-      if (CheckExists("remd.dim", "remd.dim")) return 1;
-    } else if (Run_->RunType() == MD) {
-      if (!fileExists(groupfileName)) {
-        ErrorMsg("groupfile does not exist for '%s'\n", rdir->c_str());
-        if (Run_->DependType() != NONE) // Exit if dependencies exist
-          return 1;
-        else
-          continue;
-      }
-      int nlines = 0;
-      TextFile groupfile;
-      if (groupfile.OpenRead(groupfileName)) return 1;
-      const char* ptr = groupfile.Gets();
-      while (ptr != 0) {
-        nlines++;
-        cmd_opts.assign( ptr );
-        ptr = groupfile.Gets();
-      }
-      groupfile.Close();
-      if (nlines > 1)
-        cmd_opts.assign("-ng $NG -groupfile " + groupfileName);
-    }
+    // Ensure runscript exists.
+    if (CheckExists("run script", runScriptName)) return 1;
     // Set options specific to queuing system, node info, and Amber env.
     TextFile qout;
     if (qout.OpenWrite( submitScript )) return 1;
     if (Run_->QsubHeader(qout, run_num, previous_jobid)) return 1;
-    // Set up run command TODO should be in Creation phase
-    qout.Printf("\n# Run executable\nTIME0=`date +%%s`\n$MPIRUN $EXEPATH -O %s\n"
-                "TIME1=`date +%%s`\n"
-                "((TOTAL = $TIME1 - $TIME0))\necho \"$TOTAL seconds.\"\n\n",
-                cmd_opts.c_str());
+    // Set up command to execute run script
+    qout.Printf("\n# Run executable\n./%s\n\n", runScriptName.c_str());
     // Set up script dependency if necessary
     if (Run_->DependType() == SUBMIT && rdir != finaldir) {
       std::string next_dir("../run." + integerToString(run_num+1, 3));
@@ -130,7 +91,6 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
     }
     ++run_num;
   }
-  Msg("CmdOpts: %s\n", cmd_opts.c_str());
 
   return 0; 
 }
@@ -140,7 +100,6 @@ int Submit::SubmitAnalysis(std::string const& top) {
     ErrorMsg("No ANALYSIS_FILE set.\n");
     return 1;
   }
-  Analyze_->SetRunType( ANALYSIS );
   Analyze_->CalcThreads();
   Analyze_->Info();
   return Analyze_->Submit( top );
@@ -227,19 +186,13 @@ int Submit::ReadOptions(std::string const& fnameIn, QueueOpts& Qopt) {
 // =============================================================================
 Submit::QueueOpts::QueueOpts() :
   nodes_(0),
-  ng_(0),
   ppn_(0),
   threads_(0),
-  runType_(MD),
   overWrite_(false),
   queueType_(PBS),
   isSerial_(false),
   dependType_(BATCH)
 {}
-
-const char* Submit::QueueOpts::RunTypeStr[] = {
-  "MD", "TREMD", "HREMD", "MREMD", "ANALYSIS", "ARCHIVE"
-};
 
 const char* Submit::QueueOpts::QueueTypeStr[] = {
   "PBS", "SBATCH"
@@ -265,15 +218,11 @@ int Submit::QueueOpts::ProcessOption(std::string const& OPT, std::string const& 
 
   if      (OPT == "JOBNAME") job_name_ = VAR;
   else if (OPT == "NODES"  ) nodes_ = atoi( VAR.c_str() );
-  else if (OPT == "NG"     ) ng_ = atoi( VAR.c_str() );
   else if (OPT == "PPN"    ) ppn_ = atoi( VAR.c_str() );
   else if (OPT == "THREADS") threads_ = atoi( VAR.c_str() );
   else if (OPT == "RUNTYPE") {
-    runType_ = (RUNTYPE)RetrieveOpt(RunTypeStr, NO_RUN, VAR);
-    if (runType_ == NO_RUN) {
-      ErrorMsg("Unrecognized run type: %s\n", VAR.c_str());
-      return 1;
-    }
+    ErrorMsg("RUNTYPE is obsolete. Please remove.\n");
+    return 1;
   }
   else if (OPT == "AMBERHOME") {
     if ( CheckExists("AMBERHOME", VAR) ) return 1;
@@ -353,10 +302,8 @@ int Submit::QueueOpts::Submit(std::string const& WorkDir) const {
 
 void Submit::QueueOpts::Info() const {
   Msg("\n---=== Job Submission ===---\n");
-  Msg("  RUNTYPE   : %s\n", RunTypeStr[runType_]);
   Msg("  JOBNAME   : %s\n", job_name_.c_str());
   if (nodes_ > 0  ) Msg("  NODES     : %i\n", nodes_);
-  if (ng_ > 0     ) Msg("  NG        : %i\n", ng_);
   if (ppn_ > 0    ) Msg("  PPN       : %i\n", ppn_);
   if (threads_ > 0) Msg("  THREADS   : %i\n", threads_);
   if (!amberhome_.empty()) Msg("  AMBERHOME : %s\n", amberhome_.c_str());
@@ -442,13 +389,13 @@ int Submit::QueueOpts::QsubHeader(TextFile& qout, int run_num, std::string const
     // Check if program exists
     std::string exepath = amberhome_ + "/bin/" + program_;
     if (CheckExists("Full program path", exepath)) return 1;
-    qout.Printf("EXEPATH=%s\nls -l $EXEPATH\n", exepath.c_str());
+    qout.Printf("export EXEPATH=%s\nls -l $EXEPATH\n", exepath.c_str());
   } else
-    qout.Printf("EXEPATH=%s\nls -l `which $EXEPATH`\n", program_.c_str());
+    qout.Printf("export EXEPATH=`which %s`\nls -l $EXEPATH\n", program_.c_str());
   // Add any additional input
   if (!additionalCommands_.empty())
     qout.Printf("\n%s\n\n", additionalCommands_.c_str());
-  qout.Printf("MPIRUN=\"%s\"\n", mpirun_.c_str()); // TODO Combine with EXEPATH
+  qout.Printf("export MPIRUN=\"%s\"\n", mpirun_.c_str()); // TODO Combine with EXEPATH
 
   return 0;
 }

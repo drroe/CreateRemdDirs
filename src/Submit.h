@@ -16,7 +16,6 @@ class Submit {
     class QueueOpts;
     int ReadOptions(std::string const&, QueueOpts&);
 
-    enum RUNTYPE { MD=0, TREMD, HREMD, MREMD, ANALYSIS, ARCHIVE, NO_RUN }; //TODO remove
     enum QUEUETYPE { PBS = 0, SLURM, NO_QUEUE };
     enum DEPENDTYPE { BATCH = 0, SUBMIT, NONE, NO_DEP };
     typedef std::vector<std::string> Sarray;
@@ -31,7 +30,6 @@ class Submit {
 class Submit::QueueOpts {
   public:
     QueueOpts();
-    void SetRunType(RUNTYPE r) { runType_ = r; }
 
     int ProcessOption(std::string const&, std::string const&);
     int Check() const;
@@ -40,7 +38,6 @@ class Submit::QueueOpts {
     void CalcThreads();
     int QsubHeader(TextFile&, int, std::string const&);
 
-    RUNTYPE RunType()       const { return runType_; }
     DEPENDTYPE DependType() const { return dependType_; }
     QUEUETYPE QueueType()   const { return queueType_; }
     bool OverWrite()        const { return overWrite_; }
@@ -48,17 +45,14 @@ class Submit::QueueOpts {
   private:
     void AdditionalFlags(TextFile&) const;
 
-    static const char* RunTypeStr[];
     static const char* QueueTypeStr[];
     static const char* DependTypeStr[];
     static const char* SubmitCmdStr[];
     // TODO reorganize
     std::string job_name_;           ///< Unique job name
     int nodes_;                      ///< Number of nodes
-    int ng_;                         ///< Number of groups (-ng command line flag).
     int ppn_;                        ///< Processors per node
     int threads_;                    ///< Total number of threads required.
-    RUNTYPE runType_;                ///< Run type TODO handle in RemdDirs
     bool overWrite_;                 ///< If true overwrite existing scripts.
     std::string walltime_;           ///< Wallclock time for queuing system
     std::string email_;              ///< User email address

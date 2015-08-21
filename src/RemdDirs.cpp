@@ -401,6 +401,7 @@ int RemdDirs::WriteRunMD(std::string const& cmd_opts) const {
                 "((TOTAL = $TIME1 - $TIME0))\necho \"$TOTAL seconds.\"\n\nexit 0\n",
                 cmd_opts.c_str());
   RunMD.Close();
+  ChangePermissions("RunMD.sh");
   return 0;
 }
 
