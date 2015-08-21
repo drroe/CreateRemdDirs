@@ -12,7 +12,7 @@ class RemdDirs {
     int Setup(std::string const&, bool);
     void Info() const;
     int CreateRuns(std::string const&, StrArray const&, int, bool);
-    int CreateAnalyzeArchive(std::string const&, StrArray const&, int, int, bool, bool, bool);
+    int CreateAnalyzeArchive(std::string const&, StrArray const&, int, int, bool, bool, bool, bool);
 
     void SetDebug(int d) { debug_ = d; }
   private:

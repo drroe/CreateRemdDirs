@@ -9,8 +9,9 @@ class Submit {
    ~Submit();
 
    int ReadOptions(std::string const&);
+   int CheckOptions();
    int SubmitRuns(std::string const&, StrArray const&, int) const;
-   int SubmitAnalysis(std::string const&);
+   int SubmitAnalysis(std::string const&, int, int, bool) const;
    void SetTesting(bool t) { testing_ = t; }
   private:
     class QueueOpts;
@@ -33,7 +34,6 @@ class Submit::QueueOpts {
 
     int ProcessOption(std::string const&, std::string const&);
     int Check() const;
-    int Submit(std::string const&) const;
     void Info() const;
     void CalcThreads();
     int QsubHeader(TextFile&, int, std::string const&);

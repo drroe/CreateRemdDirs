@@ -280,28 +280,38 @@ int RemdDirs::CreateRuns(std::string const& TopDir, StrArray const& RunDirs,
 
 // RemdDirs::CreateAnalyzeArchive()
 int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& RunDirs,
-                                   int start, int stop, bool overwrite,
+                                   int start, int stop, bool overwrite, bool check,
                                    bool analyzeEnabled, bool archiveEnabled)
 {
   // Find trajectory files
   ChangeDir( TopDir + "/" + RunDirs.front() );
   StrArray TrajFiles;
+  std::string traj_prefix;
   if (runType_ == MD)
     TrajFiles = ExpandToFilenames("md.nc.*");
   else
     TrajFiles = ExpandToFilenames("TRAJ/rem.crd.*");
   if (TrajFiles.empty()) {
-    ErrorMsg("No trajectory files found.\n");
-    return 1;
-  }
-  std::string traj_prefix("/" + TrajFiles.front());
+    if (check) {
+      ErrorMsg("No trajectory files found.\n");
+      return 1;
+    }
+    if (runType_ == MD)
+      traj_prefix.assign("/md.nc.001");
+    else 
+      traj_prefix.assign("/TRAJ/rem.crd.001");
+    Msg("Warning: Check disabled. Assuming first traj is '%s'\n", traj_prefix.c_str());
+  } else
+    traj_prefix.assign("/" + TrajFiles.front());
 
   // Ensure traj 1 for all runs between start and stop exist.
   ChangeDir( TopDir );
-  for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
-  {
-    std::string TRAJ1(*rdir + traj_prefix);
-    if (CheckExists("Trajectory", TRAJ1)) return 1;
+  if (check) {
+    for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
+    {
+      std::string TRAJ1(*rdir + traj_prefix);
+      if (CheckExists("Trajectory", TRAJ1)) return 1;
+    }
   }
 
   // Set up input for analysis -------------------

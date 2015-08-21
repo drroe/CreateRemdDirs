@@ -9,13 +9,12 @@ Submit::~Submit() {
   if (Archive_ != 0) delete Archive_;
 }
 
-int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int start) const
+int Submit::SubmitRuns(std::string const& TopDir, StrArray const& RunDirs, int start) const
 {
-  Run_->CalcThreads();
   Run_->Info();
   std::string user = UserName();
   Msg("User: %s\n", user.c_str());
-  std::string jobIdFilename(top + "/temp.jobid");
+  std::string jobIdFilename(TopDir + "/temp.jobid");
   std::string submitScript( std::string(Run_->SubmitCmd()) + ".sh" );
   std::string submitCommand( std::string(Run_->SubmitCmd()) + " " +
                              submitScript + " > " + jobIdFilename);
@@ -31,7 +30,7 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
   StrArray::const_iterator finaldir = RunDirs.end() - 1;
   for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
   {
-    ChangeDir( top );
+    ChangeDir( TopDir );
     // Check if run directories already contain scripts
     if ( !Run_->OverWrite() && fileExists( *rdir + "/" + submitScript) ) {
       ErrorMsg("Not overwriting (-O) and %s already contains %s\n",
@@ -95,26 +94,65 @@ int Submit::SubmitRuns(std::string const& top, StrArray const& RunDirs, int star
   return 0; 
 }
 
-int Submit::SubmitAnalysis(std::string const& top) {
+int Submit::SubmitAnalysis(std::string const& TopDir, int start, int stop, bool overwrite) const
+{
   if (Analyze_ == 0) {
     ErrorMsg("No ANALYSIS_FILE set.\n");
     return 1;
   }
-  Analyze_->CalcThreads();
   Analyze_->Info();
-  return Analyze_->Submit( top );
+  // Check that analysis directory and input exist.
+  ChangeDir( TopDir );
+  std::string CPPDIR("Analyze." + integerToString(start) + "." + integerToString(stop));
+  if (CheckExists("analysis input directory", CPPDIR)) return 1;
+  std::string CPPIN("batch.cpptraj.in"); // TODO make option
+  if (CheckExists("analysis input file", CPPDIR + "/" + CPPIN)) return 1;
+  // Create script
+  std::string scriptName(CPPDIR + "/RunAnalysis.sh");
+  if (!overwrite && fileExists(scriptName)) {
+    ErrorMsg("Not overwriting existing analysis script: %s\n", scriptName.c_str());
+    return 1;
+  }
+  // Set options specific to queuing system, node info, and Amber env.
+  TextFile qout;
+  if (qout.OpenWrite( scriptName )) return 1;
+  if (Analyze_->QsubHeader(qout, -1, std::string())) return 1;
+  qout.Printf("\n# Run executable\nTIME0=`date +%%s`\n$MPIRUN $EXEPATH -i %s\n" 
+              "TIME1=`date +%%s`\n((TOTAL = $TIME1 - $TIME0))\n"
+              "echo \"$TOTAL seconds.\"\nexit 0\n", CPPIN.c_str());
+  // Submit job
+  if (testing_)
+    Msg("Just testing; not submitting analysis job.\n");
+  else {
+    ChangeDir( CPPDIR );
+    std::string submitCommand( std::string(Analyze_->SubmitCmd()) + " " + scriptName );
+    if ( system( submitCommand.c_str() ) ) {
+      ErrorMsg("Analysis job submission failed.\n");
+      return 1;
+    }
+  }
+  return 0;
 }
 
 int Submit::ReadOptions(std::string const& fn) {
-  if (Run_ != 0) {
-    ErrorMsg("Only one queue input allowed.\n");
-    return 1;
-  }
-  Run_ = new QueueOpts();
+  n_input_read_ = 0;
+  if (Run_ == 0) Run_ = new QueueOpts();
   if (ReadOptions( fn, *Run_ )) return 1;
+  return 0;
+}
+
+int Submit::CheckOptions() {
+  if (Run_ == 0) return 1;
   if (Run_->Check()) return 1;
-  if (Analyze_ != 0 && Analyze_->Check()) return 1;
-  if (Archive_ != 0 && Archive_->Check()) return 1;
+  Run_->CalcThreads();
+  if (Analyze_ != 0) {
+    if (Analyze_->Check()) return 1;
+    Analyze_->CalcThreads();
+  }
+  if (Archive_ != 0) {
+    if (Archive_->Check()) return 1;
+    Archive_->CalcThreads();
+  }
   return 0;
 }
 
@@ -154,7 +192,7 @@ int Submit::ReadOptions(std::string const& fnameIn, QueueOpts& Qopt) {
         ErrorMsg("Only one ANALYZE_FILE allowed.\n");
         return 1;
       }
-      Analyze_ = new QueueOpts(); // TODO Copy of existing?
+      Analyze_ = new QueueOpts(Qopt); // TODO Copy of existing?
       if (ReadOptions( Args, *Analyze_ )) return 1;
     } else if (line == "ARCHIVE_FILE") {
       if (Archive_ != 0) {
@@ -290,13 +328,6 @@ int Submit::QueueOpts::Check() const {
     ErrorMsg("MPI run command MPIRUN not set.\n");
     return 1;
   }
-  return 0;
-}
-
-int Submit::QueueOpts::Submit(std::string const& WorkDir) const {
-  // Get user name from whoami command
-  std::string user = UserName();
-  Msg("User: %s\n", user.c_str());
   return 0;
 }
 
