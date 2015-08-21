@@ -17,7 +17,7 @@ RemdDirs::~RemdDirs() {
 
 void RemdDirs::OptHelp() {
   Msg("Creation input file variables:\n"
-      "  CRD_FILE <dir>     : Starting coordinates location.\n"
+      "  CRD_FILE <dir>     : Starting coordinates location (run 0 only).\n"
       "  DIMENSION <file>   : File containing replica dimension information, 1 per dimension\n"
       "  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--analyze).\n"
       "  FULLARCHIVE <arg>  : Comma-separated list of members to fully archive or NONE.\n"
@@ -34,7 +34,7 @@ void RemdDirs::OptHelp() {
 }
 
 // RemdDirs::ReadOptions()
-int RemdDirs::ReadOptions(std::string const& input_file) {
+int RemdDirs::ReadOptions(std::string const& input_file, int start) {
   // Read options from input file
   if (CheckExists("Input file", input_file)) return 1;
   Msg("Reading input from file: %s\n", input_file.c_str());
@@ -58,8 +58,12 @@ int RemdDirs::ReadOptions(std::string const& input_file) {
         VAR += (" " + infile.Token(i));
       if (debug_ > 0)
         Msg("    Option: %s  Variable: %s\n", OPT.c_str(), VAR.c_str());
-      if (OPT == "CRD_FILE")
-        crd_dir_ = VAR;
+      if      (OPT == "CRD_FILE") {
+        if (start != 0)
+          Msg("Warning: CRD_FILE only used if start run is 0. Skipping.\n");
+        else
+          crd_dir_ = VAR;
+      }
       else if (OPT == "DIMENSION")
       {
         if (CheckExists("Dimension file", VAR)) { err = 1; break; }

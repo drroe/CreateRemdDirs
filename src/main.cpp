@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
     // Read RUN options from input file
     RemdDirs create;
     create.SetDebug(debug);
-    if (create.ReadOptions( input_file )) return 1;
+    if (create.ReadOptions( input_file, start_run )) return 1;
     // Setup run
     if (create.Setup( crd_dir, needsMdin )) return 1;
     create.Info();

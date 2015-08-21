@@ -9,7 +9,7 @@ class RemdDirs {
     ~RemdDirs();
 
     static void OptHelp();
-    int ReadOptions(std::string const&);
+    int ReadOptions(std::string const&,int);
     int Setup(std::string const&, bool);
     void Info() const;
     int CreateRuns(std::string const&, StrArray const&, int, bool);
