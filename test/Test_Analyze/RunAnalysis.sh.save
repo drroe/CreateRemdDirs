@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Run executable
+TIME0=`date +%s`
+$MPIRUN $EXEPATH -i batch.cpptraj.in
+TIME1=`date +%s`
+((TOTAL = $TIME1 - $TIME0))
+echo "$TOTAL seconds."
+exit 0
