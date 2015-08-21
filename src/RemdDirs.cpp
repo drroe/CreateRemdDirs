@@ -353,6 +353,7 @@ int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Ru
     if (runScript.OpenWrite( scriptName )) return 1;
     runScript.Printf("#!/bin/bash\n\n# Run executable\nTIME0=`date +%%s`\n"
                      "$MPIRUN $EXEPATH -i %s\n"
+                     "if [[ $? -ne 0 ]] ; then\n  echo \"CPPTRAJ error.\"\n  exit 1\nfi\n"
                      "TIME1=`date +%%s`\n((TOTAL = $TIME1 - $TIME0))\n"
                      "echo \"$TOTAL seconds.\"\nexit 0\n", inputName.c_str());
     runScript.Close();
@@ -395,8 +396,6 @@ int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Ru
         return 1;
       }
       TextFile ARIN;
-      std::string
-        CPPTRAJERR("  if [[ $? -ne 0 ]] ; then\n    echo \"CPPTRAJ error.\"\n    exit 1\n  fi");
       if ( fullarchive_ != "NONE") {
         // Create input for full archiving of selected members of this run
         std::string AR1("ar1." + integerToString(run) + ".cpptraj.in");
@@ -418,6 +417,8 @@ int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Ru
     }
 
     // Create run script.
+    const char* CPPTRAJERR =
+      "  if [[ $? -ne 0 ]] ; then\n    echo \"CPPTRAJ error.\"\n    exit 1\n  fi";
     std::string scriptName("RunArchive." + integerToString(start) + "."
                            + integerToString(stop) + ".sh");
     if (!overwrite && fileExists(scriptName)) {
@@ -430,8 +431,6 @@ int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Ru
     for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
       runScript.Printf(" %s", rdir->c_str());
     runScript.Printf(" ; do\n  TIME0=`date +%%s`\n");
-    std::string
-      CPPTRAJERR("  if [[ $? -ne 0 ]] ; then\n    echo \"CPPTRAJ error.\"\n    exit 1\n  fi");
     if ( fullarchive_ != "NONE") {
       // Add command to script for full archive of this run
       runScript.Printf(
@@ -440,7 +439,7 @@ int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Ru
         "  cd ..\n  FILELIST=`ls $DIR/TRAJ/wat.nc.*`\n"
         "  if [[ -z $FILELIST ]] ; then\n"
         "    echo \"Error: Sorted solvated trajectories not found.\" >> /dev/stderr\n"
-        "    exit 1\n  fi\n", ARDIR.c_str(), CPPTRAJERR.c_str()); 
+        "    exit 1\n  fi\n", ARDIR.c_str(), CPPTRAJERR); 
     }
     // Add command to script for stripped archive of this run
     runScript.Printf(
@@ -459,7 +458,7 @@ int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Ru
         "  ((RUN++))\n"
         "done\nTOTALTIME1=`date +%%s`\n((TOTAL = $TOTALTIME1 - $TOTALTIME0))\n"
         "echo \"$TOTAL seconds total.\"\nexit 0\n",
-        ARDIR.c_str(), CPPTRAJERR.c_str(), ARDIR.c_str());
+        ARDIR.c_str(), CPPTRAJERR, ARDIR.c_str());
     runScript.Close();
   } // END archive input
 
