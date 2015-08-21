@@ -327,10 +327,12 @@ int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Ru
       }
     } else
       Mkdir( CPPDIR );
+    // Analysis input
+    std::string inputName("batch.cpptraj.in"); // TODO check exists? Make option?
     TextFile CPPIN;
-    if (CPPIN.OpenWrite( CPPDIR + "/batch.cpptraj.in" )) return 1;
-    std::string TRAJINARGS;
+    if (CPPIN.OpenWrite( CPPDIR + "/" + inputName )) return 1;
     // If HREMD, need nosort keyword
+    std::string TRAJINARGS;
     if (runType_ == MD || runType_ == HREMD)
       TRAJINARGS.assign("nosort");
     CPPIN.Printf("parm %s\n", Topology().c_str());
@@ -341,6 +343,20 @@ int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Ru
                  "trajout run%i-%i.nowat.nc netcdf remdtraj %s\n",
                  start, stop, trajoutargs_.c_str());
     CPPIN.Close();
+    // Create run script
+    std::string scriptName(CPPDIR + "/RunAnalysis.sh");
+    if (!overwrite && fileExists(scriptName)) {
+      ErrorMsg("Not overwriting existing analysis script: %s\n", scriptName.c_str());
+      return 1;
+    }
+    TextFile runScript;
+    if (runScript.OpenWrite( scriptName )) return 1;
+    runScript.Printf("#!/bin/bash\n\n# Run executable\nTIME0=`date +%%s`\n"
+                     "$MPIRUN $EXEPATH -i %s\n"
+                     "TIME1=`date +%%s`\n((TOTAL = $TIME1 - $TIME0))\n"
+                     "echo \"$TOTAL seconds.\"\nexit 0\n", inputName.c_str());
+    runScript.Close();
+    ChangePermissions( scriptName ); 
   }
   // Set up input for archiving ------------------
   if (archiveEnabled) {
@@ -363,41 +379,89 @@ int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Ru
       }
     } else
       Mkdir( ARDIR );
-    std::string TRAJINARGS;
     // If HREMD, need nosort keyword
+    std::string TRAJINARGS;
     if (runType_ == MD || runType_ == HREMD)
       TRAJINARGS.assign("nosort");
     std::string TOP = Topology();
-    int run;
-    if ( fullarchive_ != "NONE") {
-      // Create input for fully archiving selected members of each run
-      run = start; 
-      for (StrArray::const_iterator rdir = RunDirs.begin();
-                                    rdir != RunDirs.end(); ++rdir, ++run)
-      {
-        TextFile ARIN;
-        if (ARIN.OpenWrite(ARDIR + "/ar1." + integerToString(run) + ".cpptraj.in")) return 1;
+    // Create input for archiving each run.
+    int run = start;
+    for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir, ++run)
+    {
+      // Check if archive already exists for this run.
+      std::string TARFILE( ARDIR + "/traj." + *rdir + ".tgz" );
+      if (!overwrite && fileExists(TARFILE)) {
+        ErrorMsg("TAR %s already exists.\n", TARFILE.c_str());
+        return 1;
+      }
+      TextFile ARIN;
+      std::string
+        CPPTRAJERR("  if [[ $? -ne 0 ]] ; then\n    echo \"CPPTRAJ error.\"\n    exit 1\n  fi");
+      if ( fullarchive_ != "NONE") {
+        // Create input for full archiving of selected members of this run
+        std::string AR1("ar1." + integerToString(run) + ".cpptraj.in");
+        if (ARIN.OpenWrite(ARDIR + "/" + AR1)) return 1;
         ARIN.Printf("parm %s\nensemble ../%s%s %s\n"
                     "trajout ../%s/TRAJ/wat.nc netcdf remdtraj onlymembers %s\n",
                     TOP.c_str(), rdir->c_str(), traj_prefix.c_str(), TRAJINARGS.c_str(),
                     rdir->c_str(), fullarchive_.c_str());
         ARIN.Close();
       }
-    }
-    // Create input for saving all stripped trajs
-    run = start;
-    for (StrArray::const_iterator rdir = RunDirs.begin();
-                                  rdir != RunDirs.end(); ++rdir, ++run)
-    {
-      TextFile ARIN;
-      if (ARIN.OpenWrite(ARDIR + "/ar2." + integerToString(run) + ".cpptraj.in")) return 1;
+      // Create input for archiving stripped trajectories
+      std::string AR2("ar2." + integerToString(run) + ".cpptraj.in");
+      if (ARIN.OpenWrite(ARDIR + "/" + AR2)) return 1;
       ARIN.Printf("parm %s\nensemble ../%s%s %s\n"
                   "strip :WAT\nautoimage\ntrajout ../%s/TRAJ/nowat.nc netcdf remdtraj\n",
                   TOP.c_str(), rdir->c_str(), traj_prefix.c_str(), TRAJINARGS.c_str(),
                   rdir->c_str());
       ARIN.Close();
     }
-  }
+
+    // Create run script.
+    std::string scriptName("RunArchive." + integerToString(start) + "."
+                           + integerToString(stop) + ".sh");
+    if (!overwrite && fileExists(scriptName)) {
+      ErrorMsg("Not overwriting existing archive script: %s\n", scriptName.c_str());
+      return 1;
+    }
+    TextFile runScript;
+    if (runScript.OpenWrite( scriptName )) return 1;
+    runScript.Printf("#!/bin/bash\n\nTOTALTIME0=`date +%%s`\nRUN=%i\nfor DIR in", start);
+    for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
+      runScript.Printf(" %s", rdir->c_str());
+    runScript.Printf(" ; do\n  TIME0=`date +%%s`\n");
+    std::string
+      CPPTRAJERR("  if [[ $? -ne 0 ]] ; then\n    echo \"CPPTRAJ error.\"\n    exit 1\n  fi");
+    if ( fullarchive_ != "NONE") {
+      // Add command to script for full archive of this run
+      runScript.Printf(
+        "  # Sort and save the unbiased fully-solvated trajs\n"
+        "  cd %s\n  $MPIRUN $EXEPATH -i ar1.$RUN.cpptraj.in\n%s\n"
+        "  cd ..\n  FILELIST=`ls $DIR/TRAJ/wat.nc.*`\n"
+        "  if [[ -z $FILELIST ]] ; then\n"
+        "    echo \"Error: Sorted solvated trajectories not found.\" >> /dev/stderr\n"
+        "    exit 1\n  fi\n", ARDIR.c_str(), CPPTRAJERR.c_str()); 
+    }
+    // Add command to script for stripped archive of this run
+    runScript.Printf(
+        "  # Save all of the stripped trajs.\n"
+        "  cd %s\n  $MPIRUN $EXEPATH -i ar2.$RUN.cpptraj.in\n%s\n" 
+        "  cd ..\n"
+        "  for OUTTRAJ in `ls $DIR/TRAJ/nowat.nc.*` ; do\n"
+        "    FILELIST=$FILELIST\" $OUTTRAJ\"\n"
+        "  done\n  TARFILE=%s/traj.$DIR.tgz\n"
+        "  echo \"tar -czvf $TARFILE\"\n"
+        "  tar -czvf $TARFILE $FILELIST\n"
+        "  TIME1=`date +%%s`\n  ((TOTAL = $TIME1 - $TIME0))\n"
+        "  echo \"$DIR took $TOTAL seconds to archive.\"\n"
+        "  echo \"$TARFILE\" >> TrajArchives.txt\n"
+        "  echo \"--------------------------------------------------------------\"\n"
+        "  ((RUN++))\n"
+        "done\nTOTALTIME1=`date +%%s`\n((TOTAL = $TOTALTIME1 - $TOTALTIME0))\n"
+        "echo \"$TOTAL seconds total.\"\nexit 0\n",
+        ARDIR.c_str(), CPPTRAJERR.c_str(), ARDIR.c_str());
+    runScript.Close();
+  } // END archive input
 
   return 0;
 }
