@@ -3,6 +3,10 @@
 # Run executable
 TIME0=`date +%s`
 $MPIRUN $EXEPATH -i batch.cpptraj.in
+if [[ $? -ne 0 ]] ; then
+  echo "CPPTRAJ error."
+  exit 1
+fi
 TIME1=`date +%s`
 ((TOTAL = $TIME1 - $TIME0))
 echo "$TOTAL seconds."
