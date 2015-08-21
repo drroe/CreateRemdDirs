@@ -17,6 +17,8 @@ class RemdDirs {
     void SetDebug(int d) { debug_ = d; }
   private:
     enum RUNTYPE { MD=0, TREMD, HREMD, MREMD };
+    static const std::string groupfileName_;
+    static const std::string remddimName_;
 
     std::string const& Topology() const {
       if (top_dim_ == -1) return top_file_;
@@ -26,6 +28,7 @@ class RemdDirs {
     int LoadDimension(std::string const&);
     int CreateRemd(int, int, std::string const&);
     int CreateMD(int, int, std::string const&);
+    int WriteRunMD(std::string const&) const;
     int MakeMdinForMD(std::string const&, int, std::string const&, std::string const&) const;
     // File and MDIN variables
     std::string top_file_;

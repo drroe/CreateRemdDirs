@@ -393,11 +393,23 @@ int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Ru
 }
 
 // =============================================================================
+int RemdDirs::WriteRunMD(std::string const& cmd_opts) const {
+  TextFile RunMD;
+  if (RunMD.OpenWrite("RunMD.sh")) return 1;
+  RunMD.Printf("#!/bin/bash\n\n# Run executable\nTIME0=`date +%%s`\n$MPIRUN $EXEPATH -O %s\n"
+                "TIME1=`date +%%s`\n"
+                "((TOTAL = $TIME1 - $TIME0))\necho \"$TOTAL seconds.\"\n\nexit 0\n",
+                cmd_opts.c_str());
+  RunMD.Close();
+  return 0;
+}
+
+const std::string RemdDirs::groupfileName_( "groupfile" ); // TODO make these options
+const std::string RemdDirs::remddimName_("remd.dim");
+
 // RemdDirs::CreateRemd()
 int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir) {
   typedef std::vector<unsigned int> Iarray;
-  const std::string groupfileName( "groupfile" ); // TODO make these options
-  const std::string remddimName("remd.dim");
   // Create and change to run directory.
   if (Mkdir(run_dir)) return 1;
   if (ChangeDir(run_dir)) return 1;
@@ -418,7 +430,7 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
   if (Mkdir(input_dir)) return 1;
   // Open GROUPFILE
   TextFile GROUPFILE;
-  if (GROUPFILE.OpenWrite(groupfileName)) return 1; 
+  if (GROUPFILE.OpenWrite(groupfileName_)) return 1; 
   // Figure out max width of replica extension
   int width = std::max(DigitWidth( totalReplicas_ ), 3);
   // Hold current indices in each dimension.
@@ -516,26 +528,21 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
   // Create remd.dim if necessary.
   if (Dims_.size() > 1) {
     TextFile REMDDIM;
-    if (REMDDIM.OpenWrite(remddimName)) return 1;
+    if (REMDDIM.OpenWrite(remddimName_)) return 1;
     for (unsigned int id = 0; id != Dims_.size(); id++)
       groups_.WriteRemdDim(REMDDIM, id, Dims_[id]->exch_type(), Dims_[id]->description());
     REMDDIM.Close();
   }
   // Create Run script
   std::string cmd_opts;
+  std::string NG = integerToString( totalReplicas_ );
   if (runType_ == MREMD)
-    cmd_opts.assign("-ng $NG -groupfile " + groupfileName + " -remd-file " + remddimName);
+    cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -remd-file " + remddimName_);
   else if (runType_ == HREMD)
-    cmd_opts.assign("-ng $NG -groupfile " + groupfileName + " -rem 3");
+    cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 3");
   else
-    cmd_opts.assign("-ng $NG -groupfile " + groupfileName + " -rem 1");
-  TextFile RunMD;
-  if (RunMD.OpenWrite("RunMD.sh")) return 1;
-  RunMD.Printf("#!/bin/bash\n\n# Run executable\nTIME0=`date +%%s`\n$MPIRUN $EXEPATH -O %s\n"
-                "TIME1=`date +%%s`\n"
-                "((TOTAL = $TIME1 - $TIME0))\necho \"$TOTAL seconds.\"\n\nexit 0\n",
-                cmd_opts.c_str());
-  RunMD.Close();
+    cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 1");
+  if (WriteRunMD( cmd_opts )) return 1;
   // Create output directories
   if (Mkdir( "OUTPUT" )) return 1;
   if (Mkdir( "TRAJ"   )) return 1;
@@ -645,13 +652,14 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
              " or path relative to '%s'\n", top_file_.c_str(), run_dir.c_str());
     return 1;
   }
-  // Groupfile will be used by MasterQsub.sh for command-line flags.
-  TextFile GROUP;
-  if (GROUP.OpenWrite("groupfile")) return 1;
-  if (n_md_runs_ < 2)
-    GROUP.Printf("-i md.in -p %s -c %s -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info\n", 
-                 top_file_.c_str(), crd_dir_.c_str());
-  else {
+  // Set up run command 
+  std::string cmd_opts;
+  if (n_md_runs_ < 2) {
+    cmd_opts.assign("-i md.in -p " + top_file_ + " -c " + crd_dir_ + 
+                    " -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info");
+  } else {
+    TextFile GROUP;
+    if (GROUP.OpenWrite(groupfileName_)) return 1;
     for (int grp = 1; grp <= n_md_runs_; grp++) {
       std::string EXT = "." + integerToString(grp, width);
       std::string mdin_name("md.in");
@@ -664,8 +672,10 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
                    mdin_name.c_str(), top_file_.c_str(), crd_files[grp-1].c_str(), EXT.c_str(),
                    width, grp, EXT.c_str(), EXT.c_str());
     } 
+    GROUP.Close();
+    cmd_opts.assign("-ng " + integerToString(n_md_runs_) + " -groupfile " + groupfileName_);
   }
-  GROUP.Close();
+  WriteRunMD( cmd_opts );
   // Info for this run.
   if (debug_ >= 0) // 1 
       Msg("\tMD: top=%s  temp0=%f\n", top_file_.c_str(), temp0_);
