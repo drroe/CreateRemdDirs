@@ -103,7 +103,8 @@ int Submit::SubmitAnalysis(std::string const& TopDir, int start, int stop, bool 
   Analyze_->Info();
   ChangeDir( TopDir );
   // Check that analysis directory, input, and script exist.
-  std::string CPPDIR("Analyze." + integerToString(start) + "." + integerToString(stop));
+  std::string suffix(integerToString(start) + "." + integerToString(stop));
+  std::string CPPDIR("Analyze." + suffix);
   if (CheckExists("analysis input directory", CPPDIR)) return 1;
   std::string inputName("batch.cpptraj.in"); // TODO make option
   if (CheckExists("analysis input file", CPPDIR + "/" + inputName)) return 1;
@@ -118,7 +119,7 @@ int Submit::SubmitAnalysis(std::string const& TopDir, int start, int stop, bool 
   }
   TextFile qout;
   if (qout.OpenWrite( qName )) return 1;
-  if (Analyze_->QsubHeader(qout, -1, std::string(), "proc.")) return 1;
+  if (Analyze_->QsubHeader(qout, -1, std::string(), "proc." + suffix + ".")) return 1;
   qout.Printf("\n# Run script\n./%s\nexit $?\n", scriptName.c_str());
   qout.Close();
   ChangePermissions( qName );
@@ -171,7 +172,7 @@ int Submit::SubmitArchive(std::string const& TopDir, int start, int stop, bool o
   }
   TextFile qout;
   if (qout.OpenWrite( qName )) return 1;
-  if (Archive_->QsubHeader(qout, -1, std::string(), "ar.")) return 1;
+  if (Archive_->QsubHeader(qout, -1, std::string(), "ar." + suffix + ".")) return 1;
   qout.Printf("\n# Run script\n./%s\nexit $?\n", scriptName.c_str());
   qout.Close();
   ChangePermissions( qName );
