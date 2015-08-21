@@ -16,23 +16,21 @@ RemdDirs::~RemdDirs() {
 }
 
 void RemdDirs::OptHelp() {
-  Msg("Input file variables:\n"
-      "  CRD_FILE <dir>         : Starting coordinates location.\n"
-      "  DIMENSION <file>       : File containing replica dimension information, 1 per dimension\n"
-//      "  START_RUN <start run>  : Run number to start with (run.<start_run>).\n"
-//      "  STOP_RUN <stop run>    : Run number to finish with (run.<stop run>).\n"
-      "  TRAJOUTARGS <args>     : Additional trajectory output args for analysis (--analyze).\n"
-      "  FULLARCHIVE <arg>      : Comma-separated list of members to fully archive or NONE.\n"
-      "  TOPOLOGY <file>        : Topology for 1D TREMD run.\n"
-      "  MDIN_FILE <file>       : File containing extra MDIN input.\n"
-      "  RST_FILE <file>        : File containing NMR restraints (MD only).\n"
-      "  TEMPERATURE <T>        : Temperature for 1D HREMD run.\n"
-      "  NSTLIM <nstlim>        : Input file; steps per exchange. Required.\n"
-      "  DT <step>              : Input file; time step. Required.\n"
-      "  IG <seed>              : Input file; random seed.\n"
-      "  MDRUNS <#>             : Number of MD runs when not REMD (default 1).\n"
-      "  NUMEXCHG <#>           : Input file; number of exchanges. Required for REMD.\n"
-      "  UMBRELLA <#>           : Indicates MD umbrella sampling with write frequency <#>.\n\n");
+  Msg("Creation input file variables:\n"
+      "  CRD_FILE <dir>     : Starting coordinates location.\n"
+      "  DIMENSION <file>   : File containing replica dimension information, 1 per dimension\n"
+      "  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--analyze).\n"
+      "  FULLARCHIVE <arg>  : Comma-separated list of members to fully archive or NONE.\n"
+      "  TOPOLOGY <file>    : Topology for 1D TREMD run.\n"
+      "  MDIN_FILE <file>   : File containing extra MDIN input.\n"
+      "  RST_FILE <file>    : File containing NMR restraints (MD only).\n"
+      "  TEMPERATURE <T>    : Temperature for 1D HREMD run.\n"
+      "  NSTLIM <nstlim>    : Input file; steps per exchange. Required.\n"
+      "  DT <step>          : Input file; time step. Required.\n"
+      "  IG <seed>          : Input file; random seed.\n"
+      "  NUMEXCHG <#>       : Input file; number of exchanges. Required for REMD.\n"
+      "  MDRUNS <#>         : Number of MD runs when not REMD (default 1).\n"
+      "  UMBRELLA <#>       : Indicates MD umbrella sampling with write frequency <#>.\n\n");
 }
 
 // RemdDirs::ReadOptions()
@@ -460,6 +458,7 @@ int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Ru
         "echo \"$TOTAL seconds total.\"\nexit 0\n",
         ARDIR.c_str(), CPPTRAJERR, ARDIR.c_str());
     runScript.Close();
+    ChangePermissions( scriptName );
   } // END archive input
 
   return 0;

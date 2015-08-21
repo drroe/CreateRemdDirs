@@ -9,6 +9,29 @@ Submit::~Submit() {
   if (Archive_ != 0) delete Archive_;
 }
 
+void Submit::OptHelp() {
+  Msg("Queue job submission input file variables:\n"
+      "  JOBNAME <name>     : Job name in queueing system (required).\n"
+      "  NODES <#>          : Number of nodes needed.\n"
+      "  PPN <#>            : Processors per node needed.\n"
+      "  THREADS <#>        : Number of threads needed. Calcd from NODES * PPN if not specified\n"
+      "  AMBERHOME <dir>    : Directory containing AMBER installation.\n"
+      "  PROGRAM <name>     : Name of binary to run (required).\n"
+      "  QSUB <arg>         : Queue type {PBS | SBATCH (slurm)}\n"
+      "  WALLTIME <arg>     : Wall time needed.\n"
+      "  NODEARGS <arg>     : Any additonal -l node arguments (PBS only)\n"
+      "  MPIRUN <command>   : Command used to execute parallel run. Can use\n"
+      "                       $NODES, $THREADS, $PPN (will be set by script).\n"
+      "  MODULEFILE <file>  : File containing extra commands to run (load modules etc.)\n"
+      "  ACCOUNT <name>     : Account name\n"
+      "  EMAIL <email>      : User email address\n"
+      "  QUEUE <name>       : Queue name\n"
+      "  SERIAL {0|1}       : If set to 1 run in serial, no MPIRUN needed.\n"
+      "  DEPEND <arg>       : Job dependencies. BATCH=Use batch system (default),\n"
+      "                       SUBMIT=Execute next script at end of previous, or NONE.\n"
+      " FLAG <flag>         : Any additional queue flags.\n\n");
+}
+
 int Submit::SubmitRuns(std::string const& TopDir, StrArray const& RunDirs, int start) const
 {
   Run_->Info();

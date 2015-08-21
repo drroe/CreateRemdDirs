@@ -6,26 +6,36 @@
 #include "FileRoutines.h"
 #include "StringRoutines.h"
 
+static const char* VERSION = "0.9b";
+
 static void CmdLineHelp() {
   Msg("Command line options:\n"
-      "  -i <input file> (remd.opts)\n"
-      "  -b <start run>\n"
-      "  -e <stop run>\n"
-      "  -c <start coords dir>\n"
+      "  -i <file>     : Creation input options file (remd.opts)\n"
+      "  -q <file>     : Job queue submission options file (qsub.opts)\n"
+      "  -b <start run>: Run # to start at.\n"
+      "  -e <stop run> : Run # to end at.\n"
+      "  -c <dir>      : Start coords directory (run creation only)\n"
+      "  -s            : Allow job submission in addition to input creation\n"
       "  -O            : Overwrite\n"
+      "  -t            : Test only; do not submit\n"
+      "  -h | --help   : Print this help.\n"
+      "  --full-help   : Print extended help.\n"
       "  --nomdin      : No extra MD input; overridden by MDIN_FILE\n"
-      "  --analyze     : Set up analysis instead of run (no need for -c)\n"
-      "  --archive     : Set up archiving instead of run (no need for -c)\n"
+      "  --analyze     : Enable analysis input creation/submit\n"
+      "  --archive     : Enable archiving input creation/submit\n"
+      "  --runs        : Enable run input creation/submit (default if nothing else specified\n"
+      "  --submit      : Submit jobs to queue only\n"
       "  --check       : Check specified jobs only (requires NetCDF compilation).\n"
       "  --nocheck     : Do not check jobs before creating analyze/archive input.\n"
-      "  --checkall    : When multiple replicas present, check all (default only first)\n"
-      "  -s | --submit : Submit jobs to queue\n"
-      "  -q <file>     : Queue options file (qsub.opts)\n\n");
+      "  --checkall    : When multiple replicas present, check all (default only first)\n\n");
 }
 
-static void Help() {
+static void Help(bool extended) {
   CmdLineHelp();
-  RemdDirs::OptHelp();
+  if (extended) {
+    RemdDirs::OptHelp();
+    Submit::OptHelp();
+  }
 }
 
 // =============================================================================
@@ -38,6 +48,9 @@ static void Help() {
   * For now make all modes mutually exclusive.
   */
 int main(int argc, char** argv) {
+  Msg("\nCreateRemdDir: Amber run input creation/job submission/job check.\n");
+  Msg("Version: %s\n", VERSION);
+  Msg("Daniel R. Roe, 2015\n");
   enum ModeType { CREATE = 0, SUBMIT, CHECK };
   enum InputType { RUNS = 0, ANALYZE, ARCHIVE };
   std::vector<bool> ModeEnabled( 3, false );
@@ -68,7 +81,10 @@ int main(int argc, char** argv) {
     else if (Arg == "-d" && iarg+1 != argc)       // Debug level
       debug = atoi(argv[++iarg]);
     else if (Arg == "-h" || Arg == "--help") {    // Print help and exit
-      Help();
+      Help(false);
+      return 0;
+    } else if (Arg == "--full-help") {            // Print extended help and exit
+      Help(true);
       return 0;
     } else if (Arg == "-t" || Arg == "--test")    // Test, do not submit
       testOnly = true;
@@ -78,6 +94,8 @@ int main(int argc, char** argv) {
       needsMdin = false;
     else if (Arg == "--nocheck")                  // Do not check for Analyze/Archive create
       runCheck = false;
+    else if (Arg == "--runs")                     // Enable RUNS input
+      InputEnabled[RUNS] = true;
     else if (Arg == "--analyze")                  // Enable ANALYZE input 
       InputEnabled[ANALYZE] = true;
     else if (Arg == "--archive")                  // Enable ARCHIVE input

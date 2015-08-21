@@ -5,9 +5,10 @@
 #include "FileRoutines.h" // StrArray
 class RemdDirs {
   public:
-    static void OptHelp();
     RemdDirs();
     ~RemdDirs();
+
+    static void OptHelp();
     int ReadOptions(std::string const&);
     int Setup(std::string const&, bool);
     void Info() const;

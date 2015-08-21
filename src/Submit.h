@@ -8,6 +8,7 @@ class Submit {
     Submit() : Run_(0), Analyze_(0), Archive_(0), n_input_read_(0), testing_(false) {}
    ~Submit();
 
+   static void OptHelp();
    int ReadOptions(std::string const&);
    int CheckOptions();
    int SubmitRuns(std::string const&, StrArray const&, int) const;
