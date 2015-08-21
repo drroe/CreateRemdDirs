@@ -1,0 +1,44 @@
+#!/bin/bash
+
+TOTALTIME0=`date +%s`
+RUN=0
+for DIR in run.000 ; do
+  TIME0=`date +%s`
+  # Sort and save the unbiased fully-solvated trajs
+  cd Archive.0.0
+  $MPIRUN $EXEPATH -i ar1.$RUN.cpptraj.in
+  if [[ $? -ne 0 ]] ; then
+    echo "CPPTRAJ error."
+    exit 1
+  fi
+  cd ..
+  FILELIST=`ls $DIR/TRAJ/wat.nc.*`
+  if [[ -z $FILELIST ]] ; then
+    echo "Error: Sorted solvated trajectories not found." >> /dev/stderr
+    exit 1
+  fi
+  # Save all of the stripped trajs.
+  cd Archive.0.0
+  $MPIRUN $EXEPATH -i ar2.$RUN.cpptraj.in
+  if [[ $? -ne 0 ]] ; then
+    echo "CPPTRAJ error."
+    exit 1
+  fi
+  cd ..
+  for OUTTRAJ in `ls $DIR/TRAJ/nowat.nc.*` ; do
+    FILELIST=$FILELIST" $OUTTRAJ"
+  done
+  TARFILE=Archive.0.0/traj.$DIR.tgz
+  echo "tar -czvf $TARFILE"
+  tar -czvf $TARFILE $FILELIST
+  TIME1=`date +%s`
+  ((TOTAL = $TIME1 - $TIME0))
+  echo "$DIR took $TOTAL seconds to archive."
+  echo "$TARFILE" >> TrajArchives.txt
+  echo "--------------------------------------------------------------"
+  ((RUN++))
+done
+TOTALTIME1=`date +%s`
+((TOTAL = $TOTALTIME1 - $TOTALTIME0))
+echo "$TOTAL seconds total."
+exit 0
