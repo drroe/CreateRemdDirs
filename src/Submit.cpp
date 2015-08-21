@@ -101,25 +101,27 @@ int Submit::SubmitAnalysis(std::string const& TopDir, int start, int stop, bool 
     return 1;
   }
   Analyze_->Info();
-  // Check that analysis directory and input exist.
   ChangeDir( TopDir );
+  // Check that analysis directory, input, and script exist.
   std::string CPPDIR("Analyze." + integerToString(start) + "." + integerToString(stop));
   if (CheckExists("analysis input directory", CPPDIR)) return 1;
-  std::string CPPIN("batch.cpptraj.in"); // TODO make option
-  if (CheckExists("analysis input file", CPPDIR + "/" + CPPIN)) return 1;
-  // Create script
-  std::string scriptName(CPPDIR + "/RunAnalysis.sh");
-  if (!overwrite && fileExists(scriptName)) {
-    ErrorMsg("Not overwriting existing analysis script: %s\n", scriptName.c_str());
+  std::string inputName("batch.cpptraj.in"); // TODO make option
+  if (CheckExists("analysis input file", CPPDIR + "/" + inputName)) return 1;
+  std::string scriptName("RunAnalysis.sh"); // TODO make option
+  if (CheckExists("analysis script", CPPDIR + "/" + scriptName)) return 1;
+
+  // Set options specific to queuing system, node info, and Amber env.
+  std::string qName( CPPDIR + "/" + std::string(Analyze_->SubmitCmd()) + ".sh" );
+  if (!overwrite && fileExists( qName )) {
+    ErrorMsg("Not overwriting existing script %s\n", qName.c_str());
     return 1;
   }
-  // Set options specific to queuing system, node info, and Amber env.
   TextFile qout;
-  if (qout.OpenWrite( scriptName )) return 1;
+  if (qout.OpenWrite( qName )) return 1;
   if (Analyze_->QsubHeader(qout, -1, std::string(), "proc.")) return 1;
-  qout.Printf("\n# Run executable\nTIME0=`date +%%s`\n$MPIRUN $EXEPATH -i %s\n" 
-              "TIME1=`date +%%s`\n((TOTAL = $TIME1 - $TIME0))\n"
-              "echo \"$TOTAL seconds.\"\nexit 0\n", CPPIN.c_str());
+  qout.Printf("\n# Run script\n./%s\nexit $?\n", scriptName.c_str());
+  qout.Close();
+  ChangePermissions( qName );
   // Submit job
   if (testing_)
     Msg("Just testing; not submitting analysis job.\n");
@@ -131,6 +133,59 @@ int Submit::SubmitAnalysis(std::string const& TopDir, int start, int stop, bool 
       return 1;
     }
   }
+  return 0;
+}
+
+int Submit::SubmitArchive(std::string const& TopDir, int start, int stop, bool overwrite) const
+{
+  if (Archive_ == 0) {
+    ErrorMsg("No ARCHIVE_FILE set.\n");
+    return 1;
+  }
+  Archive_->Info();
+  ChangeDir( TopDir );
+  // TODO: Require or have option for dependency on analysis job.
+  // Check that archive dir, input, and run script exist
+  std::string suffix(integerToString(start) + "." + integerToString(stop));
+  std::string ARDIR("Archive." + suffix);
+  if (CheckExists("archive input directory", ARDIR)) return 1;
+  std::string scriptName("RunArchive." + suffix + ".sh");
+  if (CheckExists("archive run script", scriptName)) return 1;
+  StrArray ar1_files = ExpandToFilenames(ARDIR + "/ar1.*.in");
+  StrArray ar2_files = ExpandToFilenames(ARDIR + "/ar2.*.in");
+  if (ar2_files.empty()) {
+    ErrorMsg("No archive input found in %s\n", ARDIR.c_str());
+    return 1;
+  }
+  if (!ar1_files.empty() && ar2_files.size() != ar1_files.size()) {
+    ErrorMsg("Number of full archive input files %zu != number of stripped archive inputs %zu\n",
+             ar1_files.size(), ar2_files.size());
+    return 1;
+  }
+
+  // Set options specific to queuing system, node info, and Amber env.
+  std::string qName("archive." + std::string(Archive_->SubmitCmd()) + suffix + ".sh");
+  if (!overwrite && fileExists( qName )) {
+    ErrorMsg("Not overwriting existing script %s\n", qName.c_str());
+    return 1;
+  }
+  TextFile qout;
+  if (qout.OpenWrite( qName )) return 1;
+  if (Archive_->QsubHeader(qout, -1, std::string(), "ar.")) return 1;
+  qout.Printf("\n# Run script\n./%s\nexit $?\n", scriptName.c_str());
+  qout.Close();
+  ChangePermissions( qName );
+  // Submit job
+  if (testing_)
+    Msg("Just testing; not submitting archive job.\n");
+  else {
+    std::string submitCommand( std::string(Archive_->SubmitCmd()) + " " + scriptName );
+    if ( system( submitCommand.c_str() ) ) {
+      ErrorMsg("Archive job submission failed.\n");
+      return 1;
+    }
+  }
+
   return 0;
 }
 

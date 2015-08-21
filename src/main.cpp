@@ -177,6 +177,9 @@ int main(int argc, char** argv) {
     if (InputEnabled[ANALYZE]) {
       if (submit.SubmitAnalysis(TopDir, start_run, stop_run, overwrite)) return 1;
     }
+    if (InputEnabled[ARCHIVE]) {
+      if (submit.SubmitArchive(TopDir, start_run, stop_run, overwrite)) return 1;
+    }
   }
 
   Msg("\n");

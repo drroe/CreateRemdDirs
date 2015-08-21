@@ -12,6 +12,7 @@ class Submit {
    int CheckOptions();
    int SubmitRuns(std::string const&, StrArray const&, int) const;
    int SubmitAnalysis(std::string const&, int, int, bool) const;
+   int SubmitArchive(std::string const&, int, int, bool) const;
    void SetTesting(bool t) { testing_ = t; }
   private:
     class QueueOpts;
