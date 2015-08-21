@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J proc.test
+#SBATCH -J proc.0.1.test
 #SBATCH -N 16
 #SBATCH -t 6:00:00
 #SBATCH -n 16

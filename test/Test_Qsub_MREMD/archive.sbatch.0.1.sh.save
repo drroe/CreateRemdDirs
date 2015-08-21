@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J ar.test
+#SBATCH -J ar.0.1.test
 #SBATCH -N 16
 #SBATCH -t 6:00:00
 #SBATCH -n 16
