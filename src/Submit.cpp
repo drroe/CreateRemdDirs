@@ -29,7 +29,7 @@ void Submit::OptHelp() {
       "  SERIAL {0|1}       : If set to 1 run in serial, no MPIRUN needed.\n"
       "  DEPEND <arg>       : Job dependencies. BATCH=Use batch system (default),\n"
       "                       SUBMIT=Execute next script at end of previous, or NONE.\n"
-      " FLAG <flag>         : Any additional queue flags.\n\n");
+      "  FLAG <flag>        : Any additional queue flags.\n\n");
 }
 
 int Submit::SubmitRuns(std::string const& TopDir, StrArray const& RunDirs, int start) const
