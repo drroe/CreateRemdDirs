@@ -164,7 +164,7 @@ int Submit::SubmitArchive(std::string const& TopDir, int start, int stop, bool o
   }
 
   // Set options specific to queuing system, node info, and Amber env.
-  std::string qName("archive." + std::string(Archive_->SubmitCmd()) + suffix + ".sh");
+  std::string qName("archive." + std::string(Archive_->SubmitCmd()) + "." + suffix + ".sh");
   if (!overwrite && fileExists( qName )) {
     ErrorMsg("Not overwriting existing script %s\n", qName.c_str());
     return 1;
