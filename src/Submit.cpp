@@ -47,7 +47,7 @@ int Submit::SubmitRuns(std::string const& TopDir, StrArray const& RunDirs, int s
     // Set options specific to queuing system, node info, and Amber env.
     TextFile qout;
     if (qout.OpenWrite( submitScript )) return 1;
-    if (Run_->QsubHeader(qout, run_num, previous_jobid)) return 1;
+    if (Run_->QsubHeader(qout, run_num, previous_jobid, "")) return 1;
     // Set up command to execute run script
     qout.Printf("\n# Run executable\n./%s\n\n", runScriptName.c_str());
     // Set up script dependency if necessary
@@ -116,7 +116,7 @@ int Submit::SubmitAnalysis(std::string const& TopDir, int start, int stop, bool 
   // Set options specific to queuing system, node info, and Amber env.
   TextFile qout;
   if (qout.OpenWrite( scriptName )) return 1;
-  if (Analyze_->QsubHeader(qout, -1, std::string())) return 1;
+  if (Analyze_->QsubHeader(qout, -1, std::string(), "proc.")) return 1;
   qout.Printf("\n# Run executable\nTIME0=`date +%%s`\n$MPIRUN $EXEPATH -i %s\n" 
               "TIME1=`date +%%s`\n((TOTAL = $TIME1 - $TIME0))\n"
               "echo \"$TOTAL seconds.\"\nexit 0\n", CPPIN.c_str());
@@ -192,14 +192,14 @@ int Submit::ReadOptions(std::string const& fnameIn, QueueOpts& Qopt) {
         ErrorMsg("Only one ANALYZE_FILE allowed.\n");
         return 1;
       }
-      Analyze_ = new QueueOpts(Qopt); // TODO Copy of existing?
+      Analyze_ = new QueueOpts(Qopt);
       if (ReadOptions( Args, *Analyze_ )) return 1;
     } else if (line == "ARCHIVE_FILE") {
       if (Archive_ != 0) {
         ErrorMsg("Only one ARCHIVE_FILE allowed.\n");
         return 1;
       }
-      Archive_ = new QueueOpts();
+      Archive_ = new QueueOpts(Qopt);
       if (ReadOptions( Args, *Archive_ )) return 1;
     } else if (line == "INPUT_FILE") {
       // Try to prevent recursion.
@@ -367,13 +367,14 @@ void Submit::QueueOpts::AdditionalFlags(TextFile& qout) const {
     qout.Printf("#%s %s\n", QueueTypeStr[queueType_], flag->c_str());
 }
 
-int Submit::QueueOpts::QsubHeader(TextFile& qout, int run_num, std::string const& jobID)
+int Submit::QueueOpts::QsubHeader(TextFile& qout, int run_num, std::string const& jobID,
+                                  std::string const& namePrefix)
 {
   std::string job_title, previous_job;
   if (run_num > -1)
-    job_title = job_name_ + "." + integerToString(run_num);
+    job_title = namePrefix + job_name_ + "." + integerToString(run_num);
   else
-    job_title = job_name_;
+    job_title = namePrefix + job_name_;
   if (dependType_ == BATCH )
     previous_job = jobID;
   // Queue specific options.

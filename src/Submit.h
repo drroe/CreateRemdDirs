@@ -36,7 +36,7 @@ class Submit::QueueOpts {
     int Check() const;
     void Info() const;
     void CalcThreads();
-    int QsubHeader(TextFile&, int, std::string const&);
+    int QsubHeader(TextFile&, int, std::string const&, std::string const&);
 
     DEPENDTYPE DependType() const { return dependType_; }
     QUEUETYPE QueueType()   const { return queueType_; }
