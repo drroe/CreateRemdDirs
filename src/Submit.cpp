@@ -135,23 +135,24 @@ int Submit::SubmitAnalysis(std::string const& TopDir, int start, int stop, bool 
   if (CheckExists("analysis script", CPPDIR + "/" + scriptName)) return 1;
 
   // Set options specific to queuing system, node info, and Amber env.
-  std::string qName( CPPDIR + "/" + std::string(Analyze_->SubmitCmd()) + ".sh" );
-  if (!overwrite && fileExists( qName )) {
-    ErrorMsg("Not overwriting existing script %s\n", qName.c_str());
+  std::string qName( std::string(Analyze_->SubmitCmd()) + ".sh" );
+  std::string qNamePath( CPPDIR + "/" + qName );
+  if (!overwrite && fileExists( qNamePath )) {
+    ErrorMsg("Not overwriting existing script %s\n", qNamePath.c_str());
     return 1;
   }
   TextFile qout;
-  if (qout.OpenWrite( qName )) return 1;
+  if (qout.OpenWrite( qNamePath )) return 1;
   if (Analyze_->QsubHeader(qout, -1, std::string(), "proc." + suffix + ".")) return 1;
   qout.Printf("\n# Run script\n./%s\nexit $?\n", scriptName.c_str());
   qout.Close();
-  ChangePermissions( qName );
+  ChangePermissions( qNamePath );
   // Submit job
   if (testing_)
     Msg("Just testing; not submitting analysis job.\n");
   else {
     ChangeDir( CPPDIR );
-    std::string submitCommand( std::string(Analyze_->SubmitCmd()) + " " + scriptName );
+    std::string submitCommand( std::string(Analyze_->SubmitCmd()) + " " + qName );
     if ( system( submitCommand.c_str() ) ) {
       ErrorMsg("Analysis job submission failed.\n");
       return 1;
@@ -203,7 +204,7 @@ int Submit::SubmitArchive(std::string const& TopDir, int start, int stop, bool o
   if (testing_)
     Msg("Just testing; not submitting archive job.\n");
   else {
-    std::string submitCommand( std::string(Archive_->SubmitCmd()) + " " + scriptName );
+    std::string submitCommand( std::string(Archive_->SubmitCmd()) + " " + qName );
     if ( system( submitCommand.c_str() ) ) {
       ErrorMsg("Archive job submission failed.\n");
       return 1;
@@ -249,49 +250,50 @@ int Submit::ReadOptions(std::string const& fnameIn, QueueOpts& Qopt) {
   if (infile.OpenRead( fname )) return 1;
   const char* ptr = infile.Gets();
   while (ptr != 0) {
-    // Format is <NAME> <OPTIONS>
-    std::string line( ptr );
-    size_t found = line.find_first_of(" ");
-    if (found == std::string::npos) {
-      ErrorMsg("malformed option: %s\n", ptr);
-      return 1;
-    }
-    // Find first non-whitespace character
-    size_t found1 = found;
-    while (found1 < line.size() && line[found1] == ' ') ++found1;
-    // Remove any newline chars and trailing whitespace
-    std::string Args = NoTrailingWhitespace( line.substr(found1) );
-    // Reduce line to option only
-    line.resize(found);
-    //Msg("Opt: '%s'   Args: '%s'\n", line.c_str(), Args.c_str());
+    if (ptr[0] != '#') {
+      // Format is <NAME> <OPTIONS>
+      std::string line( ptr );
+      size_t found = line.find_first_of(" ");
+      if (found == std::string::npos) {
+        ErrorMsg("malformed option: %s\n", ptr);
+        return 1;
+      }
+      // Find first non-whitespace character
+      size_t found1 = found;
+      while (found1 < line.size() && line[found1] == ' ') ++found1;
+      // Remove any newline chars and trailing whitespace
+      std::string Args = NoTrailingWhitespace( line.substr(found1) );
+      // Reduce line to option only
+      line.resize(found);
+      //Msg("Opt: '%s'   Args: '%s'\n", line.c_str(), Args.c_str());
 
-    // Process options
-    if (line == "ANALYZE_FILE") {
-      if (Analyze_ != 0) {
-        ErrorMsg("Only one ANALYZE_FILE allowed.\n");
-        return 1;
+      // Process options
+      if (line == "ANALYZE_FILE") {
+        if (Analyze_ != 0) {
+          ErrorMsg("Only one ANALYZE_FILE allowed.\n");
+          return 1;
+        }
+        Analyze_ = new QueueOpts(Qopt);
+        if (ReadOptions( Args, *Analyze_ )) return 1;
+      } else if (line == "ARCHIVE_FILE") {
+        if (Archive_ != 0) {
+          ErrorMsg("Only one ARCHIVE_FILE allowed.\n");
+          return 1;
+        }
+        Archive_ = new QueueOpts(Qopt);
+        if (ReadOptions( Args, *Archive_ )) return 1;
+      } else if (line == "INPUT_FILE") {
+        // Try to prevent recursion.
+        std::string fn = tildeExpansion( Args );
+        if (fn == fname) {
+          ErrorMsg("An input file may not read from itself (%s).\n", Args.c_str());
+          return 1;
+        }
+        if (ReadOptions( Args, Qopt )) return 1;
+      } else {
+        if (Qopt.ProcessOption(line, Args)) return 1;
       }
-      Analyze_ = new QueueOpts(Qopt);
-      if (ReadOptions( Args, *Analyze_ )) return 1;
-    } else if (line == "ARCHIVE_FILE") {
-      if (Archive_ != 0) {
-        ErrorMsg("Only one ARCHIVE_FILE allowed.\n");
-        return 1;
-      }
-      Archive_ = new QueueOpts(Qopt);
-      if (ReadOptions( Args, *Archive_ )) return 1;
-    } else if (line == "INPUT_FILE") {
-      // Try to prevent recursion.
-      std::string fn = tildeExpansion( Args );
-      if (fn == fname) {
-        ErrorMsg("An input file may not read from itself (%s).\n", Args.c_str());
-        return 1;
-      }
-      if (ReadOptions( Args, Qopt )) return 1;
-    } else {
-      if (Qopt.ProcessOption(line, Args)) return 1;
     }
-    
     ptr = infile.Gets();
   }
   infile.Close();
@@ -358,6 +360,11 @@ int Submit::QueueOpts::ProcessOption(std::string const& OPT, std::string const& 
   else if (OPT == "MPIRUN"    ) mpirun_ = VAR;
   else if (OPT == "MODULEFILE") {
     if ( CheckExists( "Module file", VAR ) ) return 1;
+    Msg("  Reading commands from module file %s\n", VAR.c_str());
+    if (!additionalCommands_.empty()) {
+      Msg("  Warning: Overwriting previous module commands.\n");
+      additionalCommands_.clear();
+    }
     TextFile modfile;
     if (modfile.OpenRead( tildeExpansion(VAR) )) return 1;
     const char* ptr = modfile.Gets();
