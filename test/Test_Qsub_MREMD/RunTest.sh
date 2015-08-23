@@ -5,6 +5,13 @@
 CleanFiles run.00? mremd.opts Hamiltonians.dat qsub.opts analyze.opts Analyze.0.1 \
            Archive.0.1 archive.sbatch.0.1.sh RunArchive.0.1.sh 
 
+if [[ ! -d "/home/droe/Amber/GIT/amber" ]] ; then
+  echo "Warning: Skipping submission test."
+  echo "AMBERHOME /home/droe/Amber/GIT/amber not present."
+  echo ""
+  exit 0
+fi
+
 MakeOpts() {
   cat > qsub.opts <<EOF
 JOBNAME test

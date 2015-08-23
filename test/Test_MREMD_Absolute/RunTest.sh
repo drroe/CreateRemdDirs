@@ -4,8 +4,9 @@
 
 CleanFiles run.000 mremd.opts Hamiltonians.dat
 
-if [[ ! -e /home/droe/bin/createRemdDirs/test/pme.remd.gamma1.opts ]] ; then
+if [[ ! -f "/home/droe/bin/createRemdDirs/test/pme.remd.gamma1.opts" ]] ; then
   echo "Warning: Cannot run absolute path test."
+  echo ""
   exit 0
 fi
 
