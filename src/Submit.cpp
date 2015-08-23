@@ -22,7 +22,8 @@ void Submit::OptHelp() {
       "  NODEARGS <arg>     : Any additonal -l node arguments (PBS only)\n"
       "  MPIRUN <command>   : Command used to execute parallel run. Can use\n"
       "                       $NODES, $THREADS, $PPN (will be set by script).\n"
-      "  MODULEFILE <file>  : File containing extra commands to run (load modules etc.)\n"
+      "  MODULEFILE <file>  : File containing extra commands to run (only last one loaded used)\n"
+      "  COMMANDFILE <file> : File containing any additional commands to be run.\n"
       "  ACCOUNT <name>     : Account name\n"
       "  EMAIL <email>      : User email address\n"
       "  QUEUE <name>       : Queue name\n"
@@ -215,6 +216,7 @@ int Submit::SubmitArchive(std::string const& TopDir, int start, int stop, bool o
 }
 
 int Submit::ReadOptions(std::string const& fn) {
+  Msg("  Reading queue options from '%s'\n", fn.c_str());
   n_input_read_ = 0;
   if (Run_ == 0) Run_ = new QueueOpts();
   if (ReadOptions( fn, *Run_ )) return 1;
@@ -243,7 +245,7 @@ int Submit::ReadOptions(std::string const& fnameIn, QueueOpts& Qopt) {
     return 1;
   }
 
-  Msg("  Reading queue options from '%s'\n", fnameIn.c_str());
+  //Msg("  Reading queue options from '%s'\n", fnameIn.c_str());
   std::string fname = tildeExpansion( fnameIn );
   if (CheckExists( "Queue options", fname )) return 1;
   TextFile infile;
@@ -355,24 +357,21 @@ int Submit::QueueOpts::ProcessOption(std::string const& OPT, std::string const& 
       return 1;
     }
   }
-  else if (OPT == "WALLTIME"  ) walltime_ = VAR;
-  else if (OPT == "NODEARGS"  ) nodeargs_ = VAR;
-  else if (OPT == "MPIRUN"    ) mpirun_ = VAR;
-  else if (OPT == "MODULEFILE") {
-    if ( CheckExists( "Module file", VAR ) ) return 1;
-    Msg("  Reading commands from module file %s\n", VAR.c_str());
-    if (!additionalCommands_.empty()) {
-      Msg("  Warning: Overwriting previous module commands.\n");
-      additionalCommands_.clear();
-    }
-    TextFile modfile;
-    if (modfile.OpenRead( tildeExpansion(VAR) )) return 1;
-    const char* ptr = modfile.Gets();
+  else if (OPT == "WALLTIME"   ) walltime_ = VAR;
+  else if (OPT == "NODEARGS"   ) nodeargs_ = VAR;
+  else if (OPT == "MPIRUN"     ) mpirun_ = VAR;
+  else if (OPT == "MODULEFILE" ) modfileName_ = VAR;
+  else if (OPT == "COMMANDFILE") {
+    if ( CheckExists( "Additional commands file", VAR ) ) return 1;
+    Msg("  Reading commands from file %s\n", VAR.c_str());
+    TextFile cmdfile;
+    if (cmdfile.OpenRead( tildeExpansion(VAR) )) return 1;
+    const char* ptr = cmdfile.Gets();
     while (ptr != 0) {
       additionalCommands_.append( std::string(ptr) );
-      ptr = modfile.Gets();
+      ptr = cmdfile.Gets();
     }
-    modfile.Close();
+    cmdfile.Close();
   }
   else if (OPT == "ACCOUNT") account_ = VAR;
   else if (OPT == "EMAIL"  ) email_ = VAR;
@@ -426,12 +425,13 @@ void Submit::QueueOpts::Info() const {
   if (!amberhome_.empty()) Msg("  AMBERHOME : %s\n", amberhome_.c_str());
   Msg("  PROGRAM   : %s\n", program_.c_str());
   Msg("  QSUB      : %s\n", QueueTypeStr[queueType_]);
-  if (!walltime_.empty())  Msg("  WALLTIME  : %s\n", walltime_.c_str());
-  if (!mpirun_.empty())    Msg("  MPIRUN    : %s\n", mpirun_.c_str());
-  if (!nodeargs_.empty())  Msg("  NODEARGS  : %s\n", nodeargs_.c_str());
-  if (!account_.empty())   Msg("  ACCOUNT   : %s\n", account_.c_str());
-  if (!email_.empty())     Msg("  EMAIL     : %s\n", email_.c_str());
-  if (!queueName_.empty()) Msg("  QUEUE     : %s\n", queueName_.c_str());
+  if (!walltime_.empty())    Msg("  WALLTIME  : %s\n", walltime_.c_str());
+  if (!mpirun_.empty())      Msg("  MPIRUN    : %s\n", mpirun_.c_str());
+  if (!nodeargs_.empty())    Msg("  NODEARGS  : %s\n", nodeargs_.c_str());
+  if (!account_.empty())     Msg("  ACCOUNT   : %s\n", account_.c_str());
+  if (!email_.empty())       Msg("  EMAIL     : %s\n", email_.c_str());
+  if (!queueName_.empty())   Msg("  QUEUE     : %s\n", queueName_.c_str());
+  if (!modfileName_.empty()) Msg("  MODULEFILE: %s\n", modfileName_.c_str());
   Msg("  DEPEND    : %s\n", DependTypeStr[dependType_]);
 }
 
@@ -510,6 +510,18 @@ int Submit::QueueOpts::QsubHeader(TextFile& qout, int run_num, std::string const
     qout.Printf("export EXEPATH=%s\nls -l $EXEPATH\n", exepath.c_str());
   } else
     qout.Printf("export EXEPATH=`which %s`\nls -l $EXEPATH\n", program_.c_str());
+  // Add any module file commands
+  if (!modfileName_.empty()) {
+    Msg("  Reading module file %s\n", modfileName_.c_str());
+    TextFile modFile;
+    if (modFile.OpenRead( tildeExpansion(modfileName_) )) return 1;
+    const char* ptr = modFile.Gets();
+    while (ptr != 0) {
+      qout.Printf("%s", ptr);
+      ptr = modFile.Gets();
+    }
+    modFile.Close();
+  }
   // Add any additional input
   if (!additionalCommands_.empty())
     qout.Printf("\n%s\n\n", additionalCommands_.c_str());

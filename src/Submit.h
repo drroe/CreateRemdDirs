@@ -65,6 +65,7 @@ class Submit::QueueOpts {
     std::string mpirun_;             ///< MPI run command
     std::string nodeargs_;           ///< Any additional node arguments
     std::string additionalCommands_; ///< Any additional script commands.
+    std::string modfileName_;        ///< Module file name
     std::string queueName_;          ///< Name of queue to submit to.
     bool isSerial_;                  ///< If true MPI run command not required.
     DEPENDTYPE dependType_;          ///< How to handle dependencies 
