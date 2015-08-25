@@ -1,77 +1,120 @@
 #include <cstdlib> //atoi
 #include "RemdDirs.h"
+#include "CheckRuns.h"
+#include "Submit.h"
 #include "Messages.h"
 #include "FileRoutines.h"
 #include "StringRoutines.h"
-#include "CheckRuns.h"
+
+static const char* VERSION = "0.9b";
 
 static void CmdLineHelp() {
   Msg("Command line options:\n"
-      "  -i <input file> (remd.opts)\n"
-      "  -b <start run>\n"
-      "  -e <stop run>\n"
-      "  -c <start coords dir>\n"
-      "  -O : Overwrite\n"
-      "  --nomdin (no extra MD input, overridden by MDIN_FILE)\n"
-      "  --analyze (no need for -c)\n"
-      "  --archive (no need for -c)\n\n");
+      "  -i <file>     : Creation input options file (remd.opts)\n"
+      "  -q <file>     : Job queue submission options file (qsub.opts)\n"
+      "  -b <start run>: Run # to start at.\n"
+      "  -e <stop run> : Run # to end at.\n"
+      "  -c <dir>      : Start coords directory (run creation only)\n"
+      "  -s            : Allow job submission in addition to input creation\n"
+      "  -O            : Overwrite\n"
+      "  -t            : Test only; do not submit\n"
+      "  -h | --help   : Print this help.\n"
+      "  --full-help   : Print extended help.\n"
+      "  --nomdin      : No extra MD input; overridden by MDIN_FILE\n"
+      "  --analyze     : Enable analysis input creation/submit\n"
+      "  --archive     : Enable archiving input creation/submit\n"
+      "  --runs        : Enable run input creation/submit (default if nothing else specified\n"
+      "  --submit      : Submit jobs to queue only\n"
+      "  --check       : Check specified jobs only (requires NetCDF compilation).\n"
+      "  --nocheck     : Do not check jobs before creating analyze/archive input.\n"
+      "  --checkall    : When multiple replicas present, check all (default only first)\n\n");
 }
 
-static void Help() {
+static void Help(bool extended) {
   CmdLineHelp();
-  RemdDirs::OptHelp();
+  if (extended) {
+    RemdDirs::OptHelp();
+    Submit::OptHelp();
+  }
 }
 
 // =============================================================================
+/** There are three types of modes available:
+  * 1) Creation: Input is created for MD runs, analysis, and/or archiving.
+  * 2) Submission: Jobs are submitted for MD runs, analysis, and/or archiving.
+  * 3) Check: MD runs that have already run are checked. A check is also 
+  *    performed when input is created for analysis or archiving unless
+  *     disabled.
+  * For now make all modes mutually exclusive.
+  */
 int main(int argc, char** argv) {
+  Msg("\nCreateRemdDir: Amber run input creation/job submission/job check.\n");
+  Msg("Version: %s\n", VERSION);
+  Msg("Daniel R. Roe, 2015\n");
+  enum ModeType { CREATE = 0, SUBMIT, CHECK };
+  enum InputType { RUNS = 0, ANALYZE, ARCHIVE };
+  std::vector<bool> ModeEnabled( 3, false );
+  std::vector<bool> InputEnabled( 3, false );
+  // Command line option defaults.
   std::string input_file = "remd.opts";
   int debug = 0;
   int start_run = -1;
   int stop_run = -1;
   std::string crd_dir;
-  bool hasMdin = true;
+  bool needsMdin = true;
   bool overwrite = false;
-  enum RunType { REPLICA=0, MD };
-  enum ModeType { CREATE=0, ANALYZE_ARCHIVE, CHECK };
-  bool analyzeEnabled = false;
-  bool archiveEnabled = false;
   bool checkFirst = true;
-  bool runCheck = true; // For ANALYZE_ARCHIVE
-  RunType runType = REPLICA;
-  ModeType modeType = CREATE;
+  bool runCheck = true;
+  bool testOnly = false;
+  std::string qfile = "qsub.opts";
   // Get command line options
   for (int iarg = 1; iarg < argc; iarg++) {
     std::string Arg( argv[iarg] );
-    if (Arg == "-i" && iarg+1 != argc)
+    if (Arg == "-i" && iarg+1 != argc)            // Input file for CREATE 
       input_file.assign( argv[++iarg] );
-    else if (Arg == "-b" && iarg+1 != argc)
+    else if (Arg == "-b" && iarg+1 != argc)       // Begin run
       start_run = atoi(argv[++iarg]);
-    else if (Arg == "-e" && iarg+1 != argc)
+    else if (Arg == "-e" && iarg+1 != argc)       // End run
       stop_run = atoi(argv[++iarg]);
-    else if (Arg == "-c" && iarg+1 != argc)
+    else if (Arg == "-c" && iarg+1 != argc)       // Run start coordinates
       crd_dir.assign( argv[++iarg] );
-    else if (Arg == "-d" && iarg+1 != argc)
+    else if (Arg == "-d" && iarg+1 != argc)       // Debug level
       debug = atoi(argv[++iarg]);
-    else if (Arg == "-h" || Arg == "--help") {
-      Help();
+    else if (Arg == "-h" || Arg == "--help") {    // Print help and exit
+      Help(false);
       return 0;
-    } else if (Arg == "-O")
+    } else if (Arg == "--full-help") {            // Print extended help and exit
+      Help(true);
+      return 0;
+    } else if (Arg == "-t" || Arg == "--test")    // Test, do not submit
+      testOnly = true;
+    else if (Arg == "-O")                         // Overwrite existing files
       overwrite = true;
-    else if (Arg == "--nomdin")
-      hasMdin = false;
-    else if (Arg == "--nocheck")
+    else if (Arg == "--nomdin")                   // Run does not need MDIN
+      needsMdin = false;
+    else if (Arg == "--nocheck")                  // Do not check for Analyze/Archive create
       runCheck = false;
-    else if (Arg == "--analyze") {
-      modeType = ANALYZE_ARCHIVE;
-      analyzeEnabled = true;
-    } else if (Arg == "--archive") {
-      modeType = ANALYZE_ARCHIVE;
-      archiveEnabled = true;
-    } else if (Arg == "--check")
-      modeType = CHECK;
-    else if (Arg == "--checkall") {
-      modeType = CHECK;
+    else if (Arg == "--runs")                     // Enable RUNS input
+      InputEnabled[RUNS] = true;
+    else if (Arg == "--analyze")                  // Enable ANALYZE input 
+      InputEnabled[ANALYZE] = true;
+    else if (Arg == "--archive")                  // Enable ARCHIVE input
+      InputEnabled[ARCHIVE] = true; 
+    else if (Arg == "--check") {                  // Enable CHECK mode only
+      ModeEnabled[CHECK] = true;
+      ModeEnabled[CREATE] = false;
+      ModeEnabled[SUBMIT] = false;
+    } else if (Arg == "--checkall")               // Check all replicas, not just first.
       checkFirst = false;
+    else if (Arg == "-q" && iarg+1 != argc)       // SUBMIT input file
+      qfile.assign( argv[++iarg] );
+    else if (Arg == "--submit") {                 // Enable SUBMIT mode only
+      ModeEnabled[SUBMIT] = true;
+      ModeEnabled[CHECK] = false;
+      ModeEnabled[CREATE] = false;
+    } else if (Arg == "-s") {                     // Enable SUBMIT mode in addition to creation.
+      ModeEnabled[CREATE] = true;
+      ModeEnabled[SUBMIT] = true;
     } else {
       ErrorMsg("Unrecognized CMD line opt: %s\n", argv[iarg]);
       CmdLineHelp();
@@ -80,64 +123,16 @@ int main(int argc, char** argv) {
   }
   if (stop_run == -1)
     stop_run = start_run;
-
-  // Read options from input file
-  RemdDirs REMD;
-  REMD.SetDebug(debug);
-  if (modeType != CHECK) {
-    if (REMD.ReadOptions( input_file )) return 1;
-    // If no dimensions defined assume normal MD run.
-    if (REMD.Ndims() == 0) {
-      Msg("  No dimensions defined: assuming MD run.\n");
-      runType = MD;
-      // If no input coords specified on input line, use coords from file.
-      // First run only.
-      if (start_run == 0 && crd_dir.empty())
-        crd_dir = REMD.CrdFile();
-    }
-  }
+  // By default enable CREATE Mode and RUNS Input
+  if (!ModeEnabled[CREATE] && !ModeEnabled[SUBMIT] && !ModeEnabled[CHECK])
+    ModeEnabled[CREATE] = true;
+  if (!InputEnabled[RUNS] && !InputEnabled[ANALYZE] && !InputEnabled[ARCHIVE])
+    InputEnabled[RUNS] = true;
 
   // Write options
   Msg("  START            : %i\n", start_run);
   Msg("  STOP             : %i\n", stop_run);
-  if (modeType == CREATE) {
-    Msg("  MDIN_FILE        : %s\n", REMD.mdin_file());
-    Msg("  NSTLIM=%i, DT=%f\n",  REMD.Nstlim(), REMD.Dt());
-    if (runType == REPLICA) {
-      Msg("  NUMEXCHG=%i\n", REMD.Numexchg());
-      Msg("  CRD_DIR          : %s\n", crd_dir.c_str());
-    } else // MD
-      Msg("  CRD              : %s\n", crd_dir.c_str());
-  }
-  // Load dimensions for REMD runs only.
-  if (modeType != CHECK && runType != MD) {
-    Msg("  %u dimensions :\n", REMD.Ndims());
-    if (REMD.LoadDimensions()) return 1;
-  }
-
   // Check options
-  if (modeType == CREATE) {
-    if (crd_dir.empty()) {
-      ErrorMsg("No starting coords directory/file specified.\n");
-      return 1;
-    }
-    // If the COORDS dir exists at this point assume it is an absolute path
-    // and perform tildeExpansion.
-    if (fileExists(crd_dir))
-      crd_dir = tildeExpansion( crd_dir );
-    if (REMD.Nstlim() < 1 || (runType == REPLICA && REMD.Numexchg() < 1)) {
-      ErrorMsg("NSTLIM or NUMEXCHG < 1\n");
-      return 1;
-    }
-    if (hasMdin && REMD.Mdin_File().empty()) {
-      ErrorMsg("No MDIN_FILE specified and '--nomdin' not specified.\n");
-      return 1;
-    }
-    if (REMD.UmbrellaFreq() > 0 && REMD.N_MD_Runs() < 2) {
-      ErrorMsg("If UMBRELLA is specified MDRUNS must be > 1.\n");
-      return 1;
-    }
-  }
   if (start_run < 0 ) {
     ErrorMsg("Negative value for START_RUN\n");
     return 1;
@@ -146,144 +141,65 @@ int main(int argc, char** argv) {
     ErrorMsg("STOP_RUN < START_RUN\n");
     return 1;
   }
-
   std::string TopDir = GetWorkingDir();
   if (TopDir.empty()) return 1;
   Msg("Working Dir: %s\n", TopDir.c_str());
-  int runWidth = std::max( DigitWidth(stop_run), 3 );
   // Create array of run directories
+  int runWidth = std::max( DigitWidth(stop_run), 3 );
   StrArray RunDirs;
   for (int run = start_run; run <= stop_run; ++run)
     RunDirs.push_back( "run." + integerToString(run, runWidth) );
 
-  if (modeType == CHECK) {
-    if (CheckRuns( TopDir, RunDirs, checkFirst )) return 1;
-  } else if (modeType == CREATE) {
-    Msg("Creating %i runs from %i to %i\n", stop_run - start_run + 1, start_run, stop_run);
-    // Create runs
-    REMD.SetCrdDir( crd_dir );
-    StrArray::const_iterator runDir = RunDirs.begin();
-    for (int run = start_run; run <= stop_run; run++, ++runDir)
-    {
-      if (ChangeDir(TopDir)) return 1;
-      // Determine run directory name, see if it is being overwritten.
-      Msg("  RUNDIR: %s\n", runDir->c_str());
-      if (fileExists(*runDir) && !overwrite) {
-        ErrorMsg("Directory '%s' exists and '-O' not specified.\n", runDir->c_str());
-        return 1;
-      }
-      // Create run input
-      if (runType == REPLICA) {
-        if (REMD.CreateRun(start_run, run, *runDir)) return 1;
-      } else { // MD
-        if (REMD.CreateMD(start_run, run, *runDir)) return 1;
-      }
+  // ----- Input Creation ------------------------
+  if (ModeEnabled[CREATE]) {
+    // Read RUN options from input file
+    RemdDirs create;
+    create.SetDebug(debug);
+    if (create.ReadOptions( input_file, start_run )) return 1;
+    // Setup run
+    if (create.Setup( crd_dir, needsMdin )) return 1;
+    create.Info();
+    // Input for Runs
+    if (InputEnabled[RUNS]) {
+      Msg("Creating %i runs from %i to %i\n", stop_run - start_run + 1, start_run, stop_run);
+      if (create.CreateRuns(TopDir, RunDirs, start_run, overwrite)) return 1;
     }
-  } else if (modeType == ANALYZE_ARCHIVE) {
-    Msg("Creating input for");
-    if (analyzeEnabled) Msg(" analysis");
-    if (archiveEnabled) Msg(" archive");
-    Msg("\n");
-    ChangeDir( RunDirs.front() );
-    StrArray TrajFiles;
-    if (runType == REPLICA)
-      TrajFiles = ExpandToFilenames("TRAJ/rem.crd.*");
-    else // MD
-      TrajFiles = ExpandToFilenames("md.nc.*");
-    if (TrajFiles.empty()) {
-      ErrorMsg("No trajectory files found.\n");
-      return 1;
-    }
-    std::string traj_prefix("/" + TrajFiles.front());
-    ChangeDir( TopDir );
-    // Ensure traj 1 for all runs between start and stop exist.
-    for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
-    {
-      std::string TRAJ1(*rdir + traj_prefix);
-      if (CheckExists("Trajectory", TRAJ1)) return 1;
-    }
-    if (runCheck) {
-      if (CheckRuns( TopDir, RunDirs, checkFirst )) return 1;
-    } else
-      Msg("Warning: Not running check on run directories.\n");
-    // -------------------------------------------
-    if (analyzeEnabled) {
-      ChangeDir( TopDir );
-      // Set up input for analysis
-      std::string CPPDIR = "Analyze." + integerToString(start_run) + "." + 
-                                        integerToString(stop_run);
-      if ( fileExists(CPPDIR) ) {
-        if (!overwrite) {
-          ErrorMsg("Directory '%s' exists and '-O' not specified.\n", CPPDIR.c_str());
-          return 1;
-        }
+    // If analysis or archive input requested, run check unless explicitly told not to.
+    if (InputEnabled[ANALYZE] || InputEnabled[ARCHIVE]) {
+      if (runCheck) {
+        if (CheckRuns( TopDir, RunDirs, checkFirst )) return 1;
       } else
-        Mkdir( CPPDIR );
-      TextFile CPPIN;
-      if (CPPIN.OpenWrite( CPPDIR + "/batch.cpptraj.in" )) return 1;
-      std::string TRAJINARGS;
-      // If HREMD, need nosort keyword
-      if (REMD.RunType().empty() || REMD.RunType() == "HREMD")
-        TRAJINARGS.assign("nosort");
-      CPPIN.Printf("parm %s\n", REMD.Topology().c_str());
-      for (int run = start_run; run <= stop_run; run++)
-        CPPIN.Printf("ensemble ../run.%0*i%s %s\n", 
-                     runWidth, run, traj_prefix.c_str(), TRAJINARGS.c_str());
-      CPPIN.Printf("strip :WAT\nautoimage\n"
-                   "trajout run%i-%i.nowat.nc netcdf remdtraj %s\n",
-                   start_run, stop_run, REMD.TrajoutArgs().c_str());
-      CPPIN.Close();
+        Msg("Warning: Not running check on run directories.\n");
+      create.CreateAnalyzeArchive(TopDir, RunDirs, start_run, stop_run, overwrite, runCheck,
+                                  InputEnabled[ANALYZE], InputEnabled[ARCHIVE]);
     }
-    // -------------------------------------------
-    if (archiveEnabled) {
-      ChangeDir( TopDir );
-      // Set up input for archiving. This will be done in 2 separate runs. 
-      // The first sorts and saves fully solvated trajectories of interest
-      // (FULLARCHIVE). The second saves all stripped trajs.
-      if (REMD.FullArchive().empty()) {
-        ErrorMsg("FULLARCHIVE must contain a comma-separated list of ensemble members to"
-                 " save full coordinates, or NONE to skip this step.\n");
-        return 1;
-      }
-      std::string ARDIR="Archive." + integerToString(start_run) + "." +
-                                     integerToString(stop_run);
-      if ( fileExists(ARDIR) ) {
-        if (!overwrite) {
-          ErrorMsg("Directory '%s' exists and '-O' not specified.\n", ARDIR.c_str());
-          return 1;
-        }
-      } else
-        Mkdir( ARDIR );
-      std::string TRAJINARGS;
-      // If HREMD, need nosort keyword
-      if (REMD.RunType().empty() || REMD.RunType() == "HREMD")
-        TRAJINARGS.assign("nosort");
-      std::string TOP = REMD.Topology();
-      if ( REMD.FullArchive() != "NONE") {
-        // Create input for fully archiving selected members of each run 
-        for (int run = start_run; run <= stop_run; run++) {
-          TextFile ARIN;
-          if (ARIN.OpenWrite(ARDIR + "/ar1." + integerToString(run) + ".cpptraj.in")) return 1;
-          std::string RUNDIR = "../run." + integerToString(run, runWidth);
-          ARIN.Printf("parm %s\nensemble %s%s %s\n"
-                      "trajout %s/TRAJ/wat.nc netcdf remdtraj onlymembers %s\n",
-                      TOP.c_str(), RUNDIR.c_str(), traj_prefix.c_str(), TRAJINARGS.c_str(),
-                      RUNDIR.c_str(), REMD.FullArchive().c_str());
-          ARIN.Close();
-        }
-      }
-      // Create input for saving all stripped trajs
-      for (int run = start_run; run <= stop_run; run++) {
-        TextFile ARIN;
-        if (ARIN.OpenWrite(ARDIR + "/ar2." + integerToString(run) + ".cpptraj.in")) return 1;
-        std::string RUNDIR = "../run." + integerToString(run, runWidth);
-        ARIN.Printf("parm %s\nensemble %s%s %s\n"
-                    "strip :WAT\nautoimage\ntrajout %s/TRAJ/nowat.nc netcdf remdtraj\n",
-                    TOP.c_str(), RUNDIR.c_str(), traj_prefix.c_str(), TRAJINARGS.c_str(), RUNDIR.c_str());
-        ARIN.Close();
-      }
-    } 
   }
+  // ----- Run Check -----------------------------
+  if (ModeEnabled[CHECK]) {
+    if (CheckRuns( TopDir, RunDirs, checkFirst )) return 1;
+  }
+  // ----- Job submission ------------------------
+  if (ModeEnabled[SUBMIT]) {
+    ChangeDir( TopDir );
+    Submit submit;
+    submit.SetTesting( testOnly );
+    std::string defaultName("~/default.qsub.opts");
+    if (fileExists(defaultName)) {
+      if (submit.ReadOptions(defaultName)) return 1;
+    }
+    if (submit.ReadOptions( qfile )) return 1;
+    if (submit.CheckOptions()) return 1;
+    if (InputEnabled[RUNS]) {
+      if (submit.SubmitRuns(TopDir, RunDirs, start_run)) return 1;
+    }
+    if (InputEnabled[ANALYZE]) {
+      if (submit.SubmitAnalysis(TopDir, start_run, stop_run, overwrite)) return 1;
+    }
+    if (InputEnabled[ARCHIVE]) {
+      if (submit.SubmitArchive(TopDir, start_run, stop_run, overwrite)) return 1;
+    }
+  }
+
   Msg("\n");
   return 0;
 }

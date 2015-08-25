@@ -5,9 +5,10 @@
 /// Simple wrapper for text file.
 class TextFile {
   public:
-    TextFile() : file_(0) {}
+    TextFile() : file_(0), isPipe_(false) {}
     ~TextFile();
     int OpenRead(std::string const&);
+    int OpenPipe(std::string const&);
     int OpenWrite(std::string const&);
     void Close();
     /// \return next line in internal char buffer 
@@ -28,5 +29,6 @@ class TextFile {
     void* file_;
     typedef std::vector<std::string> Sarray;
     Sarray tokens_;
+    bool isPipe_;
 };
 #endif

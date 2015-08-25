@@ -9,7 +9,8 @@ ALLTESTS=test.relative \
          test.md.single \
          test.md.rst \
          test.md.multi.rst \
-         test.umbrella
+         test.umbrella \
+         test.qsub.mremd
 
 test.relative:
 	@-cd Test_MREMD_Relative && ./RunTest.sh $(OPT)
@@ -34,6 +35,9 @@ test.md.multi.rst:
 
 test.umbrella:
 	@-cd Test_Umbrella && ./RunTest.sh $(OPT)
+
+test.qsub.mremd:
+	@-cd Test_Qsub_MREMD && ./RunTest.sh $(OPT)
 
 test: $(ALLTESTS)
 

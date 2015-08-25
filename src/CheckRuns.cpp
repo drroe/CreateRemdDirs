@@ -29,6 +29,10 @@ int CheckRuns(std::string const& TopDir, StrArray const& RunDirs, bool firstOnly
         is_md = true;
       }
       Msg(" %zu output files.\n", output_files.size());
+      if (output_files.empty()) {
+        ErrorMsg("Output files not found.\n");
+        return 1;
+      }
       // Determine where the trajectory files are.
       StrArray traj_files;
       if (!is_md)

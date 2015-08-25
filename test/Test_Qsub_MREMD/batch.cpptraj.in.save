@@ -1,0 +1,6 @@
+parm ../../AltDFC.01.PagF.TIP3P.ff14SB.parm7
+ensemble ../run.000/TRAJ/rem.crd.001 
+ensemble ../run.001/TRAJ/rem.crd.001 
+strip :WAT
+autoimage
+trajout run0-1.nowat.nc netcdf remdtraj 

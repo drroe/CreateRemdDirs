@@ -35,3 +35,20 @@ std::string doubleToString(double d) {
   oss << d;
   return oss.str();
 }
+
+// RemoveTrailingWhitespace()
+/// Remove any trailing whitespace from string.
+void RemoveTrailingWhitespace(std::string &line) {
+  if (line.empty()) return;
+  std::locale loc;
+  int p = (int)line.size() - 1;
+  while (p > -1 && (isspace(line[p],loc) || line[p]=='\n' || line[p]=='\r'))
+    --p;
+  line.resize(p + 1);
+}
+
+std::string NoTrailingWhitespace(std::string const& line) {
+  std::string duplicate(line);
+  RemoveTrailingWhitespace(duplicate);
+  return duplicate;
+}

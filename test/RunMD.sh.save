@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Run executable
+TIME0=`date +%s`
+$MPIRUN $EXEPATH -O -i md.in -p ../../AltDFC.01.PagF.TIP3P.ff14SB.parm7 -c ../../CRD/004.rst7 -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info
+TIME1=`date +%s`
+((TOTAL = $TIME1 - $TIME0))
+echo "$TOTAL seconds."
+
+exit 0

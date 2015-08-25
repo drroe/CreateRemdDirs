@@ -1,7 +1,6 @@
 #include <cstdlib> // atoi, atof
 #include "RemdDirs.h"
 #include "Messages.h"
-#include "FileRoutines.h"
 #include "TextFile.h"
 #include "StringRoutines.h"
 
@@ -17,27 +16,25 @@ RemdDirs::~RemdDirs() {
 }
 
 void RemdDirs::OptHelp() {
-  Msg("Input file variables:\n"
-      "  CRD_FILE <dir>         : Starting coordinates location.\n"
-      "  DIMENSION <file>       : File containing replica dimension information, 1 per dimension\n"
-//      "  START_RUN <start run>  : Run number to start with (run.<start_run>).\n"
-//      "  STOP_RUN <stop run>    : Run number to finish with (run.<stop run>).\n"
-      "  TRAJOUTARGS <args>     : Additional trajectory output args for analysis (--analyze).\n"
-      "  FULLARCHIVE <arg>      : Comma-separated list of members to fully archive or NONE.\n"
-      "  TOPOLOGY <file>        : Topology for 1D TREMD run.\n"
-      "  MDIN_FILE <file>       : File containing extra MDIN input.\n"
-      "  RST_FILE <file>        : File containing NMR restraints (MD only).\n"
-      "  TEMPERATURE <T>        : Temperature for 1D HREMD run.\n"
-      "  NSTLIM <nstlim>        : Input file; steps per exchange. Required.\n"
-      "  DT <step>              : Input file; time step. Required.\n"
-      "  IG <seed>              : Input file; random seed.\n"
-      "  MDRUNS <#>             : Number of MD runs when not REMD (default 1).\n"
-      "  NUMEXCHG <#>           : Input file; number of exchanges. Required for REMD.\n"
-      "  UMBRELLA <#>           : Indicates MD umbrella sampling with write frequency <#>.\n\n");
+  Msg("Creation input file variables:\n"
+      "  CRD_FILE <dir>     : Starting coordinates location (run 0 only).\n"
+      "  DIMENSION <file>   : File containing replica dimension information, 1 per dimension\n"
+      "  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--analyze).\n"
+      "  FULLARCHIVE <arg>  : Comma-separated list of members to fully archive or NONE.\n"
+      "  TOPOLOGY <file>    : Topology for 1D TREMD run.\n"
+      "  MDIN_FILE <file>   : File containing extra MDIN input.\n"
+      "  RST_FILE <file>    : File containing NMR restraints (MD only).\n"
+      "  TEMPERATURE <T>    : Temperature for 1D HREMD run.\n"
+      "  NSTLIM <nstlim>    : Input file; steps per exchange. Required.\n"
+      "  DT <step>          : Input file; time step. Required.\n"
+      "  IG <seed>          : Input file; random seed.\n"
+      "  NUMEXCHG <#>       : Input file; number of exchanges. Required for REMD.\n"
+      "  MDRUNS <#>         : Number of MD runs when not REMD (default 1).\n"
+      "  UMBRELLA <#>       : Indicates MD umbrella sampling with write frequency <#>.\n\n");
 }
 
 // RemdDirs::ReadOptions()
-int RemdDirs::ReadOptions(std::string const& input_file) {
+int RemdDirs::ReadOptions(std::string const& input_file, int start) {
   // Read options from input file
   if (CheckExists("Input file", input_file)) return 1;
   Msg("Reading input from file: %s\n", input_file.c_str());
@@ -61,12 +58,16 @@ int RemdDirs::ReadOptions(std::string const& input_file) {
         VAR += (" " + infile.Token(i));
       if (debug_ > 0)
         Msg("    Option: %s  Variable: %s\n", OPT.c_str(), VAR.c_str());
-      if (OPT == "CRD_FILE")
-        crd_dir_ = VAR;
+      if      (OPT == "CRD_FILE") {
+        if (start != 0)
+          Msg("Warning: CRD_FILE only used if start run is 0. Skipping.\n");
+        else
+          crd_dir_ = VAR;
+      }
       else if (OPT == "DIMENSION")
       {
         if (CheckExists("Dimension file", VAR)) { err = 1; break; }
-        DimFileNames_.push_back( tildeExpansion(VAR) );
+        if (LoadDimension( tildeExpansion(VAR) )) { err = 1; break; }
       }
       else if (OPT == "MDRUNS")
         n_md_runs_ = atoi( VAR.c_str() );
@@ -129,92 +130,362 @@ int RemdDirs::ReadOptions(std::string const& input_file) {
   return err;
 }
 
-// RemdDirs::LoadDimensions()
-int RemdDirs::LoadDimensions() {
+// RemdDirs::LoadDimension()
+int RemdDirs::LoadDimension(std::string const& dfile) {
   TextFile infile;
-  int err = 0;
-  totalReplicas_ = 1;
-  for (Sarray::const_iterator dfile = DimFileNames_.begin();
-                              dfile != DimFileNames_.end(); ++dfile)
-  {
-    // File existence already checked.
-    if (infile.OpenRead(*dfile)) return 1;
-    // Determine dimension type from first line.
-    std::string firstLine = infile.GetString();
-    if (firstLine.empty()) {
-      ErrorMsg("Could not read first line of dimension file '%s'\n", dfile->c_str());
-      err = 1;
-      break;
-    }
-    infile.Close(); 
-    // Allocate proper dimension type and load.
-    ReplicaDimension* dim = ReplicaAllocator::Allocate( firstLine );
-    if (dim == 0) {
-      ErrorMsg("Unrecognized dimension type: %s\n", firstLine.c_str());
-      err = 2;
-      break;
-    }
-    // Push it here so it will be deallocated if there is an error
-    Dims_.push_back( dim ); 
-    if (dim->LoadDim( *dfile )) {
-      ErrorMsg("Loading info from dimension file '%s'\n", dfile->c_str());
-      err = 3;
-      break;
-    }
-    Msg("\t%u: %s (%u)\n", Dims_.size(), dim->description(), dim->Size());
-    totalReplicas_ *= dim->Size();
+  // File existence already checked.
+  if (infile.OpenRead(dfile)) return 1;
+  // Determine dimension type from first line.
+  std::string firstLine = infile.GetString();
+  if (firstLine.empty()) {
+    ErrorMsg("Could not read first line of dimension file '%s'\n", dfile.c_str());
+    return 1;
   }
-  if (err != 0) return err;
-  Msg("    %u total replicas.\n", totalReplicas_);
+  infile.Close(); 
+  // Allocate proper dimension type and load.
+  ReplicaDimension* dim = ReplicaAllocator::Allocate( firstLine );
+  if (dim == 0) {
+    ErrorMsg("Unrecognized dimension type: %s\n", firstLine.c_str());
+    return 2;
+  }
+  // Push it here so it will be deallocated if there is an error
+  Dims_.push_back( dim ); 
+  if (dim->LoadDim( dfile )) {
+    ErrorMsg("Loading info from dimension file '%s'\n", dfile.c_str());
+    return 1;
+  }
+  Msg("    Dim %u: %s (%u)\n", Dims_.size(), dim->description(), dim->Size());
+  return 0;
+}
+
+// RemdDirs::Setup()
+int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
+  // Command line input coordinates override any in options file.
+  if (!crdDirIn.empty())
+    crd_dir_.assign(crdDirIn);
+  // Perform tilde expansion on coords if necessary.
+  if (crd_dir_[0] == '~')
+    crd_dir_ = tildeExpansion(crd_dir_);
+  // Figure out what type of run this is.
+  runDescription_.clear();
   if (Dims_.empty()) {
-    ErrorMsg("No dimensions defined.\n");
+    Msg("  No dimensions defined: assuming MD run.\n");
+    runType_ = MD;
+    runDescription_.assign("MD");
+  } else {
+    if (Dims_.size() == 1) {
+      if (Dims_[0]->Type() == ReplicaDimension::TEMP ||
+          Dims_[0]->Type() == ReplicaDimension::SGLD)
+        runType_ = TREMD;
+      else
+        runType_ = HREMD;
+      runDescription_.assign( Dims_[0]->name() );
+    } else {
+      runType_ = MREMD;
+      DimArray::const_iterator dim = Dims_.begin();
+      runDescription_.assign( "MREMD" );
+    }
+    // Count total # of replicas, Do some error checking.
+    totalReplicas_ = 1;
+    temp0_dim_ = -1;
+    top_dim_ = -1;
+    int providesTemp0 = 0;
+    int providesTopFiles = 0;
+    for (DimArray::const_iterator dim = Dims_.begin(); dim != Dims_.end(); ++dim)
+    {
+      totalReplicas_ *= (*dim)->Size();
+      if ((*dim)->ProvidesTemp0()) {
+        temp0_dim_ = (int)(dim - Dims_.begin());
+        providesTemp0++;
+      }
+      if ((*dim)->ProvidesTopFiles()) {
+        top_dim_ = (int)(dim - Dims_.begin());
+        providesTopFiles++;
+      }
+    }
+    if (providesTemp0 > 1) {
+      ErrorMsg("At most one dimension that provides temperatures should be specified.\n");
+      return 1;
+    } else if (providesTemp0 == 0 && temp0_ < 0.0) {
+      ErrorMsg("No dimension provides temperature and TEMPERATURE not specified.\n");
+      return 1;
+    }
+    if (providesTopFiles > 1) {
+      ErrorMsg("At most one dimension that provides topology files should be specified.\n");
+      return 1;
+    } else if (providesTopFiles == 0 && top_file_.empty()) {
+      ErrorMsg("No dimension provides topology files and TOPOLOGY not specified.\n");
+      return 1;
+    }
+    if (debug_ > 0)
+      Msg("    Topology dimension: %i\n    Temp0 dimension: %i\n", top_dim_, temp0_dim_);
+  }
+  // Perform some more error checking
+  if (nstlim_ < 1 || (runType_ != MD && numexchg_ < 1)) {
+    ErrorMsg("NSTLIM or NUMEXCHG < 1\n");
     return 1;
   }
-  // Do some error checking.
-  temp0_dim_ = -1;
-  top_dim_ = -1;
-  int providesTemp0 = 0;
-  int providesTopFiles = 0;
-  for (DimArray::const_iterator dim = Dims_.begin(); dim != Dims_.end(); ++dim)
+  if (needsMdin && mdin_file_.empty()) {
+    ErrorMsg("No MDIN_FILE specified and '--nomdin' not specified.\n");
+    return 1;
+  }
+  if (umbrella_ > 0 && n_md_runs_ < 2) {
+    ErrorMsg("If UMBRELLA is specified MDRUNS must be > 1.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+// RemdDirs::Info()
+void RemdDirs::Info() const {
+  Msg("  MDIN_FILE        : %s\n", mdin_file_.c_str());
+  Msg("  NSTLIM=%i, DT=%f\n", nstlim_, dt_);
+  if (runType_ == MD)
+    Msg("  CRD              : %s\n", crd_dir_.c_str());
+  else { // Some type of replica run
+    Msg("  NUMEXCHG=%i\n", numexchg_);
+    Msg("  CRD_DIR          : %s\n", crd_dir_.c_str());
+    Msg("  %u dimensions, %u total replicas.\n", Dims_.size(), totalReplicas_);
+  }
+}
+
+// RemdDirs::CreateRuns()
+int RemdDirs::CreateRuns(std::string const& TopDir, StrArray const& RunDirs,
+                         int start, bool overwrite)
+{
+  if (crd_dir_.empty()) {
+    ErrorMsg("No starting coords directory/file specified.\n");
+    return 1;
+  }
+  int run = start;
+  for (StrArray::const_iterator runDir = RunDirs.begin();
+                                runDir != RunDirs.end(); ++runDir, ++run)
   {
-    if ((*dim)->ProvidesTemp0()) {
-      temp0_dim_ = (int)(dim - Dims_.begin());
-      providesTemp0++;
+    if (ChangeDir(TopDir)) return 1;
+    // Determine run directory name, see if it is being overwritten.
+    Msg("  RUNDIR: %s\n", runDir->c_str());
+    if (fileExists(*runDir) && !overwrite) {
+      ErrorMsg("Directory '%s' exists and '-O' not specified.\n", runDir->c_str());
+      return 1;
     }
-    if ((*dim)->ProvidesTopFiles()) {
-      top_dim_ = (int)(dim - Dims_.begin());
-      providesTopFiles++;
+    // Create run input
+    int err;
+    if (runType_ == MD)
+      err = CreateMD(start, run, *runDir);
+    else
+      err = CreateRemd(start, run, *runDir);
+    if (err) return 1;
+  }
+  return 0;
+}
+
+// RemdDirs::CreateAnalyzeArchive()
+int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& RunDirs,
+                                   int start, int stop, bool overwrite, bool check,
+                                   bool analyzeEnabled, bool archiveEnabled)
+{
+  // Find trajectory files
+  ChangeDir( TopDir + "/" + RunDirs.front() );
+  StrArray TrajFiles;
+  std::string traj_prefix;
+  if (runType_ == MD)
+    TrajFiles = ExpandToFilenames("md.nc.*");
+  else
+    TrajFiles = ExpandToFilenames("TRAJ/rem.crd.*");
+  if (TrajFiles.empty()) {
+    if (check) {
+      ErrorMsg("No trajectory files found.\n");
+      return 1;
+    }
+    if (runType_ == MD)
+      traj_prefix.assign("/md.nc.001");
+    else 
+      traj_prefix.assign("/TRAJ/rem.crd.001");
+    Msg("Warning: Check disabled. Assuming first traj is '%s'\n", traj_prefix.c_str());
+  } else
+    traj_prefix.assign("/" + TrajFiles.front());
+
+  // Ensure traj 1 for all runs between start and stop exist.
+  ChangeDir( TopDir );
+  if (check) {
+    for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
+    {
+      std::string TRAJ1(*rdir + traj_prefix);
+      if (CheckExists("Trajectory", TRAJ1)) return 1;
     }
   }
-  if (providesTemp0 > 1) {
-    ErrorMsg("At most one dimension that provides temperatures should be specified.\n");
-    return 1;
-  } else if (providesTemp0 == 0 && temp0_ < 0.0) {
-    ErrorMsg("No dimension provides temperature and TEMPERATURE not specified.\n");
-    return 1;
+
+  // Set up input for analysis -------------------
+  if (analyzeEnabled) {
+    ChangeDir( TopDir );
+    Msg("Creating input for analysis.\n");
+    std::string CPPDIR = "Analyze." + integerToString(start) + "." +
+                                      integerToString(stop);
+    if ( fileExists(CPPDIR) ) {
+      if (!overwrite) {
+        ErrorMsg("Directory '%s' exists and '-O' not specified.\n", CPPDIR.c_str());
+        return 1;
+      }
+    } else
+      Mkdir( CPPDIR );
+    // Analysis input
+    std::string inputName("batch.cpptraj.in"); // TODO check exists? Make option?
+    TextFile CPPIN;
+    if (CPPIN.OpenWrite( CPPDIR + "/" + inputName )) return 1;
+    // If HREMD, need nosort keyword
+    std::string TRAJINARGS;
+    if (runType_ == MD || runType_ == HREMD)
+      TRAJINARGS.assign("nosort");
+    CPPIN.Printf("parm %s\n", Topology().c_str());
+    for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
+      CPPIN.Printf("ensemble ../%s%s %s\n",
+                   rdir->c_str(), traj_prefix.c_str(), TRAJINARGS.c_str());
+    CPPIN.Printf("strip :WAT\nautoimage\n"
+                 "trajout run%i-%i.nowat.nc netcdf remdtraj %s\n",
+                 start, stop, trajoutargs_.c_str());
+    CPPIN.Close();
+    // Create run script
+    std::string scriptName(CPPDIR + "/RunAnalysis.sh");
+    if (!overwrite && fileExists(scriptName)) {
+      ErrorMsg("Not overwriting existing analysis script: %s\n", scriptName.c_str());
+      return 1;
+    }
+    TextFile runScript;
+    if (runScript.OpenWrite( scriptName )) return 1;
+    runScript.Printf("#!/bin/bash\n\n# Run executable\nTIME0=`date +%%s`\n"
+                     "$MPIRUN $EXEPATH -i %s\n"
+                     "if [[ $? -ne 0 ]] ; then\n  echo \"CPPTRAJ error.\"\n  exit 1\nfi\n"
+                     "TIME1=`date +%%s`\n((TOTAL = $TIME1 - $TIME0))\n"
+                     "echo \"$TOTAL seconds.\"\nexit 0\n", inputName.c_str());
+    runScript.Close();
+    ChangePermissions( scriptName ); 
   }
-  if (providesTopFiles > 1) {
-    ErrorMsg("At most one dimension that provides topology files should be specified.\n");
-    return 1;
-  } else if (providesTopFiles == 0 && top_file_.empty()) {
-    ErrorMsg("No dimension provides topology files and TOPOLOGY not specified.\n");
-    return 1;
-  }
-  // Determine run type
-  run_type_.clear();
-  if (Dims_.size() == 1)
-    run_type_.assign( Dims_[0]->name() );
-  else // Must be > 1
-    run_type_ = "MREMD";
-  Msg("Run type: %s\n", run_type_.c_str());
-  if (debug_ > 0)
-    Msg("    Topology dimension: %i\n    Temp0 dimension: %i\n", top_dim_, temp0_dim_);
+  // Set up input for archiving ------------------
+  if (archiveEnabled) {
+    ChangeDir( TopDir );
+    Msg("Creating input for archiving.\n");
+    // Set up input for archiving. This will be done in 2 separate runs. 
+    // The first sorts and saves fully solvated trajectories of interest
+    // (FULLARCHIVE). The second saves all stripped trajs.
+    if (fullarchive_.empty()) {
+      ErrorMsg("FULLARCHIVE must contain a comma-separated list of ensemble members to"
+               " save full coordinates, or NONE to skip this step.\n");
+      return 1;
+    }
+    std::string ARDIR="Archive." + integerToString(start) + "." +
+                                   integerToString(stop);
+    if ( fileExists(ARDIR) ) {
+      if (!overwrite) {
+        ErrorMsg("Directory '%s' exists and '-O' not specified.\n", ARDIR.c_str());
+        return 1;
+      }
+    } else
+      Mkdir( ARDIR );
+    // If HREMD, need nosort keyword
+    std::string TRAJINARGS;
+    if (runType_ == MD || runType_ == HREMD)
+      TRAJINARGS.assign("nosort");
+    std::string TOP = Topology();
+    // Create input for archiving each run.
+    int run = start;
+    for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir, ++run)
+    {
+      // Check if archive already exists for this run.
+      std::string TARFILE( ARDIR + "/traj." + *rdir + ".tgz" );
+      if (!overwrite && fileExists(TARFILE)) {
+        ErrorMsg("TAR %s already exists.\n", TARFILE.c_str());
+        return 1;
+      }
+      TextFile ARIN;
+      if ( fullarchive_ != "NONE") {
+        // Create input for full archiving of selected members of this run
+        std::string AR1("ar1." + integerToString(run) + ".cpptraj.in");
+        if (ARIN.OpenWrite(ARDIR + "/" + AR1)) return 1;
+        ARIN.Printf("parm %s\nensemble ../%s%s %s\n"
+                    "trajout ../%s/TRAJ/wat.nc netcdf remdtraj onlymembers %s\n",
+                    TOP.c_str(), rdir->c_str(), traj_prefix.c_str(), TRAJINARGS.c_str(),
+                    rdir->c_str(), fullarchive_.c_str());
+        ARIN.Close();
+      }
+      // Create input for archiving stripped trajectories
+      std::string AR2("ar2." + integerToString(run) + ".cpptraj.in");
+      if (ARIN.OpenWrite(ARDIR + "/" + AR2)) return 1;
+      ARIN.Printf("parm %s\nensemble ../%s%s %s\n"
+                  "strip :WAT\nautoimage\ntrajout ../%s/TRAJ/nowat.nc netcdf remdtraj\n",
+                  TOP.c_str(), rdir->c_str(), traj_prefix.c_str(), TRAJINARGS.c_str(),
+                  rdir->c_str());
+      ARIN.Close();
+    }
+
+    // Create run script.
+    const char* CPPTRAJERR =
+      "  if [[ $? -ne 0 ]] ; then\n    echo \"CPPTRAJ error.\"\n    exit 1\n  fi";
+    std::string scriptName("RunArchive." + integerToString(start) + "."
+                           + integerToString(stop) + ".sh");
+    if (!overwrite && fileExists(scriptName)) {
+      ErrorMsg("Not overwriting existing archive script: %s\n", scriptName.c_str());
+      return 1;
+    }
+    TextFile runScript;
+    if (runScript.OpenWrite( scriptName )) return 1;
+    runScript.Printf("#!/bin/bash\n\nTOTALTIME0=`date +%%s`\nRUN=%i\nfor DIR in", start);
+    for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
+      runScript.Printf(" %s", rdir->c_str());
+    runScript.Printf(" ; do\n  TIME0=`date +%%s`\n");
+    if ( fullarchive_ != "NONE") {
+      // Add command to script for full archive of this run
+      runScript.Printf(
+        "  # Sort and save the unbiased fully-solvated trajs\n"
+        "  cd %s\n  $MPIRUN $EXEPATH -i ar1.$RUN.cpptraj.in\n%s\n"
+        "  cd ..\n  FILELIST=`ls $DIR/TRAJ/wat.nc.*`\n"
+        "  if [[ -z $FILELIST ]] ; then\n"
+        "    echo \"Error: Sorted solvated trajectories not found.\" >> /dev/stderr\n"
+        "    exit 1\n  fi\n", ARDIR.c_str(), CPPTRAJERR); 
+    }
+    // Add command to script for stripped archive of this run
+    runScript.Printf(
+        "  # Save all of the stripped trajs.\n"
+        "  cd %s\n  $MPIRUN $EXEPATH -i ar2.$RUN.cpptraj.in\n%s\n" 
+        "  cd ..\n"
+        "  for OUTTRAJ in `ls $DIR/TRAJ/nowat.nc.*` ; do\n"
+        "    FILELIST=$FILELIST\" $OUTTRAJ\"\n"
+        "  done\n  TARFILE=%s/traj.$DIR.tgz\n"
+        "  echo \"tar -czvf $TARFILE\"\n"
+        "  tar -czvf $TARFILE $FILELIST\n"
+        "  TIME1=`date +%%s`\n  ((TOTAL = $TIME1 - $TIME0))\n"
+        "  echo \"$DIR took $TOTAL seconds to archive.\"\n"
+        "  echo \"$TARFILE\" >> TrajArchives.txt\n"
+        "  echo \"--------------------------------------------------------------\"\n"
+        "  ((RUN++))\n"
+        "done\nTOTALTIME1=`date +%%s`\n((TOTAL = $TOTALTIME1 - $TOTALTIME0))\n"
+        "echo \"$TOTAL seconds total.\"\nexit 0\n",
+        ARDIR.c_str(), CPPTRAJERR, ARDIR.c_str());
+    runScript.Close();
+    ChangePermissions( scriptName );
+  } // END archive input
+
   return 0;
 }
 
 // =============================================================================
-// RemdDirs::CreateRun()
-int RemdDirs::CreateRun(int start_run, int run_num, std::string const& run_dir) {
+int RemdDirs::WriteRunMD(std::string const& cmd_opts) const {
+  TextFile RunMD;
+  if (RunMD.OpenWrite("RunMD.sh")) return 1;
+  RunMD.Printf("#!/bin/bash\n\n# Run executable\nTIME0=`date +%%s`\n$MPIRUN $EXEPATH -O %s\n"
+                "TIME1=`date +%%s`\n"
+                "((TOTAL = $TIME1 - $TIME0))\necho \"$TOTAL seconds.\"\n\nexit 0\n",
+                cmd_opts.c_str());
+  RunMD.Close();
+  ChangePermissions("RunMD.sh");
+  return 0;
+}
+
+const std::string RemdDirs::groupfileName_( "groupfile" ); // TODO make these options
+const std::string RemdDirs::remddimName_("remd.dim");
+
+// RemdDirs::CreateRemd()
+int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir) {
   typedef std::vector<unsigned int> Iarray;
   // Create and change to run directory.
   if (Mkdir(run_dir)) return 1;
@@ -236,7 +507,7 @@ int RemdDirs::CreateRun(int start_run, int run_num, std::string const& run_dir) 
   if (Mkdir(input_dir)) return 1;
   // Open GROUPFILE
   TextFile GROUPFILE;
-  if (GROUPFILE.OpenWrite("groupfile")) return 1; 
+  if (GROUPFILE.OpenWrite(groupfileName_)) return 1; 
   // Figure out max width of replica extension
   int width = std::max(DigitWidth( totalReplicas_ ), 3);
   // Hold current indices in each dimension.
@@ -281,7 +552,7 @@ int RemdDirs::CreateRun(int start_run, int run_num, std::string const& run_dir) 
       Msg("\t\tMDIN: %s\n", mdin_name.c_str());
     TextFile MDIN;
     if (MDIN.OpenWrite(mdin_name)) return 1;
-    MDIN.Printf("%s", run_type_.c_str());
+    MDIN.Printf("%s", runDescription_.c_str());
     // Write indices to mdin for MREMD
     if (Dims_.size() > 1) {
       MDIN.Printf(" {");
@@ -334,11 +605,21 @@ int RemdDirs::CreateRun(int start_run, int run_num, std::string const& run_dir) 
   // Create remd.dim if necessary.
   if (Dims_.size() > 1) {
     TextFile REMDDIM;
-    if (REMDDIM.OpenWrite("remd.dim")) return 1;
+    if (REMDDIM.OpenWrite(remddimName_)) return 1;
     for (unsigned int id = 0; id != Dims_.size(); id++)
       groups_.WriteRemdDim(REMDDIM, id, Dims_[id]->exch_type(), Dims_[id]->description());
     REMDDIM.Close();
   }
+  // Create Run script
+  std::string cmd_opts;
+  std::string NG = integerToString( totalReplicas_ );
+  if (runType_ == MREMD)
+    cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -remd-file " + remddimName_);
+  else if (runType_ == HREMD)
+    cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 3");
+  else
+    cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 1");
+  if (WriteRunMD( cmd_opts )) return 1;
   // Create output directories
   if (Mkdir( "OUTPUT" )) return 1;
   if (Mkdir( "TRAJ"   )) return 1;
@@ -381,7 +662,7 @@ int RemdDirs::MakeMdinForMD(std::string const& fname, int run_num,
               "    imin = 0, nstlim = %i, dt = %f,\n"
               "    irest = %i, ntx = %i, ig = %i,\n"
               "    temp0 = %f, tempi = %f,\n%s",
-              run_type_.c_str(), total_time,
+              runDescription_.c_str(), total_time,
               nstlim_, dt_, irest, ntx, ig_,
               temp0_, temp0_, additionalInput_.c_str());
   if (!rst_file_.empty()) {
@@ -411,7 +692,6 @@ int RemdDirs::MakeMdinForMD(std::string const& fname, int run_num,
 
 // RemdDirs::CreateMD()
 int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
-  run_type_.assign("MD");
   // Create and change to run directory.
   if (Mkdir(run_dir)) return 1;
   if (ChangeDir(run_dir)) return 1;
@@ -449,13 +729,14 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
              " or path relative to '%s'\n", top_file_.c_str(), run_dir.c_str());
     return 1;
   }
-  // Groupfile will be used by MasterQsub.sh for command-line flags.
-  TextFile GROUP;
-  if (GROUP.OpenWrite("groupfile")) return 1;
-  if (n_md_runs_ < 2)
-    GROUP.Printf("-i md.in -p %s -c %s -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info\n", 
-                 top_file_.c_str(), crd_dir_.c_str());
-  else {
+  // Set up run command 
+  std::string cmd_opts;
+  if (n_md_runs_ < 2) {
+    cmd_opts.assign("-i md.in -p " + top_file_ + " -c " + crd_dir_ + 
+                    " -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info");
+  } else {
+    TextFile GROUP;
+    if (GROUP.OpenWrite(groupfileName_)) return 1;
     for (int grp = 1; grp <= n_md_runs_; grp++) {
       std::string EXT = "." + integerToString(grp, width);
       std::string mdin_name("md.in");
@@ -468,8 +749,10 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
                    mdin_name.c_str(), top_file_.c_str(), crd_files[grp-1].c_str(), EXT.c_str(),
                    width, grp, EXT.c_str(), EXT.c_str());
     } 
+    GROUP.Close();
+    cmd_opts.assign("-ng " + integerToString(n_md_runs_) + " -groupfile " + groupfileName_);
   }
-  GROUP.Close();
+  WriteRunMD( cmd_opts );
   // Info for this run.
   if (debug_ >= 0) // 1 
       Msg("\tMD: top=%s  temp0=%f\n", top_file_.c_str(), temp0_);

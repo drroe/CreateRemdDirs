@@ -6,4 +6,8 @@ int DigitWidth(long int);
 std::string integerToString(int);
 std::string integerToString(int,int);
 std::string doubleToString(double);
+/// Remove any trailing whitespace from string.
+void RemoveTrailingWhitespace(std::string &);
+/// \return string stripped of trailing whitespace.
+std::string NoTrailingWhitespace(std::string const&);
 #endif
