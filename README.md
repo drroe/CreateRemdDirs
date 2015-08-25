@@ -9,6 +9,13 @@ several runs). The general idea is to facilitate long simulation runs on e.g.
 HPC resources. Currently CreateRemdDirs requires NetCDF libraries to perform
 checks on Amber trajectories/restarts.
 
+## Installation
+Typically it is enough to run `./configure gnu` on most systems. The job check
+mode requires NetCDF libraries. If you've already got an Amber installation
+built with NetCDF it will be enough to `./configure --with-netcdf=$AMBERHOME gnu`.
+Alternatively you can `./configure -no-netcdf gnu` to build without NetCDF.
+
+## Usage
 CreateRemdDirs has 3 modes: input Creation, job Submission, job Checking. There
 are also 3 types of jobs: Runs, Analysis (--analyze), and Archiving (--archive).
 Analysis is currently very basic and just consists of stripping, imaging, and 
@@ -25,12 +32,16 @@ consist of the following:
 Help is available via the command line flags '-h' or '--help'. Help on options for
 various input files is available via the command line flag '--full-help'.
 
+# Author
+-Daniel R. Roe
+
 Disclaimer and Copyright
 ========================
 CreateRemdDirs is Copyright (c) 2015 Daniel R. Roe.
 The software is provided AS IS with no warranty.
+CreateRemdDirs is free software and is licensed under the GPL v2 license (see LICENSE for details).
 
-# Brief Usage Guide
+# Brief Example for REMD
 CreateRemdDirs uses an input file (by default named remd.opts) that describes
 how a run should be set up. For example, a 2D M-REMD run (temperature + Hamiltonian)
 might look like so:
