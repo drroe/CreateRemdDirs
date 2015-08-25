@@ -33,7 +33,7 @@ void Submit::OptHelp() {
       "  FLAG <flag>        : Any additional queue flags.\n\n");
 }
 
-int Submit::SubmitRuns(std::string const& TopDir, StrArray const& RunDirs, int start) const
+int Submit::SubmitRuns(std::string const& TopDir, StrArray const& RunDirs, int start, bool overwrite) const
 {
   Run_->Info();
   std::string user = UserName();
@@ -56,7 +56,7 @@ int Submit::SubmitRuns(std::string const& TopDir, StrArray const& RunDirs, int s
   {
     ChangeDir( TopDir );
     // Check if run directories already contain scripts
-    if ( !Run_->OverWrite() && fileExists( *rdir + "/" + submitScript) ) {
+    if ( !overwrite && fileExists( *rdir + "/" + submitScript) ) {
       ErrorMsg("Not overwriting (-O) and %s already contains %s\n",
                rdir->c_str(), submitScript.c_str());
       if (Run_->DependType() != NONE) // Exit if dependencies exist
@@ -76,8 +76,8 @@ int Submit::SubmitRuns(std::string const& TopDir, StrArray const& RunDirs, int s
     qout.Printf("\n# Run executable\n./%s\n\n", runScriptName.c_str());
     // Set up script dependency if necessary
     if (Run_->DependType() == SUBMIT && rdir != finaldir) {
-      std::string next_dir("../run." + integerToString(run_num+1, 3));
-      qout.Printf("%s %s/%s\n", Run_->SubmitCmd(), next_dir.c_str(), submitScript.c_str());
+      std::string next_dir("../" + *(rdir+1));
+      qout.Printf("cd %s && %s %s\n", next_dir.c_str(), Run_->SubmitCmd(), submitScript.c_str());
     }
     qout.Printf("exit 0\n");
     qout.Close();
@@ -85,6 +85,8 @@ int Submit::SubmitRuns(std::string const& TopDir, StrArray const& RunDirs, int s
     // Peform job submission if not testing
     if (testing_)
       Msg("Just testing. Skipping script submission.\n");
+    else if (Run_->DependType() == SUBMIT && rdir != RunDirs.begin())
+      Msg("Job will be submitted when previous job completes.\n");
     else {
       Msg("%s\n", submitCommand.c_str()); 
       if ( system( submitCommand.c_str() ) ) {
@@ -309,7 +311,6 @@ Submit::QueueOpts::QueueOpts() :
   nodes_(0),
   ppn_(0),
   threads_(0),
-  overWrite_(false),
   queueType_(PBS),
   isSerial_(false),
   dependType_(BATCH)

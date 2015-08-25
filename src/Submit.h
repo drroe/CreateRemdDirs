@@ -11,7 +11,7 @@ class Submit {
    static void OptHelp();
    int ReadOptions(std::string const&);
    int CheckOptions();
-   int SubmitRuns(std::string const&, StrArray const&, int) const;
+   int SubmitRuns(std::string const&, StrArray const&, int, bool) const;
    int SubmitAnalysis(std::string const&, int, int, bool) const;
    int SubmitArchive(std::string const&, int, int, bool) const;
    void SetTesting(bool t) { testing_ = t; }
@@ -42,7 +42,6 @@ class Submit::QueueOpts {
 
     DEPENDTYPE DependType() const { return dependType_; }
     QUEUETYPE QueueType()   const { return queueType_; }
-    bool OverWrite()        const { return overWrite_; }
     const char* SubmitCmd() const { return SubmitCmdStr[queueType_]; }
   private:
     void AdditionalFlags(TextFile&) const;
@@ -55,7 +54,6 @@ class Submit::QueueOpts {
     int nodes_;                      ///< Number of nodes
     int ppn_;                        ///< Processors per node
     int threads_;                    ///< Total number of threads required.
-    bool overWrite_;                 ///< If true overwrite existing scripts.
     std::string walltime_;           ///< Wallclock time for queuing system
     std::string email_;              ///< User email address
     std::string account_;            ///< Account for running jobs
