@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
     if (submit.ReadOptions( qfile )) return 1;
     if (submit.CheckOptions()) return 1;
     if (InputEnabled[RUNS]) {
-      if (submit.SubmitRuns(TopDir, RunDirs, start_run)) return 1;
+      if (submit.SubmitRuns(TopDir, RunDirs, start_run, overwrite)) return 1;
     }
     if (InputEnabled[ANALYZE]) {
       if (submit.SubmitAnalysis(TopDir, start_run, stop_run, overwrite)) return 1;
