@@ -23,7 +23,7 @@ static void CmdLineHelp() {
       "  --nomdin      : No extra MD input; overridden by MDIN_FILE\n"
       "  --analyze     : Enable analysis input creation/submit\n"
       "  --archive     : Enable archiving input creation/submit\n"
-      "  --runs        : Enable run input creation/submit (default if nothing else specified\n"
+      "  --runs        : Enable run input creation/submit (default if nothing else specified)\n"
       "  --submit      : Submit jobs to queue only\n"
       "  --check       : Check specified jobs only (requires NetCDF compilation).\n"
       "  --nocheck     : Do not check jobs before creating analyze/archive input.\n"
