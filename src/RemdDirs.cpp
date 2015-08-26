@@ -391,12 +391,19 @@ int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Ru
     int run = start;
     for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir, ++run)
     {
-      // Check if archive already exists for this run.
+      // Check if traj archive already exists for this run.
       std::string TARFILE( ARDIR + "/traj." + *rdir + ".tgz" );
       if (!overwrite && fileExists(TARFILE)) {
-        ErrorMsg("TAR %s already exists.\n", TARFILE.c_str());
+        ErrorMsg("Trajectory archive %s already exists.\n", TARFILE.c_str());
         return 1;
       }
+      // Check if non-traj archive exists for this run
+      TARFILE.assign( *rdir + ".tgz" );
+      if (!overwrite && fileExists(TARFILE)) {
+        ErrorMsg("Run archive %s already exists.\n", TARFILE.c_str());
+        return 1;
+      }
+      // Create cpptraj input
       TextFile ARIN;
       if ( fullarchive_ != "NONE") {
         // Create input for full archiving of selected members of this run
@@ -432,7 +439,20 @@ int RemdDirs::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Ru
     runScript.Printf("#!/bin/bash\n\nTOTALTIME0=`date +%%s`\nRUN=%i\nfor DIR in", start);
     for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
       runScript.Printf(" %s", rdir->c_str());
-    runScript.Printf(" ; do\n  TIME0=`date +%%s`\n");
+    const char* tprefix;
+    if (runType_ == MD)
+      tprefix = "md.nc";
+    else
+      tprefix = "TRAJ";
+    runScript.Printf(" ; do\n  TIME0=`date +%%s`\n"
+                     "  # Put everything but trajectories into a separate archive.\n"
+                     "  TARFILE=$DIR.tgz\n"
+                     "  FILELIST=""\n  for FILE in `find $DIR -name \"*\"` ; do\n"
+                     "    if [[ ! -d $FILE ]] ; then\n"
+                     "      if [[ `echo \"$FILE\" | awk '{print index($0,\"%s\");}'` -eq 0 ]] ; then\n"
+                     "        # Not a TRAJ directory file\n"
+                     "        FILELIST=$FILELIST\" $FILE\"\n      fi\n    fi\n"
+                     "  done\n  echo \"tar -czvf $TARFILE\"\n  tar -czvf $TARFILE $FILELIST\n", tprefix);
     if ( fullarchive_ != "NONE") {
       // Add command to script for full archive of this run
       runScript.Printf(
