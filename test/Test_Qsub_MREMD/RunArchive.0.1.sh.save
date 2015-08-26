@@ -4,6 +4,19 @@ TOTALTIME0=`date +%s`
 RUN=0
 for DIR in run.000 run.001 ; do
   TIME0=`date +%s`
+  # Put everything but trajectories into a separate archive.
+  TARFILE=$DIR.tgz
+  FILELIST=
+  for FILE in `find $DIR -name "*"` ; do
+    if [[ ! -d $FILE ]] ; then
+      if [[ `echo "$FILE" | awk '{print index($0,"TRAJ");}'` -eq 0 ]] ; then
+        # Not a TRAJ directory file
+        FILELIST=$FILELIST" $FILE"
+      fi
+    fi
+  done
+  echo "tar -czvf $TARFILE"
+  tar -czvf $TARFILE $FILELIST
   # Sort and save the unbiased fully-solvated trajs
   cd Archive.0.1
   $MPIRUN $EXEPATH -i ar1.$RUN.cpptraj.in
