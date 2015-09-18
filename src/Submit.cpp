@@ -247,29 +247,19 @@ int Submit::ReadOptions(std::string const& fnameIn, QueueOpts& Qopt) {
     return 1;
   }
 
-  //Msg("  Reading queue options from '%s'\n", fnameIn.c_str());
+  if (debug_ > 0)
+    Msg("  Reading queue options from '%s'\n", fnameIn.c_str());
   std::string fname = tildeExpansion( fnameIn );
   if (CheckExists( "Queue options", fname )) return 1;
   TextFile infile;
-  if (infile.OpenRead( fname )) return 1;
-  const char* ptr = infile.Gets();
-  while (ptr != 0) {
-    if (ptr[0] != '#') {
-      // Format is <NAME> <OPTIONS>
-      std::string line( ptr );
-      size_t found = line.find_first_of(" ");
-      if (found == std::string::npos) {
-        ErrorMsg("malformed option: %s\n", ptr);
-        return 1;
-      }
-      // Find first non-whitespace character
-      size_t found1 = found;
-      while (found1 < line.size() && line[found1] == ' ') ++found1;
-      // Remove any newline chars and trailing whitespace
-      std::string Args = NoTrailingWhitespace( line.substr(found1) );
-      // Reduce line to option only
-      line.resize(found);
-      //Msg("Opt: '%s'   Args: '%s'\n", line.c_str(), Args.c_str());
+  TextFile::OptArray Options = infile.GetOptionsArray(fnameIn, debug_);
+  if (Options.empty()) return 1;
+  for (TextFile::OptArray::const_iterator opair = Options.begin(); opair != Options.end(); ++opair)
+  {
+    std::string const& line = opair->first;
+    std::string const& Args = opair->second;
+    if (debug_ > 0)
+      Msg("Opt: '%s'   Args: '%s'\n", line.c_str(), Args.c_str());
 
       // Process options
       if (line == "ANALYZE_FILE") {
@@ -297,10 +287,7 @@ int Submit::ReadOptions(std::string const& fnameIn, QueueOpts& Qopt) {
       } else {
         if (Qopt.ProcessOption(line, Args)) return 1;
       }
-    }
-    ptr = infile.Gets();
   }
-  infile.Close();
 
   return 0;
 }

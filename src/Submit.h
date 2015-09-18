@@ -5,7 +5,7 @@
 /// Class used to submit jobs via a queuing system.
 class Submit {
   public:
-    Submit() : Run_(0), Analyze_(0), Archive_(0), n_input_read_(0), testing_(false) {}
+    Submit() : Run_(0), Analyze_(0), Archive_(0), n_input_read_(0), debug_(0), testing_(false) {}
    ~Submit();
 
    static void OptHelp();
@@ -15,6 +15,7 @@ class Submit {
    int SubmitAnalysis(std::string const&, int, int, bool) const;
    int SubmitArchive(std::string const&, int, int, bool) const;
    void SetTesting(bool t) { testing_ = t; }
+   void SetDebug(int d)    { debug_ = d;   }
   private:
     class QueueOpts;
     int ReadOptions(std::string const&, QueueOpts&);
@@ -27,6 +28,7 @@ class Submit {
     QueueOpts *Analyze_; ///< Analysis queue options
     QueueOpts *Archive_; ///< Archive queue options
     int n_input_read_;   ///< # of times ReadOptions has been called.
+    int debug_;
     bool testing_;       ///< If true do not actually submit scripts.
 };
 

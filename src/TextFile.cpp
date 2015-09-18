@@ -90,3 +90,29 @@ int TextFile::Printf(const char *format, ...) {
   va_end(args);
   return 0;
 }
+
+TextFile::OptArray TextFile::GetOptionsArray(std::string const& fname, int debug) {
+  OptArray options;
+  if (OpenRead( fname )) return options;
+  const char* SEP = " \t\n";
+  int ncols = GetColumns( SEP );
+  while (ncols > -1) {
+    if (ncols > 0 && tokens_[0][0] != '#') {
+      if (ncols < 2) {
+        ErrorMsg("Malformed input: %s\n", buffer_);
+        options.clear();
+        break;
+      }
+      std::string OPT = tokens_[0];
+      std::string VAR = tokens_[1];
+      for (int i = 2; i < ncols; i++)
+        VAR += (" " + tokens_[i]);
+      if (debug > 0)
+        Msg("    File '%s': Option: %s  Variable: %s\n", fname.c_str(), OPT.c_str(), VAR.c_str());
+      options.push_back( Spair(OPT, VAR) );
+    }
+    ncols = GetColumns( SEP );
+  }
+  Close();
+  return options;
+}

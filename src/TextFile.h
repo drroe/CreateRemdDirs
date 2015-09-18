@@ -5,6 +5,8 @@
 /// Simple wrapper for text file.
 class TextFile {
   public:
+    typedef std::pair<std::string, std::string> Spair;
+    typedef std::vector<Spair> OptArray;
     TextFile() : file_(0), isPipe_(false) {}
     ~TextFile();
     int OpenRead(std::string const&);
@@ -23,6 +25,8 @@ class TextFile {
     int Printf(const char*, ...);
     /// \return pointer to internal buffer.
     const char* Buffer() const { return buffer_; }
+    /// \return Options array from <OPT> <VAR> style file.
+    OptArray GetOptionsArray(std::string const&, int);
   private:
     static const unsigned int BUF_SIZE = 8192;
     char buffer_[BUF_SIZE];

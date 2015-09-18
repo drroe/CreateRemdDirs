@@ -182,6 +182,7 @@ int main(int argc, char** argv) {
   if (ModeEnabled[SUBMIT]) {
     ChangeDir( TopDir );
     Submit submit;
+    submit.SetDebug(debug);
     submit.SetTesting( testOnly );
     std::string defaultName("~/default.qsub.opts");
     if (fileExists(defaultName)) {

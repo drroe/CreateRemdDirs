@@ -39,23 +39,12 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
   if (CheckExists("Input file", input_file)) return 1;
   Msg("Reading input from file: %s\n", input_file.c_str());
   TextFile infile;
-  if (infile.OpenRead(input_file)) return 1;
-  int err = 0;
-  const char* SEP = " \n";
-  int ncols = infile.GetColumns(SEP);
-  while (ncols > -1) {
-    // Skip comment lines
-    if (ncols > 0 && infile.Token(0)[0] != '#') {
-      if (ncols < 2) {
-        ErrorMsg("Malformed input: %s\n", infile.Buffer());
-        err = 1;
-        OptHelp();
-        break;
-      }
-      std::string OPT = infile.Token(0);
-      std::string VAR = infile.Token(1);
-      for (int i = 2; i < ncols; i++)
-        VAR += (" " + infile.Token(i));
+  TextFile::OptArray Options = infile.GetOptionsArray(input_file, debug_);
+  if (Options.empty()) return 1;
+  for (TextFile::OptArray::const_iterator opair = Options.begin(); opair != Options.end(); ++opair)
+  {
+    std::string const& OPT = opair->first;
+    std::string const& VAR = opair->second;
       if (debug_ > 0)
         Msg("    Option: %s  Variable: %s\n", OPT.c_str(), VAR.c_str());
       if      (OPT == "CRD_FILE") {
@@ -66,8 +55,8 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
       }
       else if (OPT == "DIMENSION")
       {
-        if (CheckExists("Dimension file", VAR)) { err = 1; break; }
-        if (LoadDimension( tildeExpansion(VAR) )) { err = 1; break; }
+        if (CheckExists("Dimension file", VAR)) { return 1; }
+        if (LoadDimension( tildeExpansion(VAR) )) { return 1; }
       }
       else if (OPT == "MDRUNS")
         n_md_runs_ = atoi( VAR.c_str() );
@@ -97,7 +86,7 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
         fullarchive_ = VAR;
       else if (OPT == "MDIN_FILE")
       {
-        if (CheckExists("MDIN file", VAR)) { err = 1; break; }
+        if (CheckExists("MDIN file", VAR)) { return 1; }
         mdin_file_ = tildeExpansion( VAR );
       }
       else if (OPT == "RST_FILE")
@@ -109,14 +98,10 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
       else
       {
         ErrorMsg("Unrecognized option '%s' in input file.", OPT.c_str());
-        err = 1;
         OptHelp();
-        break;
+        return 1;
       }
-    }
-    ncols = infile.GetColumns(SEP);
   }
-  infile.Close();
   // If MDIN file specified, store it in a string.
   additionalInput_.clear();
   if (!mdin_file_.empty()) {
@@ -127,7 +112,7 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
       additionalInput_.append( buffer );
     MDIN.Close();
   }
-  return err;
+  return 0;
 }
 
 // RemdDirs::LoadDimension()
