@@ -401,6 +401,10 @@ int Submit::QueueOpts::Check() const {
     ErrorMsg("MPI run command MPIRUN not set.\n");
     return 1;
   }
+  if (nodes_ < 1) {
+    ErrorMsg("Less than 1 node specified (use NODES option).\n");
+    return 1;
+  }
   return 0;
 }
 
