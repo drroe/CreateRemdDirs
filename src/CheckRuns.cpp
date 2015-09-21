@@ -15,6 +15,24 @@ static inline int checkNCerr(int ncerr) {
   }
   return 0;
 }
+
+static inline int GetDimInfo(int ncid, const char* attribute, int& length) {
+  int dimID;
+  size_t slength = 0;
+  length = 0;
+  // Get dimid 
+  if ( checkNCerr(nc_inq_dimid(ncid, attribute, &dimID)) ) {
+    ErrorMsg("Getting dimID for attribute %s\n", attribute);
+    return -1;
+  }
+  // get Dim length 
+  if ( checkNCerr(nc_inq_dimlen(ncid, dimID, &slength)) ) {
+    ErrorMsg("Getting length for attribute %s\n",attribute);
+    return -1;
+  }
+  length = (int) slength;
+  return dimID;
+}
 #endif
 
 static inline std::string Ext(std::string const& name) {
@@ -186,10 +204,52 @@ int CheckRuns(std::string const& TopDir, StrArray const& RunDirs, bool firstOnly
             rst_time0 = rsttime;
             Msg("\tInitial restart time: %g\n", rst_time0);
           } else if ( fabs(rst_time0 - rsttime) > 0.00000000000001 ) {
-            ErrorMsg("File %s time %g does not match initial restart time %g\n",
+            ErrorMsg("File '%s' time %g does not match initial restart time %g\n",
                      rfile->c_str(), rsttime, rst_time0);
             return 1;
           }
+          // Check first 2 coordinates
+          int natom;
+          int atomDID = GetDimInfo(ncid, "atom", natom);
+          if (atomDID < 0) return 1;
+          if (natom > 1) {
+            size_t start[2], count[2];
+            int coordVID = -1;
+            if ( checkNCerr(nc_inq_varid(ncid, "coordinates", &coordVID)) ) return 1;
+            start[0] = 0;
+            start[1] = 0;
+            count[0] = 2; // Only 2 atoms
+            count[1] = 3;
+            double Coords[6]; // Hold first 2 coord sets
+            if ( checkNCerr(nc_get_vara_double(ncid, coordVID, start, count, Coords)) )
+              return 1;
+            // Calculate distance
+            double dx = Coords[0] - Coords[3];
+            double dy = Coords[1] - Coords[4];
+            double dz = Coords[2] - Coords[5];
+            double dist2 = (dx * dx) + (dy * dy) + (dz * dz);
+            if (dist2 < 0.1) {
+              ErrorMsg("First two coordinates in restart '%s' overlap. Probable corruption.\n",
+                        rfile->c_str());
+              return 1;
+            }
+            // Get box info if present
+            int cellVID = -1;
+            if ( nc_inq_varid(ncid, "cell_lengths", &cellVID) == NC_NOERR ) {
+              count[0] = 3;
+              count[1] = 0;
+              if ( checkNCerr(nc_get_vara_double(ncid, cellVID, start, count, Coords)) )
+                return 1;
+              // Calc max distance allowed by box
+              double box2 = (Coords[0]*Coords[0]) + (Coords[1]*Coords[1]) + (Coords[2]*Coords[2]);
+              if (dist2 > box2) {
+                ErrorMsg("First two coordinates distance > box size in restart '%s'."
+                         " Probable corruption.\n", rfile->c_str());
+                return 1;
+              }
+            }
+          }
+          nc_close( ncid );
         }
       }
     }
