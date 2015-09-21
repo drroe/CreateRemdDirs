@@ -252,7 +252,7 @@ int Submit::ReadOptions(std::string const& fnameIn, QueueOpts& Qopt) {
   std::string fname = tildeExpansion( fnameIn );
   if (CheckExists( "Queue options", fname )) return 1;
   TextFile infile;
-  TextFile::OptArray Options = infile.GetOptionsArray(fnameIn, debug_);
+  TextFile::OptArray Options = infile.GetOptionsArray(fname, debug_);
   if (Options.empty()) return 1;
   for (TextFile::OptArray::const_iterator opair = Options.begin(); opair != Options.end(); ++opair)
   {

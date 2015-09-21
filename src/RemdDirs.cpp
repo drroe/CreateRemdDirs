@@ -37,9 +37,10 @@ void RemdDirs::OptHelp() {
 int RemdDirs::ReadOptions(std::string const& input_file, int start) {
   // Read options from input file
   if (CheckExists("Input file", input_file)) return 1;
-  Msg("Reading input from file: %s\n", input_file.c_str());
+  std::string fname = tildeExpansion( input_file );
+  Msg("Reading input from file: %s\n", fname.c_str());
   TextFile infile;
-  TextFile::OptArray Options = infile.GetOptionsArray(input_file, debug_);
+  TextFile::OptArray Options = infile.GetOptionsArray(fname, debug_);
   if (Options.empty()) return 1;
   for (TextFile::OptArray::const_iterator opair = Options.begin(); opair != Options.end(); ++opair)
   {
