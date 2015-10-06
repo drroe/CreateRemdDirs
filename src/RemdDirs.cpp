@@ -1,3 +1,4 @@
+#include <cstring> // strstr
 #include <cstdlib> // atoi, atof
 #include "RemdDirs.h"
 #include "Messages.h"
@@ -6,7 +7,8 @@
 
 RemdDirs::RemdDirs() : nstlim_(-1), ig_(-1), numexchg_(-1),
    dt_(-1.0), temp0_(-1.0), totalReplicas_(0), top_dim_(-1),
-   temp0_dim_(-1), debug_(0), n_md_runs_(0), umbrella_(0)
+   temp0_dim_(-1), debug_(0), n_md_runs_(0), umbrella_(0),
+   override_irest_(false), override_ntx_(false)
 {}
 
 // DESTRUCTOR
@@ -104,14 +106,29 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
       }
   }
   // If MDIN file specified, store it in a string.
+  override_irest_ = false;
+  override_ntx_ = false;
   additionalInput_.clear();
   if (!mdin_file_.empty()) {
     TextFile MDIN;
     if (MDIN.OpenRead(mdin_file_)) return 1;
     const char* buffer;
-    while ( (buffer = MDIN.Gets()) != 0)
+    while ( (buffer = MDIN.Gets()) != 0) {
+      if (strstr(buffer, "irest ") != 0 || strstr(buffer, "irest=") != 0) {
+        Msg("Warning: Using 'irest' in '%s'\n", mdin_file_.c_str());
+        override_irest_ = true;
+      }
+      if (strstr(buffer, "ntx ") != 0 || strstr(buffer, "ntx=") != 0) {
+        Msg("Warning: Using 'ntx' in '%s'\n", mdin_file_.c_str());
+        override_ntx_ = true;
+      }
       additionalInput_.append( buffer );
+    }
     MDIN.Close();
+    if (override_irest_ != override_ntx_) {
+      ErrorMsg("Both 'irest' and 'ntx' must be in '%s' if either are.\n", mdin_file_.c_str());
+      return 1;
+    }
   }
   return 0;
 }
@@ -547,12 +564,15 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
     // Create input
     int irest = 1;
     int ntx = 5;
-    if (run_num == 0) {
-      if (rep ==0)
-        Msg("    Run 0: irest=0, ntx=1\n");
-      irest = 0;
-      ntx = 1;
-    }
+    if (!override_irest_) {
+      if (run_num == 0) {
+        if (rep ==0)
+          Msg("    Run 0: irest=0, ntx=1\n");
+        irest = 0;
+        ntx = 1;
+      }
+    } else
+      Msg("    Using irest/ntx from MDIN.\n");
     std::string mdin_name(input_dir + "/in." + EXT);
     if (debug_ > 1)
       Msg("\t\tMDIN: %s\n", mdin_name.c_str());
@@ -569,12 +589,15 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
     // for Top %u at %g K 
     MDIN.Printf(" (rep %u), %g ps/exchg\n"
                 " &cntrl\n"
-                "    imin = 0, nstlim = %i, dt = %f,\n"
-                "    irest = %i, ntx = %i, ig = %i, numexchg = %i,\n"
-                "    temp0 = %f, tempi = %f,\n%s",
-                rep+1, ps_per_exchg,
-                nstlim_, dt_, irest, ntx, ig_, numexchg_,
-                currentTemp0, currentTemp0, additionalInput_.c_str());
+                "    imin = 0, nstlim = %i, dt = %f,\n",
+                rep+1, ps_per_exchg, nstlim_, dt_);
+    if (!override_irest_)
+      MDIN.Printf("    irest = %i, ntx = %i, ig = %i, numexchg = %i,\n",
+                  irest, ntx, ig_, numexchg_);
+    else
+      MDIN.Printf("    ig = %i, numexchg = %i,\n", ig_, numexchg_);
+    MDIN.Printf("    temp0 = %f, tempi = %f,\n%s", currentTemp0, currentTemp0,
+                additionalInput_.c_str());
     for (unsigned int id = 0; id != Dims_.size(); id++)
       Dims_[id]->WriteMdin(Indices[id], MDIN);
     MDIN.Printf(" &end\n");
@@ -656,20 +679,26 @@ int RemdDirs::MakeMdinForMD(std::string const& fname, int run_num,
   double total_time = dt_ * (double)nstlim_;
   int irest = 1;
   int ntx = 5;
-  if (run_num == 0) {
-    Msg("    Run 0: irest=0, ntx=1\n");
-    irest = 0;
-    ntx = 1;
-  }
+  if (!override_irest_) {
+    if (run_num == 0) {
+      Msg("    Run 0: irest=0, ntx=1\n");
+      irest = 0;
+      ntx = 1;
+    }
+  } else
+    Msg("    Using irest/ntx from MDIN.\n");
   TextFile MDIN;
   if (MDIN.OpenWrite(fname)) return 1;
   MDIN.Printf("%s %g ps\n"
               " &cntrl\n"
-              "    imin = 0, nstlim = %i, dt = %f,\n"
-              "    irest = %i, ntx = %i, ig = %i,\n"
-              "    temp0 = %f, tempi = %f,\n%s",
-              runDescription_.c_str(), total_time,
-              nstlim_, dt_, irest, ntx, ig_,
+              "    imin = 0, nstlim = %i, dt = %f,\n",
+              runDescription_.c_str(), total_time, nstlim_, dt_);
+  if (!override_irest_)
+    MDIN.Printf("    irest = %i, ntx = %i, ig = %i,\n",
+                irest, ntx, ig_);
+  else
+    MDIN.Printf("    ig = %i,\n", ig_);
+  MDIN.Printf("    temp0 = %f, tempi = %f,\n%s",
               temp0_, temp0_, additionalInput_.c_str());
   if (!rst_file_.empty()) {
     MDIN.Printf("    nmropt=1,\n");
