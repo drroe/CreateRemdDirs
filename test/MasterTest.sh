@@ -34,10 +34,12 @@ DoTest() {
   ((NUMTEST++))
   if [[ ! -f "$1" ]] ; then
     echo "Error: Save file $1 missing." >> $TEST_ERROR
+    echo "Error: Save file $1 missing." > /dev/stderr
     exit 1
   fi
   if [[ ! -f "$2" ]] ; then
     echo "Error: Test file $2 missing." >> $TEST_ERROR
+    echo "Error: Test file $2 missing." > /dev/stderr
     exit 1
   fi
   $DIFFCMD $1 $2 > temp.diff
