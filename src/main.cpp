@@ -10,24 +10,24 @@ static const char* VERSION = "0.9b";
 
 static void CmdLineHelp() {
   Msg("Command line options:\n"
-      "  -i <file>     : Creation input options file (remd.opts)\n"
-      "  -q <file>     : Job queue submission options file (qsub.opts)\n"
+      "  -i <file>     : Creation input options file (remd.opts).\n"
+      "  -q <file>     : Job queue submission options file (qsub.opts).\n"
       "  -b <start run>: Run # to start at.\n"
       "  -e <stop run> : Run # to end at.\n"
-      "  -c <dir>      : Start coords directory (run creation only)\n"
-      "  -s            : Allow job submission in addition to input creation\n"
-      "  -O            : Overwrite\n"
-      "  -t            : Test only; do not submit\n"
+      "  -c <dir>      : Start coords directory (run creation only).\n"
+      "  -s            : Allow job submission in addition to input creation.\n"
+      "  -O            : Overwrite.\n"
+      "  -t            : Test only; do not submit.\n"
       "  -h | --help   : Print this help.\n"
       "  --full-help   : Print extended help.\n"
-      "  --nomdin      : No extra MD input; overridden by MDIN_FILE\n"
-      "  --analyze     : Enable analysis input creation/submit\n"
-      "  --archive     : Enable archiving input creation/submit\n"
-      "  --runs        : Enable run input creation/submit (default if nothing else specified)\n"
-      "  --submit      : Submit jobs to queue only\n"
+      "  --nomdin      : No extra MD input needed. Ignored if MDIN_FILE specified in input options file.\n"
+      "  --analyze     : Enable analysis input creation/submit.\n"
+      "  --archive     : Enable archiving input creation/submit.\n"
+      "  --runs        : Enable run input creation/submit (default if nothing else specified).\n"
+      "  --submit      : Submit jobs to queue only.\n"
       "  --check       : Check specified jobs only (requires NetCDF compilation).\n"
       "  --nocheck     : Do not check jobs before creating analyze/archive input.\n"
-      "  --checkall    : When multiple replicas present, check all (default only first)\n\n");
+      "  --checkall    : When multiple replicas present, check all (default only first).\n\n");
 }
 
 static void Help(bool extended) {
