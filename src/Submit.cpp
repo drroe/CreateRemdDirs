@@ -36,7 +36,7 @@ void Submit::OptHelp() {
 int Submit::SubmitRuns(std::string const& TopDir, StrArray const& RunDirs, int start, bool overwrite) const
 {
   Run_->Info();
-  std::string user = UserName();
+  std::string user = NoTrailingWhitespace( UserName() );
   Msg("User: %s\n", user.c_str());
   std::string jobIdFilename(TopDir + "/temp.jobid");
   std::string submitScript( std::string(Run_->SubmitCmd()) + ".sh" );
@@ -101,8 +101,10 @@ int Submit::SubmitRuns(std::string const& TopDir, StrArray const& RunDirs, int s
         if (ptr == 0) return 1;
         previous_jobid.assign(ptr);
       } else if (Run_->QueueType() == SLURM) {
-        if (jobid.OpenPipe("squeue -u " + user + " --sort=i")) return 1;
-        int cols = jobid.GetColumns(" \t");
+        // -i inidcates reverse sort
+        if (jobid.OpenPipe("squeue -u " + user + " --sort=-i")) return 1;
+        const char* ptr = jobid.Gets();     // Header with JOBID
+        int cols = jobid.GetColumns(" \t"); // Should be last submitted job
         if (cols < 1) return 1;
         previous_jobid.assign( jobid.Token(0) );
       } else return 1; // sanity check
