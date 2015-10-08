@@ -8,7 +8,7 @@ Usage() {
   echo "    --help             : Display this message."
   echo "    -cray              : Use cray compiler wrappers (cc/CC/ftn)."
   echo "    --with-netcdf=<DIR>: Use NetCDF in <DIR>"
-  echo "    -no-netcdf         : Disable NetCDF (disables check functionality)."
+  echo "    -nonetcdf          : Disable NetCDF (disables check functionality)."
   echo "    -nolfs             : Disable large file support."
   echo ""
 }
