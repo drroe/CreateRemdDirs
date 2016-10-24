@@ -174,7 +174,12 @@ fi
 
 # Set up NETCDF linking
 if [[ ! -z $NETCDF_HOME && ! -z $NETCDFLIB ]] ; then
-  NETCDFLIB="-L$NETCDF_HOME/lib $NETCDFLIB"
+  # Try to link statically if possible
+  if [ -f "$NETCDF_HOME/lib/libnetcdf.a" ] ; then
+    NETCDFLIB="$NETCDF_HOME/lib/libnetcdf.a"
+  else
+    NETCDFLIB="-L$NETCDF_HOME/lib $NETCDFLIB"
+  fi
 fi
 
 # Set up compiler flags
