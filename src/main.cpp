@@ -6,7 +6,7 @@
 #include "FileRoutines.h"
 #include "StringRoutines.h"
 
-static const char* VERSION = "0.9b";
+static const char* VERSION = "0.95b";
 
 static void CmdLineHelp() {
   Msg("Command line options:\n"
@@ -50,7 +50,7 @@ static void Help(bool extended) {
 int main(int argc, char** argv) {
   Msg("\nCreateRemdDir: Amber run input creation/job submission/job check.\n");
   Msg("Version: %s\n", VERSION);
-  Msg("Daniel R. Roe, 2015\n");
+  Msg("Daniel R. Roe, 2017\n");
   enum ModeType { CREATE = 0, SUBMIT, CHECK };
   enum InputType { RUNS = 0, ANALYZE, ARCHIVE };
   std::vector<bool> ModeEnabled( 3, false );
