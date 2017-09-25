@@ -605,7 +605,7 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
     // Write to groupfile
     std::string INPUT_CRD = crd_dir_ + "/" + EXT + ".rst7";
     if (run_num == start_run && !fileExists( INPUT_CRD )) {
-      ErrorMsg("Coords %s not found.", INPUT_CRD.c_str());
+      ErrorMsg("Coords %s not found.\n", INPUT_CRD.c_str());
       return 1;
     }
     if (debug_ > 1)
