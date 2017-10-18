@@ -18,6 +18,8 @@ class ReplicaDimension {
     virtual int LoadDim(std::string const&) = 0;
     /// \return true if dimension provides bath temperatures (temp0).
     virtual bool ProvidesTemp0() const = 0;
+    /// \return true if dimension provides ph TODO pure virtual
+    virtual bool ProvidesPh() const { return false; }
     /// \return true if dimension provides topology files.
     virtual bool ProvidesTopFiles() const = 0;
     /// \return Dimension name.
@@ -74,6 +76,7 @@ class PhDim : public ReplicaDimension {
     unsigned int Size() const { return phs_.size(); }
     int LoadDim(std::string const&);
     bool ProvidesTemp0()    const { return false; }
+    bool ProvidesPh()       const { return true;  }
     bool ProvidesTopFiles() const { return false; }
     const char* name()      const { return "PHREMD"; }
 
