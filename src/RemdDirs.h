@@ -45,6 +45,7 @@ class RemdDirs {
     unsigned int totalReplicas_;  /// Total # of replicas based on dimensions
     int top_dim_;                 ///< Set to index of temp0 dim or -1 = global temp
     int temp0_dim_;               ///< Set to index to topo dim or -1 = global topo
+    int ph_dim_;                  ///< Set to index of ph dim or -1 = no ph
     int debug_;
     int n_md_runs_;               ///< Number of MD runs.
     int umbrella_;                ///< When > 0 indicates umbrella sampling write frequency.

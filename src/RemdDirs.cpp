@@ -5,10 +5,21 @@
 #include "TextFile.h"
 #include "StringRoutines.h"
 
-RemdDirs::RemdDirs() : nstlim_(-1), ig_(-1), numexchg_(-1),
-   dt_(-1.0), temp0_(-1.0), totalReplicas_(0), top_dim_(-1),
-   temp0_dim_(-1), debug_(0), n_md_runs_(0), umbrella_(0),
-   override_irest_(false), override_ntx_(false)
+RemdDirs::RemdDirs() :
+  nstlim_(-1),
+  ig_(-1),
+  numexchg_(-1),
+  dt_(-1.0),
+  temp0_(-1.0),
+  totalReplicas_(0),
+  top_dim_(-1),
+  temp0_dim_(-1),
+  ph_dim_(-1),
+  debug_(0),
+  n_md_runs_(0),
+  umbrella_(0),
+  override_irest_(false),
+  override_ntx_(false)
 {}
 
 // DESTRUCTOR
@@ -192,7 +203,9 @@ int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
     totalReplicas_ = 1;
     temp0_dim_ = -1;
     top_dim_ = -1;
+    ph_dim_ = -1;
     int providesTemp0 = 0;
+    int providesPh = 0;
     int providesTopFiles = 0;
     for (DimArray::const_iterator dim = Dims_.begin(); dim != Dims_.end(); ++dim)
     {
@@ -200,6 +213,10 @@ int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
       if ((*dim)->ProvidesTemp0()) {
         temp0_dim_ = (int)(dim - Dims_.begin());
         providesTemp0++;
+      }
+      if ((*dim)->ProvidesPh()) {
+        ph_dim_ = (int)(dim - Dims_.begin());
+        providesPh++;
       }
       if ((*dim)->ProvidesTopFiles()) {
         top_dim_ = (int)(dim - Dims_.begin());
@@ -213,6 +230,10 @@ int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
       ErrorMsg("No dimension provides temperature and TEMPERATURE not specified.\n");
       return 1;
     }
+    if (providesPh > 1) {
+      ErrorMsg("At most one dimension that provides pH should be specified.\n");
+      return 1;
+    }
     if (providesTopFiles > 1) {
       ErrorMsg("At most one dimension that provides topology files should be specified.\n");
       return 1;
@@ -221,11 +242,16 @@ int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
       return 1;
     }
     if (debug_ > 0)
-      Msg("    Topology dimension: %i\n    Temp0 dimension: %i\n", top_dim_, temp0_dim_);
+      Msg("    Topology dimension: %i\n    Temp0 dimension: %i    pH dimension: %i\n",
+          top_dim_, temp0_dim_, ph_dim_);
   }
   // Perform some more error checking
   if (nstlim_ < 1 || (runType_ != MD && numexchg_ < 1)) {
     ErrorMsg("NSTLIM or NUMEXCHG < 1\n");
+    return 1;
+  }
+  if (dt_ < 0.0) {
+    ErrorMsg("DT must be specified.\n");
     return 1;
   }
   if (needsMdin && mdin_file_.empty()) {
@@ -596,6 +622,8 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
                   irest, ntx, ig_, numexchg_);
     else
       MDIN.Printf("    ig = %i, numexchg = %i,\n", ig_, numexchg_);
+    if (ph_dim_ != -1)
+      MDIN.Printf("    solvph = %f,\n", Dims_[ph_dim_]->SolvPH( Indices[ph_dim_] ));
     MDIN.Printf("    temp0 = %f, tempi = %f,\n%s", currentTemp0, currentTemp0,
                 additionalInput_.c_str());
     for (unsigned int id = 0; id != Dims_.size(); id++)
