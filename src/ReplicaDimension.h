@@ -33,7 +33,9 @@ class ReplicaDimension {
     /// \return Topology name
     virtual std::string const& TopName(int) const { return emptystring_; }
     /// \return Temperature
-    virtual double Temp0(int) const { return -1.0; }
+    virtual double Temp0(int)  const { return -1.0; }
+    /// \return pH
+    virtual double SolvPH(int) const { return -1.0; }
     // ---------------------------------
     /// \return Replica dimension type.
     DimType Type() const { return type_;     }
