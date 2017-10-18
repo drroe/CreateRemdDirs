@@ -100,7 +100,7 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
       }
       else
       {
-        ErrorMsg("Unrecognized option '%s' in input file.", OPT.c_str());
+        ErrorMsg("Unrecognized option '%s' in input file.\n", OPT.c_str());
         OptHelp();
         return 1;
       }
