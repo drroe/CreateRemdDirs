@@ -8,7 +8,7 @@
 const std::string ReplicaDimension::emptystring_ = "";
 
 // Should correspong to ExchType
-const char* ReplicaDimension::exchString_[] = { "NONE", "TEMPERATURE", "HAMILTONIAN" };
+const char* ReplicaDimension::exchString_[] = { "NONE", "TEMPERATURE", "HAMILTONIAN", "PH" };
 
 int TemperatureDim::LoadDim(std::string const& fname) {
   TextFile infile;
@@ -25,6 +25,26 @@ int TemperatureDim::LoadDim(std::string const& fname) {
   infile.Close();
   std::ostringstream oss;
   oss << "Temperature exchange from " << temps_.front() << " K to " << temps_.back() << " K";
+  SetDescription(oss.str());
+  return 0;
+}
+
+// -----------------------------------------------------------------------------
+int PhDim::LoadDim(std::string const& fname) {
+  TextFile infile;
+  if (infile.OpenRead(fname)) return 1;
+  const char* buffer = infile.Gets(); // Scan past first line.
+  double ph0;
+  while ( (buffer = infile.Gets()) != 0 ) {
+    if (sscanf(buffer, "%lf", &ph0) != 1) {
+      ErrorMsg("Reading temperature from dim file.\n");
+      return 1;
+    }
+    phs_.push_back( ph0 );
+  }
+  infile.Close();
+  std::ostringstream oss;
+  oss << "pH exchange from " << phs_.front() << " to " << phs_.back();
   SetDescription(oss.str());
   return 0;
 }

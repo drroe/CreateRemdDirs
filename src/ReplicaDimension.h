@@ -6,8 +6,8 @@ class ReplicaDimension {
   public:
     typedef std::vector<std::string> Sarray;
     typedef std::vector<double> Darray;
-    enum DimType { NO_TYPE=0, TEMP, TOPOLOGY, AMD_DIHEDRAL, SGLD };
-    enum ExchType { NO_EXCH=0, TREMD, HREMD };
+    enum DimType { NO_TYPE=0, TEMP, TOPOLOGY, AMD_DIHEDRAL, SGLD, PH };
+    enum ExchType { NO_EXCH=0, TREMD, HREMD, PHREMD };
     ReplicaDimension() : type_(NO_TYPE), etype_(NO_EXCH) {}
     ReplicaDimension(DimType t, ExchType e) : type_(t), etype_(e) {}
     virtual ~ReplicaDimension() {}
@@ -63,6 +63,23 @@ class TemperatureDim : public ReplicaDimension {
     const char* name() const { return "TREMD"; }
   private:
     Darray temps_; ///< List of replica temperatures.
+};
+
+// -----------------------------------------------
+/// pH dimension
+class PhDim : public ReplicaDimension {
+  public:
+    PhDim() : ReplicaDimension(PH, PHREMD) {}
+    static ReplicaDimension* Alloc() { return (ReplicaDimension*)new PhDim(); }
+    unsigned int Size() const { return phs_.size(); }
+    int LoadDim(std::string const&);
+    bool ProvidesTemp0()    const { return false; }
+    bool ProvidesTopFiles() const { return false; }
+    const char* name()      const { return "PHREMD"; }
+
+    double SolvPH(int i)    const { return phs_[i]; }
+  private:
+    Darray phs_; ///< List of replica pHs.
 };
 
 // -----------------------------------------------
@@ -130,6 +147,7 @@ namespace ReplicaAllocator {
     { "#Hamiltonian",  TopologyDim::Alloc    },
     { "#amd_dihedral", AmdDihedralDim::Alloc },
     { "#SGLD",         SgldDim::Alloc        },
+    { "#PH",           PhDim::Alloc          },
     { 0,               0                     }
   };
   ReplicaDimension* Allocate(std::string const&);
