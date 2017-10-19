@@ -32,7 +32,7 @@ void RemdDirs::OptHelp() {
   Msg("Creation input file variables:\n"
       "  CRD_FILE <dir>     : Starting coordinates location (run 0 only).\n"
       "  DIMENSION <file>   : File containing replica dimension information, 1 per dimension\n"
-      "    Dimensions:");
+      "    Headers:");
   for (ReplicaAllocator::Token const* ptr = ReplicaAllocator::AllocArray;
                                       ptr->Key != 0; ++ptr)
     Msg(" %s", ptr->Key);
