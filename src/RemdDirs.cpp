@@ -191,6 +191,8 @@ int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
       if (Dims_[0]->Type() == ReplicaDimension::TEMP ||
           Dims_[0]->Type() == ReplicaDimension::SGLD)
         runType_ = TREMD;
+      else if (Dims_[0]->Type() == ReplicaDimension::PH)
+        runType_ = PHREMD;
       else
         runType_ = HREMD;
       runDescription_.assign( Dims_[0]->name() );
@@ -642,6 +644,9 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
       " -p " + currentTop + " -c " + INPUT_CRD + " -o OUTPUT/rem.out." + EXT +
       " -inf INFO/reminfo." + EXT + " -r RST/" + EXT + 
       ".rst7 -x TRAJ/rem.crd." + EXT + " -l LOG/logfile." + EXT;
+    if (ph_dim_ != -1)
+      GROUPFILE_LINE.append(" -cpin ../cpin -cpout CPH/cpout." + EXT +
+                            " -cprestrt CPH/cprestrt." + EXT);
     for (unsigned int id = 0; id != Dims_.size(); id++)
       GROUPFILE_LINE += Dims_[id]->Groupline(EXT);
     GROUPFILE.Printf("%s\n", GROUPFILE_LINE.c_str());
@@ -674,6 +679,8 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
     cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -remd-file " + remddimName_);
   else if (runType_ == HREMD)
     cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 3");
+  else if (runType_ == PHREMD)
+    cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 4");
   else
     cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 1");
   if (WriteRunMD( cmd_opts )) return 1;
@@ -683,6 +690,9 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
   if (Mkdir( "RST"    )) return 1;
   if (Mkdir( "INFO"   )) return 1;
   if (Mkdir( "LOG"    )) return 1;
+  if (ph_dim_ != -1) {
+    if (Mkdir( "CPH" )) return 1;
+  }
   // Create any dimension-specific directories
   for (DimArray::const_iterator dim = Dims_.begin(); dim != Dims_.end(); ++dim) {
     if ((*dim)->OutputDir() != 0) {

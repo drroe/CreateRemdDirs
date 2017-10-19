@@ -17,7 +17,7 @@ class RemdDirs {
 
     void SetDebug(int d) { debug_ = d; }
   private:
-    enum RUNTYPE { MD=0, TREMD, HREMD, MREMD };
+    enum RUNTYPE { MD=0, TREMD, HREMD, PHREMD, MREMD };
     static const std::string groupfileName_;
     static const std::string remddimName_;
 
