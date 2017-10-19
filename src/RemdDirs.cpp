@@ -117,6 +117,8 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
       else if (OPT == "CPIN_FILE")
       {
         cpin_file_ = VAR;
+        if (fileExists(cpin_file_))
+          cpin_file_ = tildeExpansion( cpin_file_ );
       }
       else
       {
