@@ -32,11 +32,16 @@ void RemdDirs::OptHelp() {
   Msg("Creation input file variables:\n"
       "  CRD_FILE <dir>     : Starting coordinates location (run 0 only).\n"
       "  DIMENSION <file>   : File containing replica dimension information, 1 per dimension\n"
-      "  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--analyze).\n"
+      "    Dimensions:");
+  for (ReplicaAllocator::Token const* ptr = ReplicaAllocator::AllocArray;
+                                      ptr->Key != 0; ++ptr)
+    Msg(" %s", ptr->Key);
+Msg("\n  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--analyze).\n"
       "  FULLARCHIVE <arg>  : Comma-separated list of members to fully archive or NONE.\n"
       "  TOPOLOGY <file>    : Topology for 1D TREMD run.\n"
       "  MDIN_FILE <file>   : File containing extra MDIN input.\n"
       "  RST_FILE <file>    : File containing NMR restraints (MD only).\n"
+      "  CPIN_FILE <file>   : CPIN file (constant pH only).\n"
       "  TEMPERATURE <T>    : Temperature for 1D HREMD run.\n"
       "  NSTLIM <nstlim>    : Input file; steps per exchange. Required.\n"
       "  DT <step>          : Input file; time step. Required.\n"
@@ -108,6 +113,10 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
         rst_file_ = VAR;
         if (fileExists(rst_file_))
           rst_file_ = tildeExpansion( rst_file_ );
+      }
+      else if (OPT == "CPIN_FILE")
+      {
+        cpin_file_ = VAR;
       }
       else
       {
@@ -234,6 +243,9 @@ int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
     }
     if (providesPh > 1) {
       ErrorMsg("At most one dimension that provides pH should be specified.\n");
+      return 1;
+    } else if (providesPh == 1 && cpin_file_.empty()) {
+      ErrorMsg("CPIN_FILE must be specified if pH dimension is present.\n");
       return 1;
     }
     if (providesTopFiles > 1) {
@@ -547,6 +559,12 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
              " or path relative to '%s'\n", crd_dir_.c_str(), run_dir.c_str());
     return 1;
   }
+  // If constant pH, ensure CPIN file exists
+  if (ph_dim_ != -1 && !fileExists(cpin_file_)) {
+    ErrorMsg("CPIN file '%s' not found. Must specify absolute path"
+             " or path relative to '%s'\n", cpin_file_.c_str(), run_dir.c_str());
+    return 1;
+  }
   // Calculate ps per exchange
   double ps_per_exchg = dt_ * (double)nstlim_;
   // Do we need to setup groups for MREMD?
@@ -645,7 +663,8 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
       " -inf INFO/reminfo." + EXT + " -r RST/" + EXT + 
       ".rst7 -x TRAJ/rem.crd." + EXT + " -l LOG/logfile." + EXT;
     if (ph_dim_ != -1)
-      GROUPFILE_LINE.append(" -cpin ../cpin -cpout CPH/cpout." + EXT +
+      GROUPFILE_LINE.append(" -cpin " + cpin_file_ +
+                            " -cpout CPH/cpout." + EXT +
                             " -cprestrt CPH/cprestrt." + EXT);
     for (unsigned int id = 0; id != Dims_.size(); id++)
       GROUPFILE_LINE += Dims_[id]->Groupline(EXT);

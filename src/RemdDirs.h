@@ -55,6 +55,7 @@ class RemdDirs {
     std::string runDescription_;  ///< Run description
     std::string additionalInput_; ///< Hold any additional MDIN input.
     std::string crd_dir_;         ///< Directory where input coordinates are.
+    std::string cpin_file_;       ///< CPIN file for constant pH
     Groups groups_;               ///< For setting up MREMD groups.
 };
 #endif
