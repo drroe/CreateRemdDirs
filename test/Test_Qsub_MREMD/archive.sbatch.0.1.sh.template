@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J proc.0.1.test
+#SBATCH -J ar.0.1.test
 #SBATCH -N 16
 #SBATCH -t 6:00:00
 #SBATCH -n 16
@@ -14,12 +14,12 @@ cd $SLURM_SUBMIT_DIR
 PPN=1
 NODES=16
 THREADS=16
-export AMBERHOME=/home/droe/Amber/GIT/amber
+export AMBERHOME=amberhome
 source $AMBERHOME/amber.sh
-export EXEPATH=/home/droe/Amber/GIT/amber/bin/cpptraj
+export EXEPATH=amberhome/bin/cpptraj
 ls -l $EXEPATH
 export MPIRUN="mpiexec -n $THREADS"
 
 # Run script
-./RunAnalysis.sh
+./RunArchive.0.1.sh
 exit $?
