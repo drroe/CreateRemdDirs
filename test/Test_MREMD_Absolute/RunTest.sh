@@ -2,7 +2,7 @@
 
 . ../MasterTest.sh
 
-CleanFiles run.000 mremd.opts Hamiltonians.dat
+CleanFiles run.000 mremd.opts Hamiltonians.dat absolute.groupfile.save
 
 TESTDIR=`pwd`
 TESTDIR=`dirname $TESTDIR`
