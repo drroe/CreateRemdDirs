@@ -5,9 +5,9 @@
 CleanFiles run.00? mremd.opts Hamiltonians.dat qsub.opts analyze.opts Analyze.0.1 \
            Archive.0.1 archive.sbatch.0.1.sh RunArchive.0.1.sh 
 
-if [[ ! -d "/home/droe/Amber/GIT/amber" ]] ; then
+if [ -z "$AMBERHOME" ] ; then
   echo "Warning: Skipping submission test."
-  echo "AMBERHOME /home/droe/Amber/GIT/amber not present."
+  echo "AMBERHOME not set."
   echo ""
   exit 0
 fi
@@ -23,7 +23,7 @@ ACCOUNT testaccount
 PROGRAM pmemd
 QSUB $1 
 MPIRUN mpiexec -n \$THREADS
-AMBERHOME /home/droe/Amber/GIT/amber
+AMBERHOME $AMBERHOME 
 EOF
 }
 
@@ -38,6 +38,7 @@ DoTest run1.sbatch.sh.save run.001/sbatch.sh
 MakeOpts PBS
 OPTLINE=$OPTLINE" -O"
 RunTest "MREMD job submission test (PBS)"
+sed "s:amberhome:$AMBERHOME:g" run0.qsub.sh.template > run0.qsub.sh.save
 DoTest run0.qsub.sh.save run.000/qsub.sh
 
 echo "ANALYZE_FILE analyze.opts" >> qsub.opts
@@ -51,7 +52,7 @@ ACCOUNT testaccount
 PROGRAM cpptraj
 QSUB SBATCH
 MPIRUN mpiexec -n \$THREADS
-AMBERHOME /home/droe/Amber/GIT/amber
+AMBERHOME $AMBERHOME 
 EOF
 OPTLINE="-i ../relative.mremd.opts --analyze --archive -b 0 -e 1 -s --nocheck -t"
 RunTest "MREMD analysis/archive job submission test (PBS)"
