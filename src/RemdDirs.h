@@ -17,7 +17,7 @@ class RemdDirs {
 
     void SetDebug(int d) { debug_ = d; }
   private:
-    enum RUNTYPE { MD=0, TREMD, HREMD, MREMD };
+    enum RUNTYPE { MD=0, TREMD, HREMD, PHREMD, MREMD };
     static const std::string groupfileName_;
     static const std::string remddimName_;
 
@@ -45,6 +45,7 @@ class RemdDirs {
     unsigned int totalReplicas_;  /// Total # of replicas based on dimensions
     int top_dim_;                 ///< Set to index of temp0 dim or -1 = global temp
     int temp0_dim_;               ///< Set to index to topo dim or -1 = global topo
+    int ph_dim_;                  ///< Set to index of ph dim or -1 = no ph
     int debug_;
     int n_md_runs_;               ///< Number of MD runs.
     int umbrella_;                ///< When > 0 indicates umbrella sampling write frequency.
@@ -54,6 +55,7 @@ class RemdDirs {
     std::string runDescription_;  ///< Run description
     std::string additionalInput_; ///< Hold any additional MDIN input.
     std::string crd_dir_;         ///< Directory where input coordinates are.
+    std::string cpin_file_;       ///< CPIN file for constant pH
     Groups groups_;               ///< For setting up MREMD groups.
 };
 #endif

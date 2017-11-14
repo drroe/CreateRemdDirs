@@ -37,7 +37,7 @@ various input files is available via the command line flag '--full-help'.
 
 Disclaimer and Copyright
 ========================
-CreateRemdDirs is Copyright (c) 2015 Daniel R. Roe.
+CreateRemdDirs is Copyright (c) 2017 Daniel R. Roe.
 The software is provided AS IS with no warranty.
 CreateRemdDirs is free software and is licensed under the GPL v2 license (see LICENSE for details).
 

@@ -5,10 +5,21 @@
 #include "TextFile.h"
 #include "StringRoutines.h"
 
-RemdDirs::RemdDirs() : nstlim_(-1), ig_(-1), numexchg_(-1),
-   dt_(-1.0), temp0_(-1.0), totalReplicas_(0), top_dim_(-1),
-   temp0_dim_(-1), debug_(0), n_md_runs_(0), umbrella_(0),
-   override_irest_(false), override_ntx_(false)
+RemdDirs::RemdDirs() :
+  nstlim_(-1),
+  ig_(-1),
+  numexchg_(-1),
+  dt_(-1.0),
+  temp0_(-1.0),
+  totalReplicas_(0),
+  top_dim_(-1),
+  temp0_dim_(-1),
+  ph_dim_(-1),
+  debug_(0),
+  n_md_runs_(0),
+  umbrella_(0),
+  override_irest_(false),
+  override_ntx_(false)
 {}
 
 // DESTRUCTOR
@@ -21,11 +32,16 @@ void RemdDirs::OptHelp() {
   Msg("Creation input file variables:\n"
       "  CRD_FILE <dir>     : Starting coordinates location (run 0 only).\n"
       "  DIMENSION <file>   : File containing replica dimension information, 1 per dimension\n"
-      "  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--analyze).\n"
+      "    Headers:");
+  for (ReplicaAllocator::Token const* ptr = ReplicaAllocator::AllocArray;
+                                      ptr->Key != 0; ++ptr)
+    Msg(" %s", ptr->Key);
+Msg("\n  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--analyze).\n"
       "  FULLARCHIVE <arg>  : Comma-separated list of members to fully archive or NONE.\n"
       "  TOPOLOGY <file>    : Topology for 1D TREMD run.\n"
       "  MDIN_FILE <file>   : File containing extra MDIN input.\n"
       "  RST_FILE <file>    : File containing NMR restraints (MD only).\n"
+      "  CPIN_FILE <file>   : CPIN file (constant pH only).\n"
       "  TEMPERATURE <T>    : Temperature for 1D HREMD run.\n"
       "  NSTLIM <nstlim>    : Input file; steps per exchange. Required.\n"
       "  DT <step>          : Input file; time step. Required.\n"
@@ -98,9 +114,15 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
         if (fileExists(rst_file_))
           rst_file_ = tildeExpansion( rst_file_ );
       }
+      else if (OPT == "CPIN_FILE")
+      {
+        cpin_file_ = VAR;
+        if (fileExists(cpin_file_))
+          cpin_file_ = tildeExpansion( cpin_file_ );
+      }
       else
       {
-        ErrorMsg("Unrecognized option '%s' in input file.", OPT.c_str());
+        ErrorMsg("Unrecognized option '%s' in input file.\n", OPT.c_str());
         OptHelp();
         return 1;
       }
@@ -180,6 +202,8 @@ int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
       if (Dims_[0]->Type() == ReplicaDimension::TEMP ||
           Dims_[0]->Type() == ReplicaDimension::SGLD)
         runType_ = TREMD;
+      else if (Dims_[0]->Type() == ReplicaDimension::PH)
+        runType_ = PHREMD;
       else
         runType_ = HREMD;
       runDescription_.assign( Dims_[0]->name() );
@@ -192,7 +216,9 @@ int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
     totalReplicas_ = 1;
     temp0_dim_ = -1;
     top_dim_ = -1;
+    ph_dim_ = -1;
     int providesTemp0 = 0;
+    int providesPh = 0;
     int providesTopFiles = 0;
     for (DimArray::const_iterator dim = Dims_.begin(); dim != Dims_.end(); ++dim)
     {
@@ -200,6 +226,10 @@ int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
       if ((*dim)->ProvidesTemp0()) {
         temp0_dim_ = (int)(dim - Dims_.begin());
         providesTemp0++;
+      }
+      if ((*dim)->ProvidesPh()) {
+        ph_dim_ = (int)(dim - Dims_.begin());
+        providesPh++;
       }
       if ((*dim)->ProvidesTopFiles()) {
         top_dim_ = (int)(dim - Dims_.begin());
@@ -213,6 +243,13 @@ int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
       ErrorMsg("No dimension provides temperature and TEMPERATURE not specified.\n");
       return 1;
     }
+    if (providesPh > 1) {
+      ErrorMsg("At most one dimension that provides pH should be specified.\n");
+      return 1;
+    } else if (providesPh == 1 && cpin_file_.empty()) {
+      ErrorMsg("CPIN_FILE must be specified if pH dimension is present.\n");
+      return 1;
+    }
     if (providesTopFiles > 1) {
       ErrorMsg("At most one dimension that provides topology files should be specified.\n");
       return 1;
@@ -221,11 +258,16 @@ int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
       return 1;
     }
     if (debug_ > 0)
-      Msg("    Topology dimension: %i\n    Temp0 dimension: %i\n", top_dim_, temp0_dim_);
+      Msg("    Topology dimension: %i\n    Temp0 dimension: %i    pH dimension: %i\n",
+          top_dim_, temp0_dim_, ph_dim_);
   }
   // Perform some more error checking
   if (nstlim_ < 1 || (runType_ != MD && numexchg_ < 1)) {
     ErrorMsg("NSTLIM or NUMEXCHG < 1\n");
+    return 1;
+  }
+  if (dt_ < 0.0) {
+    ErrorMsg("DT must be specified.\n");
     return 1;
   }
   if (needsMdin && mdin_file_.empty()) {
@@ -519,6 +561,12 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
              " or path relative to '%s'\n", crd_dir_.c_str(), run_dir.c_str());
     return 1;
   }
+  // If constant pH, ensure CPIN file exists
+  if (ph_dim_ != -1 && !fileExists(cpin_file_)) {
+    ErrorMsg("CPIN file '%s' not found. Must specify absolute path"
+             " or path relative to '%s'\n", cpin_file_.c_str(), run_dir.c_str());
+    return 1;
+  }
   // Calculate ps per exchange
   double ps_per_exchg = dt_ * (double)nstlim_;
   // Do we need to setup groups for MREMD?
@@ -596,6 +644,8 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
                   irest, ntx, ig_, numexchg_);
     else
       MDIN.Printf("    ig = %i, numexchg = %i,\n", ig_, numexchg_);
+    if (ph_dim_ != -1)
+      MDIN.Printf("    solvph = %f,\n", Dims_[ph_dim_]->SolvPH( Indices[ph_dim_] ));
     MDIN.Printf("    temp0 = %f, tempi = %f,\n%s", currentTemp0, currentTemp0,
                 additionalInput_.c_str());
     for (unsigned int id = 0; id != Dims_.size(); id++)
@@ -614,6 +664,10 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
       " -p " + currentTop + " -c " + INPUT_CRD + " -o OUTPUT/rem.out." + EXT +
       " -inf INFO/reminfo." + EXT + " -r RST/" + EXT + 
       ".rst7 -x TRAJ/rem.crd." + EXT + " -l LOG/logfile." + EXT;
+    if (ph_dim_ != -1)
+      GROUPFILE_LINE.append(" -cpin " + cpin_file_ +
+                            " -cpout CPH/cpout." + EXT +
+                            " -cprestrt CPH/cprestrt." + EXT);
     for (unsigned int id = 0; id != Dims_.size(); id++)
       GROUPFILE_LINE += Dims_[id]->Groupline(EXT);
     GROUPFILE.Printf("%s\n", GROUPFILE_LINE.c_str());
@@ -646,6 +700,8 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
     cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -remd-file " + remddimName_);
   else if (runType_ == HREMD)
     cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 3");
+  else if (runType_ == PHREMD)
+    cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 4");
   else
     cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 1");
   if (WriteRunMD( cmd_opts )) return 1;
@@ -655,6 +711,9 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
   if (Mkdir( "RST"    )) return 1;
   if (Mkdir( "INFO"   )) return 1;
   if (Mkdir( "LOG"    )) return 1;
+  if (ph_dim_ != -1) {
+    if (Mkdir( "CPH" )) return 1;
+  }
   // Create any dimension-specific directories
   for (DimArray::const_iterator dim = Dims_.begin(); dim != Dims_.end(); ++dim) {
     if ((*dim)->OutputDir() != 0) {

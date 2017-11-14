@@ -6,8 +6,8 @@ class ReplicaDimension {
   public:
     typedef std::vector<std::string> Sarray;
     typedef std::vector<double> Darray;
-    enum DimType { NO_TYPE=0, TEMP, TOPOLOGY, AMD_DIHEDRAL, SGLD };
-    enum ExchType { NO_EXCH=0, TREMD, HREMD };
+    enum DimType { NO_TYPE=0, TEMP, TOPOLOGY, AMD_DIHEDRAL, SGLD, PH };
+    enum ExchType { NO_EXCH=0, TREMD, HREMD, PHREMD };
     ReplicaDimension() : type_(NO_TYPE), etype_(NO_EXCH) {}
     ReplicaDimension(DimType t, ExchType e) : type_(t), etype_(e) {}
     virtual ~ReplicaDimension() {}
@@ -18,6 +18,8 @@ class ReplicaDimension {
     virtual int LoadDim(std::string const&) = 0;
     /// \return true if dimension provides bath temperatures (temp0).
     virtual bool ProvidesTemp0() const = 0;
+    /// \return true if dimension provides ph TODO pure virtual
+    virtual bool ProvidesPh() const { return false; }
     /// \return true if dimension provides topology files.
     virtual bool ProvidesTopFiles() const = 0;
     /// \return Dimension name.
@@ -31,7 +33,9 @@ class ReplicaDimension {
     /// \return Topology name
     virtual std::string const& TopName(int) const { return emptystring_; }
     /// \return Temperature
-    virtual double Temp0(int) const { return -1.0; }
+    virtual double Temp0(int)  const { return -1.0; }
+    /// \return pH
+    virtual double SolvPH(int) const { return -1.0; }
     // ---------------------------------
     /// \return Replica dimension type.
     DimType Type() const { return type_;     }
@@ -55,14 +59,31 @@ class TemperatureDim : public ReplicaDimension {
   public:
     TemperatureDim() : ReplicaDimension(TEMP, TREMD) {}
     static ReplicaDimension* Alloc() { return (ReplicaDimension*)new TemperatureDim(); }
-    unsigned int Size() const { return temps_.size(); }
-    int LoadDim(std::string const&);
-    bool ProvidesTemp0() const { return true; }
+    unsigned int Size()     const { return temps_.size(); }
+    bool ProvidesTemp0()    const { return true; }
     bool ProvidesTopFiles() const { return false; }
-    double Temp0(int i) const { return temps_[i]; }
-    const char* name() const { return "TREMD"; }
+    double Temp0(int i)     const { return temps_[i]; }
+    const char* name()      const { return "TREMD"; }
+    int LoadDim(std::string const&);
   private:
     Darray temps_; ///< List of replica temperatures.
+};
+
+// -----------------------------------------------
+/// pH dimension TODO explicit vs implicit?
+class PhDim : public ReplicaDimension {
+  public:
+    PhDim() : ReplicaDimension(PH, PHREMD) {}
+    static ReplicaDimension* Alloc() { return (ReplicaDimension*)new PhDim(); }
+    unsigned int Size()     const { return phs_.size(); }
+    bool ProvidesTemp0()    const { return false; }
+    bool ProvidesPh()       const { return true;  }
+    bool ProvidesTopFiles() const { return false; }
+    double SolvPH(int i)    const { return phs_[i]; }
+    const char* name()      const { return "PHREMD"; }
+    int LoadDim(std::string const&);
+  private:
+    Darray phs_; ///< List of replica pHs.
 };
 
 // -----------------------------------------------
@@ -71,12 +92,12 @@ class TopologyDim : public ReplicaDimension {
   public:
     TopologyDim() : ReplicaDimension(TOPOLOGY, HREMD) {}
     static ReplicaDimension* Alloc() { return (ReplicaDimension*)new TopologyDim(); }
-    unsigned int Size() const { return tops_.size(); }
-    int LoadDim(std::string const&);
-    bool ProvidesTemp0() const { return false; }
-    bool ProvidesTopFiles() const { return true; }
+    unsigned int Size()               const { return tops_.size(); }
+    bool ProvidesTemp0()              const { return false; }
+    bool ProvidesTopFiles()           const { return true; }
     std::string const& TopName(int i) const { return tops_[i]; }
-    const char* name() const { return "HREMD"; }
+    const char* name()                const { return "HREMD"; }
+    int LoadDim(std::string const&);
   private:
     Sarray tops_; ///< List of replica topologies
 }; 
@@ -87,14 +108,14 @@ class AmdDihedralDim : public ReplicaDimension {
   public:
     AmdDihedralDim() : ReplicaDimension(AMD_DIHEDRAL, HREMD) {}
     static ReplicaDimension* Alloc() { return (ReplicaDimension*)new AmdDihedralDim(); }
-    unsigned int Size() const { return d_alpha_.size(); }
-    int LoadDim(std::string const&);
-    int WriteMdin(int, TextFile&) const;
-    std::string Groupline(std::string const&) const;
+    unsigned int Size()     const { return d_alpha_.size(); }
     const char* OutputDir() const { return "AMD"; }
-    bool ProvidesTemp0() const { return false; }
+    bool ProvidesTemp0()    const { return false; }
     bool ProvidesTopFiles() const { return false; }
-    const char* name() const { return "AMDHREMD"; }
+    const char* name()      const { return "AMDHREMD"; }
+    int LoadDim(std::string const&);
+    std::string Groupline(std::string const&) const;
+    int WriteMdin(int, TextFile&) const;
   private:
     Darray d_alpha_; ///< List of amd dihedral alpha values
     Darray d_thresh_; ///< List of amd dihedral threshhold values
@@ -106,12 +127,12 @@ class SgldDim : public ReplicaDimension {
   public:
     SgldDim() : ReplicaDimension(SGLD, TREMD) {}
     static ReplicaDimension* Alloc() { return (ReplicaDimension*)new SgldDim(); }
-    unsigned int Size() const { return sgtemps_.size(); }
+    unsigned int Size()     const { return sgtemps_.size(); }
+    bool ProvidesTemp0()    const { return false; }
+    bool ProvidesTopFiles() const { return false; }
+    const char* name()      const { return "RXSGLD"; }
     int LoadDim(std::string const&);
     int WriteMdin(int, TextFile&) const;
-    bool ProvidesTemp0() const { return false; }
-    bool ProvidesTopFiles() const { return false; }
-    const char* name() const { return "RXSGLD"; }
   private:
     Darray sgtemps_; ///< Self-guided Langevin temperatures.
 };
@@ -130,6 +151,7 @@ namespace ReplicaAllocator {
     { "#Hamiltonian",  TopologyDim::Alloc    },
     { "#amd_dihedral", AmdDihedralDim::Alloc },
     { "#SGLD",         SgldDim::Alloc        },
+    { "#PH",           PhDim::Alloc          },
     { 0,               0                     }
   };
   ReplicaDimension* Allocate(std::string const&);

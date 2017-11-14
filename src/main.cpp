@@ -6,7 +6,7 @@
 #include "FileRoutines.h"
 #include "StringRoutines.h"
 
-static const char* VERSION = "0.95b";
+static const char* VERSION = "0.96b";
 
 static void CmdLineHelp() {
   Msg("Command line options:\n"
@@ -20,6 +20,8 @@ static void CmdLineHelp() {
       "  -t            : Test only; do not submit.\n"
       "  -h | --help   : Print this help.\n"
       "  --full-help   : Print extended help.\n"
+      "  --create-help : Print run creation help.\n"
+      "  --submit-help : Print run submission help.\n"
       "  --nomdin      : No extra MD input needed. Ignored if MDIN_FILE specified in input options file.\n"
       "  --analyze     : Enable analysis input creation/submit.\n"
       "  --archive     : Enable archiving input creation/submit.\n"
@@ -85,6 +87,12 @@ int main(int argc, char** argv) {
       return 0;
     } else if (Arg == "--full-help") {            // Print extended help and exit
       Help(true);
+      return 0;
+    } else if (Arg == "--create-help") {
+      RemdDirs::OptHelp();
+      return 0;
+    } else if (Arg == "--submit-help") {
+      Submit::OptHelp();
       return 0;
     } else if (Arg == "-t" || Arg == "--test")    // Test, do not submit
       testOnly = true;

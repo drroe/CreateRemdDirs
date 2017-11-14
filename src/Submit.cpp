@@ -104,6 +104,7 @@ int Submit::SubmitRuns(std::string const& TopDir, StrArray const& RunDirs, int s
         // -i inidcates reverse sort
         if (jobid.OpenPipe("squeue -u " + user + " --sort=-i")) return 1;
         const char* ptr = jobid.Gets();     // Header with JOBID
+        if (ptr == 0) return 1;
         int cols = jobid.GetColumns(" \t"); // Should be last submitted job
         if (cols < 1) return 1;
         previous_jobid.assign( jobid.Token(0) );

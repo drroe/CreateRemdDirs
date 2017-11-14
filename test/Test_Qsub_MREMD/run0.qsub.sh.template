@@ -11,9 +11,9 @@ cd $PBS_O_WORKDIR
 PPN=8
 NODES=16
 THREADS=128
-export AMBERHOME=/home/droe/Amber/GIT/amber
+export AMBERHOME=amberhome
 source $AMBERHOME/amber.sh
-export EXEPATH=/home/droe/Amber/GIT/amber/bin/pmemd
+export EXEPATH=amberhome/bin/pmemd
 ls -l $EXEPATH
 export MPIRUN="mpiexec -n $THREADS"
 

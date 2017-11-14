@@ -2,12 +2,13 @@
 
 . ../MasterTest.sh
 
-CleanFiles run.000 mremd.opts Hamiltonians.dat
+CleanFiles run.000 mremd.opts Hamiltonians.dat absolute.groupfile.save
 
-if [[ ! -f "/home/droe/bin/createRemdDirs/test/pme.remd.gamma1.opts" ]] ; then
-  echo "Warning: Cannot run absolute path test."
-  echo ""
-  exit 0
+TESTDIR=`pwd`
+TESTDIR=`dirname $TESTDIR`
+if [ -z "$TESTDIR" ] ; then
+  echo "Error: Could not get absolute path."
+  exit 1
 fi
 
 cat > mremd.opts <<EOF
@@ -18,21 +19,22 @@ NSTLIM      500
 DT          0.002
 NUMEXCHG    100
 TEMPERATURE 300.0
-TOPOLOGY    ~/bin/createRemdDirs/test/full.parm7
-MDIN_FILE   ~/bin/createRemdDirs/test/pme.remd.gamma1.opts
+TOPOLOGY    $TESTDIR/full.parm7
+MDIN_FILE   $TESTDIR/pme.remd.gamma1.opts
 # Only fully archive lowest Hamiltonian
 FULLARCHIVE 0
 EOF
 
 cat > Hamiltonians.dat <<EOF
 #Hamiltonian
-~/bin/createRemdDirs/test/AltDFC.01.PagF.TIP3P.ff14SB.parm7
-~/bin/createRemdDirs/test/AltDFC.02.PagF.TIP3P.ff14SB.parm7
+$TESTDIR/AltDFC.01.PagF.TIP3P.ff14SB.parm7
+$TESTDIR/AltDFC.02.PagF.TIP3P.ff14SB.parm7
 EOF
 
-OPTLINE="-i mremd.opts -b 0 -e 0 -c ~/bin/createRemdDirs/test/CRD"
+OPTLINE="-i mremd.opts -b 0 -e 0 -c $TESTDIR/CRD"
 RunTest "Absolute path test"
 DoTest ../mremd.dim.save run.000/remd.dim
+sed "s:TESTDIR:$TESTDIR:g" absolute.groupfile.template > absolute.groupfile.save
 DoTest absolute.groupfile.save run.000/groupfile
 DoTest ../in.001.save run.000/INPUT/in.001
 
