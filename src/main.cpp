@@ -123,6 +123,8 @@ int main(int argc, char** argv) {
     } else if (Arg == "-s") {                     // Enable SUBMIT mode in addition to creation.
       ModeEnabled[CREATE] = true;
       ModeEnabled[SUBMIT] = true;
+    } else if (Arg == "-v" || Arg == "--version") {
+      return 0;
     } else {
       ErrorMsg("Unrecognized CMD line opt: %s\n", argv[iarg]);
       CmdLineHelp();
