@@ -19,7 +19,8 @@ RemdDirs::RemdDirs() :
   n_md_runs_(0),
   umbrella_(0),
   override_irest_(false),
-  override_ntx_(false)
+  override_ntx_(false),
+  uselog_(true)
 {}
 
 // DESTRUCTOR
@@ -42,6 +43,7 @@ Msg("\n  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--
       "  MDIN_FILE <file>   : File containing extra MDIN input.\n"
       "  RST_FILE <file>    : File containing NMR restraints (MD only).\n"
       "  CPIN_FILE <file>   : CPIN file (constant pH only).\n"
+      "  USELOG {yes|no}    : yes (default): use logfile (pmemd), otherwise do not (sander).\n"
       "  TEMPERATURE <T>    : Temperature for 1D HREMD run.\n"
       "  NSTLIM <nstlim>    : Input file; steps per exchange. Required.\n"
       "  DT <step>          : Input file; time step. Required.\n"
@@ -119,6 +121,18 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
         cpin_file_ = VAR;
         if (fileExists(cpin_file_))
           cpin_file_ = tildeExpansion( cpin_file_ );
+      }
+      else if (OPT == "USELOG")
+      {
+        if (VAR == "yes")
+          uselog_ = true;
+        else if (VAR == "no")
+          uselog_ = false;
+        else {
+          ErrorMsg("Expected either 'yes' or 'no' for USELOG.\n");
+          OptHelp();
+          return 1;
+        }
       }
       else
       {
@@ -663,7 +677,9 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
     std::string GROUPFILE_LINE = "-O -remlog rem.log -i " + mdin_name +
       " -p " + currentTop + " -c " + INPUT_CRD + " -o OUTPUT/rem.out." + EXT +
       " -inf INFO/reminfo." + EXT + " -r RST/" + EXT + 
-      ".rst7 -x TRAJ/rem.crd." + EXT + " -l LOG/logfile." + EXT;
+      ".rst7 -x TRAJ/rem.crd." + EXT;
+    if (uselog_)
+      GROUPFILE_LINE.append(" -l LOG/logfile." + EXT);
     if (ph_dim_ != -1)
       GROUPFILE_LINE.append(" -cpin " + cpin_file_ +
                             " -cpout CPH/cpout." + EXT +

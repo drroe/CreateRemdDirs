@@ -51,6 +51,7 @@ class RemdDirs {
     int umbrella_;                ///< When > 0 indicates umbrella sampling write frequency.
     bool override_irest_;         ///< If true do not set irest, use from MDIN
     bool override_ntx_;           ///< If true do not set ntx, use from MDIN
+    bool uselog_;                 ///< If true use -l in groupfile
     RUNTYPE runType_;             ///< Type of run from options file.
     std::string runDescription_;  ///< Run description
     std::string additionalInput_; ///< Hold any additional MDIN input.
