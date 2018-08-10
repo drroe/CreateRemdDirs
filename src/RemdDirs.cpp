@@ -680,10 +680,22 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
       ".rst7 -x TRAJ/rem.crd." + EXT;
     if (uselog_)
       GROUPFILE_LINE.append(" -l LOG/logfile." + EXT);
-    if (ph_dim_ != -1)
-      GROUPFILE_LINE.append(" -cpin " + cpin_file_ +
-                            " -cpout CPH/cpout." + EXT +
+    if (ph_dim_ != -1) {
+      if (run_num == 0)
+        GROUPFILE_LINE.append(" -cpin " + cpin_file_);
+      else {
+        // Use CPrestart from previous run
+        std::string prevCP("../run." + integerToString(run_num-1, width) +
+                           "/CPH/cprestrt." + EXT);
+        if (!fileExists( prevCP )) {
+          ErrorMsg("Previous CP restart %s not found.\n", prevCP.c_str());
+          return 1;
+        }
+        GROUPFILE_LINE.append(" -cpin " + prevCP);
+      }
+      GROUPFILE_LINE.append(" -cpout CPH/cpout." + EXT +
                             " -cprestrt CPH/cprestrt." + EXT);
+    }
     for (unsigned int id = 0; id != Dims_.size(); id++)
       GROUPFILE_LINE += Dims_[id]->Groupline(EXT);
     GROUPFILE.Printf("%s\n", GROUPFILE_LINE.c_str());
