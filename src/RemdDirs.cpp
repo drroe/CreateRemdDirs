@@ -20,7 +20,8 @@ RemdDirs::RemdDirs() :
   umbrella_(0),
   override_irest_(false),
   override_ntx_(false),
-  uselog_(true)
+  uselog_(true),
+  crdDirSpecified_(false)
 {}
 
 // DESTRUCTOR
@@ -200,8 +201,11 @@ int RemdDirs::LoadDimension(std::string const& dfile) {
 // RemdDirs::Setup()
 int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
   // Command line input coordinates override any in options file.
-  if (!crdDirIn.empty())
+  if (!crdDirIn.empty()) {
+    crdDirSpecified_ = true;
     crd_dir_.assign(crdDirIn);
+  } else
+    crdDirSpecified_ = false;
   // Perform tilde expansion on coords if necessary.
   if (crd_dir_[0] == '~')
     crd_dir_ = tildeExpansion(crd_dir_);
@@ -313,7 +317,7 @@ void RemdDirs::Info() const {
 int RemdDirs::CreateRuns(std::string const& TopDir, StrArray const& RunDirs,
                          int start, bool overwrite)
 {
-  if (crd_dir_.empty()) {
+  if (start < 1 && crd_dir_.empty()) {
     ErrorMsg("No starting coords directory/file specified.\n");
     return 1;
   }
@@ -570,7 +574,7 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
   if (Mkdir(run_dir)) return 1;
   if (ChangeDir(run_dir)) return 1;
   // Ensure that coords directory exists.
-  if (!fileExists(crd_dir_)) {
+  if (crdDirSpecified_ && !fileExists(crd_dir_)) {
     ErrorMsg("Coords directory '%s' not found. Must specify absolute path"
              " or path relative to '%s'\n", crd_dir_.c_str(), run_dir.c_str());
     return 1;
@@ -666,9 +670,14 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
       Dims_[id]->WriteMdin(Indices[id], MDIN);
     MDIN.Printf(" &end\n");
     MDIN.Close();
-    // Write to groupfile
-    std::string INPUT_CRD = crd_dir_ + "/" + EXT + ".rst7";
-    if (run_num == start_run && !fileExists( INPUT_CRD )) {
+    // Write to groupfile. Determine restart.
+    std::string INPUT_CRD;
+    if (crdDirSpecified_ || run_num == 0)
+      INPUT_CRD = crd_dir_ + "/" + EXT + ".rst7";
+    else
+      INPUT_CRD = "../run." + integerToString(run_num-1, width) +
+                  "/RST/" + EXT + ".rst7";
+    if (start_run == run_num && !fileExists( INPUT_CRD )) {
       ErrorMsg("Coords %s not found.\n", INPUT_CRD.c_str());
       return 1;
     }
@@ -687,7 +696,7 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
         // Use CPrestart from previous run
         std::string prevCP("../run." + integerToString(run_num-1, width) +
                            "/CPH/cprestrt." + EXT);
-        if (!fileExists( prevCP )) {
+        if (start_run == run_num && !fileExists( prevCP )) {
           ErrorMsg("Previous CP restart %s not found.\n", prevCP.c_str());
           return 1;
         }
