@@ -317,6 +317,8 @@ void RemdDirs::Info() const {
     Msg("  CRD              : %s\n", crd_dir_.c_str());
     if (!ref_file_.empty())
       Msg("  REF              : %s\n", ref_file_.c_str());
+    if (!ref_dir_.empty())
+      Msg("  REF              : %s\n", ref_dir_.c_str());
   } else { // Some type of replica run
     Msg("  NUMEXCHG=%i\n", numexchg_);
     Msg("  CRD_DIR          : %s\n", crd_dir_.c_str());
@@ -898,16 +900,20 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
   if (n_md_runs_ < 2) {
     cmd_opts.assign("-i md.in -p " + top_file_ + " -c " + crd_dir_ + 
                     " -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info");
-    std::string repRef;
-    if (!ref_file_.empty()) {
-      if (!ref_dir_.empty())
-        Msg("Warning: Ignoring reference dir '%s' for MD run.\n", ref_dir_.c_str());
-      if (!fileExists( ref_file_ )) {
+    std::string mdRef;
+    if (!ref_file_.empty() || !ref_dir_.empty()) {
+      if (!ref_file_.empty())
+        mdRef = ref_file_;
+      else if (!ref_dir_.empty())
+        mdRef = ref_dir_;
+      if (!ref_file_.empty() && !ref_dir_.empty())
+        Msg("Warning: Both reference dir and prefix defined. Using '%s'\n", mdRef.c_str());
+      if (!fileExists( mdRef )) {
         ErrorMsg("Reference file '%s' not found. Must specify absolute path"
-                 " or path relative to '%s'\n", ref_file_.c_str(), run_dir.c_str());
+                 " or path relative to '%s'\n", mdRef.c_str(), run_dir.c_str());
         return 1;
       }
-      cmd_opts.append(" -ref " + tildeExpansion(ref_file_));
+      cmd_opts.append(" -ref " + tildeExpansion(mdRef));
     }
   } else {
     TextFile GROUP;
