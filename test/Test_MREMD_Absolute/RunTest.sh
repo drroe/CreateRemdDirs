@@ -21,6 +21,7 @@ NUMEXCHG    100
 TEMPERATURE 300.0
 TOPOLOGY    $TESTDIR/full.parm7
 MDIN_FILE   $TESTDIR/pme.remd.gamma1.opts
+REF_FILE $TESTDIR/CRD
 # Only fully archive lowest Hamiltonian
 FULLARCHIVE 0
 EOF
