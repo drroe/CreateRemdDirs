@@ -6,7 +6,7 @@
 #include "FileRoutines.h"
 #include "StringRoutines.h"
 
-static const char* VERSION = "0.97b";
+static const char* VERSION = "0.98b";
 
 static void CmdLineHelp() {
   Msg("Command line options:\n"
