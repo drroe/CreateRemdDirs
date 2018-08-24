@@ -27,6 +27,7 @@ class RemdDirs {
     }
 
     int LoadDimension(std::string const&);
+    std::string RefFileName(std::string const&) const;
     int CreateRemd(int, int, std::string const&);
     int CreateMD(int, int, std::string const&);
     int WriteRunMD(std::string const&) const;
@@ -58,6 +59,8 @@ class RemdDirs {
     std::string additionalInput_; ///< Hold any additional MDIN input.
     std::string crd_dir_;         ///< Directory where input coordinates are.
     std::string cpin_file_;       ///< CPIN file for constant pH
+    std::string ref_file_;        ///< Reference file (MD) or path prefix (REMD)
+    std::string ref_dir_;         ///< Directory where reference coords are (like crd_dir_)
     Groups groups_;               ///< For setting up MREMD groups.
 };
 #endif

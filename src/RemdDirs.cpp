@@ -33,6 +33,11 @@ RemdDirs::~RemdDirs() {
 void RemdDirs::OptHelp() {
   Msg("Creation input file variables:\n"
       "  CRD_FILE <dir>     : Starting coordinates location (run 0 only).\n"
+      "                       Expect name '<CRD_FILE>/XXX.rst7' for REMD.\n"
+      "  REF_FILE <dir>     : Reference coordinates (optional).\n"
+      "                       Expect name '<REF_FILE>/XXX.rst7' for REMD.\n"
+      "  REFERENCE <prefix> : Reference coordinates (optional, groupfile only).\n"
+      "                       Expect name '<REFERENCE>.XXX'.\n"
       "  DIMENSION <file>   : File containing replica dimension information, 1 per dimension\n"
       "    Headers:");
   for (ReplicaAllocator::Token const* ptr = ReplicaAllocator::AllocArray;
@@ -100,6 +105,10 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
         if (fileExists(top_file_))
           top_file_ = tildeExpansion( top_file_ );
       }
+      else if (OPT == "REFERENCE") // Format: <ref_file_>.EXT
+        ref_file_ = VAR;
+      else if (OPT == "REF_FILE")  // Format: <ref_dir>/EXT.rst7
+        ref_dir_ = VAR;
       else if (OPT == "TEMPERATURE")
         temp0_ = atof( VAR.c_str() );
       else if (OPT == "TRAJOUTARGS")
@@ -304,11 +313,17 @@ int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
 void RemdDirs::Info() const {
   Msg("  MDIN_FILE        : %s\n", mdin_file_.c_str());
   Msg("  NSTLIM=%i, DT=%f\n", nstlim_, dt_);
-  if (runType_ == MD)
+  if (runType_ == MD) {
     Msg("  CRD              : %s\n", crd_dir_.c_str());
-  else { // Some type of replica run
+    if (!ref_file_.empty())
+      Msg("  REF              : %s\n", ref_file_.c_str());
+  } else { // Some type of replica run
     Msg("  NUMEXCHG=%i\n", numexchg_);
     Msg("  CRD_DIR          : %s\n", crd_dir_.c_str());
+    if (!ref_file_.empty())
+      Msg("  REF_PREFIX       : %s\n", ref_file_.c_str());
+    else if (!ref_dir_.empty())
+      Msg("  REF_DIR          : %s\n", ref_dir_.c_str());
     Msg("  %u dimensions, %u total replicas.\n", Dims_.size(), totalReplicas_);
   }
 }
@@ -567,6 +582,15 @@ int RemdDirs::WriteRunMD(std::string const& cmd_opts) const {
 const std::string RemdDirs::groupfileName_( "groupfile" ); // TODO make these options
 const std::string RemdDirs::remddimName_("remd.dim");
 
+std::string RemdDirs::RefFileName(std::string const& EXT) const {
+  std::string repRef;
+  if (!ref_file_.empty())
+    repRef.assign(ref_file_ + "." + EXT);
+  else if (!ref_dir_.empty())
+    repRef.assign(ref_dir_ + "/" + EXT + ".rst7");
+  return repRef;
+}
+
 // RemdDirs::CreateRemd()
 int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir) {
   typedef std::vector<unsigned int> Iarray;
@@ -687,6 +711,15 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
       " -p " + currentTop + " -c " + INPUT_CRD + " -o OUTPUT/rem.out." + EXT +
       " -inf INFO/reminfo." + EXT + " -r RST/" + EXT + 
       ".rst7 -x TRAJ/rem.crd." + EXT;
+    std::string repRef = RefFileName(EXT);
+    if (!repRef.empty()) {
+      if (!fileExists( repRef )) {
+        ErrorMsg("Reference file '%s' not found. Must specify absolute path"
+                 " or path relative to '%s'\n", repRef.c_str(), run_dir.c_str());
+        return 1;
+      }
+      GROUPFILE_LINE.append(" -ref " + tildeExpansion(repRef));
+    }
     if (uselog_)
       GROUPFILE_LINE.append(" -l LOG/logfile." + EXT);
     if (ph_dim_ != -1) {
@@ -865,6 +898,17 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
   if (n_md_runs_ < 2) {
     cmd_opts.assign("-i md.in -p " + top_file_ + " -c " + crd_dir_ + 
                     " -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info");
+    std::string repRef;
+    if (!ref_file_.empty()) {
+      if (!ref_dir_.empty())
+        Msg("Warning: Ignoring reference dir '%s' for MD run.\n", ref_dir_.c_str());
+      if (!fileExists( ref_file_ )) {
+        ErrorMsg("Reference file '%s' not found. Must specify absolute path"
+                 " or path relative to '%s'\n", ref_file_.c_str(), run_dir.c_str());
+        return 1;
+      }
+      cmd_opts.append(" -ref " + tildeExpansion(ref_file_));
+    }
   } else {
     TextFile GROUP;
     if (GROUP.OpenWrite(groupfileName_)) return 1;
@@ -876,9 +920,20 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
         mdin_name.append(EXT);
         if (MakeMdinForMD(mdin_name, run_num, EXT, run_dir)) return 1;
       }
-      GROUP.Printf("-i %s -p %s -c %s -x md.nc%s -r %0*i.rst7 -o md.out%s -inf md.info%s\n",
+      GROUP.Printf("-i %s -p %s -c %s -x md.nc%s -r %0*i.rst7 -o md.out%s -inf md.info%s",
                    mdin_name.c_str(), top_file_.c_str(), crd_files[grp-1].c_str(), EXT.c_str(),
                    width, grp, EXT.c_str(), EXT.c_str());
+      std::string repRef = RefFileName(EXT);
+      if (!repRef.empty()) {
+        if (!fileExists( repRef )) {
+          ErrorMsg("Reference file '%s' not found. Must specify absolute path"
+                   " or path relative to '%s'\n", repRef.c_str(), run_dir.c_str());
+          return 1;
+        }
+        repRef = tildeExpansion(repRef);
+        GROUP.Printf(" -ref %s", repRef.c_str());
+      }
+      GROUP.Printf("\n");
     } 
     GROUP.Close();
     cmd_opts.assign("-ng " + integerToString(n_md_runs_) + " -groupfile " + groupfileName_);
