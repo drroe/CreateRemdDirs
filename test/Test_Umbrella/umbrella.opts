@@ -6,3 +6,4 @@ NSTLIM 3000
 DT 0.002
 UMBRELLA 1
 MDIN_FILE ../pme.remd.gamma1.opts
+REF_FILE ../../CRD
