@@ -929,7 +929,7 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
       GROUP.Printf("-i %s -p %s -c %s -x md.nc%s -r %0*i.rst7 -o md.out%s -inf md.info%s",
                    mdin_name.c_str(), top_file_.c_str(), crd_files[grp-1].c_str(), EXT.c_str(),
                    width, grp, EXT.c_str(), EXT.c_str());
-      std::string repRef = RefFileName(EXT);
+      std::string repRef = RefFileName(integerToString(grp, width));
       if (!repRef.empty()) {
         if (!fileExists( repRef )) {
           ErrorMsg("Reference file '%s' not found. Must specify absolute path"
