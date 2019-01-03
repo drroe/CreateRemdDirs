@@ -24,6 +24,7 @@ void Submit::OptHelp() {
       "                       $NODES, $THREADS, $PPN (will be set by script).\n"
       "  MODULEFILE <file>  : File containing extra commands to run (only last one loaded used)\n"
       "  COMMANDFILE <file> : File containing any additional commands to be run.\n"
+      "  COMMAND <command>  : Additional command to run (can specify multiple).\n"
       "  ACCOUNT <name>     : Account name\n"
       "  EMAIL <email>      : User email address\n"
       "  QUEUE <name>       : Queue name\n"
@@ -364,6 +365,10 @@ int Submit::QueueOpts::ProcessOption(std::string const& OPT, std::string const& 
     }
     cmdfile.Close();
   }
+  else if (OPT == "COMMAND") {
+    additionalCommands_.append( VAR );
+    additionalCommands_.append("\n");
+  }
   else if (OPT == "ACCOUNT") account_ = VAR;
   else if (OPT == "EMAIL"  ) email_ = VAR;
   else if (OPT == "QUEUE"  ) queueName_ = VAR;
@@ -489,10 +494,11 @@ int Submit::QueueOpts::QsubHeader(TextFile& qout, int run_num, std::string const
     qout.Printf("\necho \"JobID: $SLURM_JOB_ID\"\necho \"NodeList: $SLURM_NODELIST\"\n"
                 "cd $SLURM_SUBMIT_DIR\n\n");
   }
-  // Set thread info, Amber environment
+  // Set thread info
   if (ppn_ > 0) qout.Printf("PPN=%i\n", ppn_);
   if (nodes_ > 0) qout.Printf("NODES=%i\n", nodes_);
   if (threads_ > 0) qout.Printf("THREADS=%i\n", threads_);
+  // If AMBERHOME is set, set the EXE path
   if (!amberhome_.empty()) {
     qout.Printf("export AMBERHOME=%s\n", amberhome_.c_str());
     if (fileExists(amberhome_ + "/amber.sh"))
@@ -503,8 +509,7 @@ int Submit::QueueOpts::QsubHeader(TextFile& qout, int run_num, std::string const
     std::string exepath = amberhome_ + "/bin/" + program_;
     if (CheckExists("Full program path", exepath)) return 1;
     qout.Printf("export EXEPATH=%s\nls -l $EXEPATH\n", exepath.c_str());
-  } else
-    qout.Printf("export EXEPATH=`which %s`\nls -l $EXEPATH\n", program_.c_str());
+  }
   // Add any module file commands
   if (!modfileName_.empty()) {
     Msg("  Reading module file %s\n", modfileName_.c_str());
@@ -521,6 +526,9 @@ int Submit::QueueOpts::QsubHeader(TextFile& qout, int run_num, std::string const
   if (!additionalCommands_.empty())
     qout.Printf("\n%s\n\n", additionalCommands_.c_str());
   qout.Printf("export MPIRUN=\"%s\"\n", mpirun_.c_str()); // TODO Combine with EXEPATH
+  // Set EXE path here if AMBERHOME not set
+  if (amberhome_.empty())
+    qout.Printf("export EXEPATH=`which %s`\nls -l $EXEPATH\n", program_.c_str());
 
   return 0;
 }
