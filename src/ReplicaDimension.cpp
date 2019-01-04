@@ -72,7 +72,7 @@ int TopologyDim::LoadDim(std::string const& fname) {
       tops_.push_back( std::string(topname) );
     // Optionally add the temperature
     if (ncols > 1) {
-      Msg("DBG: Temperature %f\n", toptemp);
+      //Msg("DBG: Temperature %f\n", toptemp);
       temps_.push_back( toptemp );
     }
   }
@@ -81,7 +81,10 @@ int TopologyDim::LoadDim(std::string const& fname) {
              tops_.size(), temps_.size());
     err = 1;
   }
-  SetDescription("Varying topology files");
+  if (temps_.empty())
+    SetDescription("Varying topology files");
+  else
+    SetDescription("Varying topology files with temperatures");
   infile.Close();
   return err;
 }
