@@ -11,7 +11,8 @@ ALLTESTS=test.relative \
          test.md.multi.rst \
          test.umbrella \
          test.qsub.mremd \
-         test.override
+         test.override \
+         test.hremd
 
 test.relative:
 	@-cd Test_MREMD_Relative && ./RunTest.sh $(OPT)
@@ -42,6 +43,9 @@ test.qsub.mremd:
 
 test.override:
 	@-cd Test_Override_Irest && ./RunTest.sh $(OPT)
+
+test.hremd:
+	@-cd Test_HREMD && ./RunTest.sh $(OPT)
 
 test: $(ALLTESTS)
 
