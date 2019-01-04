@@ -38,8 +38,11 @@ class RemdDirs {
     std::string fullarchive_;
     std::string mdin_file_;
     std::string rst_file_;
-    int nstlim_, ig_, numexchg_;
-    double dt_, temp0_;
+    int nstlim_;                  ///< Simulation number of steps/steps per exchange.
+    int ig_;                      ///< Simulation random seed.
+    int numexchg_;                ///< Simulation number of exchanges.
+    double dt_;                   ///< Simulation time step.
+    double temp0_;                ///< Simulation temperature.
 
     typedef std::vector<ReplicaDimension*> DimArray;
     DimArray Dims_;               ///< Hold any replica dimensions

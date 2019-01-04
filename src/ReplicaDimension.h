@@ -93,13 +93,15 @@ class TopologyDim : public ReplicaDimension {
     TopologyDim() : ReplicaDimension(TOPOLOGY, HREMD) {}
     static ReplicaDimension* Alloc() { return (ReplicaDimension*)new TopologyDim(); }
     unsigned int Size()               const { return tops_.size(); }
-    bool ProvidesTemp0()              const { return false; }
+    bool ProvidesTemp0()              const { return !temps_.empty(); }
     bool ProvidesTopFiles()           const { return true; }
     std::string const& TopName(int i) const { return tops_[i]; }
+    double Temp0(int i)               const { return temps_[i]; }
     const char* name()                const { return "HREMD"; }
     int LoadDim(std::string const&);
   private:
     Sarray tops_; ///< List of replica topologies
+    Darray temps_; ///< Optional corresponding list of temperatures
 }; 
 
 // -----------------------------------------------

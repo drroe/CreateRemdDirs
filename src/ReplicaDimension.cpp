@@ -70,9 +70,16 @@ int TopologyDim::LoadDim(std::string const& fname) {
       tops_.push_back( tildeExpansion(std::string(topname)) );
     else
       tops_.push_back( std::string(topname) );
-    // Report the temperature
-    if (ncols > 1)
+    // Optionally add the temperature
+    if (ncols > 1) {
       Msg("DBG: Temperature %f\n", toptemp);
+      temps_.push_back( toptemp );
+    }
+  }
+  if (!temps_.empty() && tops_.size() != temps_.size()) {
+    ErrorMsg("Number of tops (%zu) and temperatures (%zu) do not match.\n",
+             tops_.size(), temps_.size());
+    err = 1;
   }
   SetDescription("Varying topology files");
   infile.Close();
