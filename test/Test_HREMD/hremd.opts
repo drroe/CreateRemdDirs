@@ -2,5 +2,4 @@ DIMENSION   relative.Hamiltonians.dat
 NSTLIM      500
 DT          0.002
 NUMEXCHG    100
-TEMPERATURE 300.0
 MDIN_FILE   ../pme.remd.gamma1.opts

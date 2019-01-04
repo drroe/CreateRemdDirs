@@ -8,6 +8,6 @@ OPTLINE="-i hremd.opts -b 0 -e 0 -c ../../CRD"
 RunTest "H-REMD relative path test."
 #DoTest ../mremd.dim.save run.000/remd.dim
 DoTest groupfile.save run.000/groupfile
-#DoTest ../in.001.save run.000/INPUT/in.001
+DoTest in.001.save run.000/INPUT/in.001
 
 EndTest
