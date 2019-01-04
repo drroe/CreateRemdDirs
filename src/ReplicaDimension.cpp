@@ -53,19 +53,30 @@ int PhDim::LoadDim(std::string const& fname) {
 int TopologyDim::LoadDim(std::string const& fname) {
   TextFile infile;
   if (infile.OpenRead(fname)) return 1;
-  std::string topname = infile.GetString(); // Scan past first line.
-  topname = infile.GetString(); // Get second line. 
-  while ( !topname.empty() ) {
-    //if (CheckExists("Topology from dim", topname)) return 1;
-    if ( topname[0] == '~' )
-      tops_.push_back( tildeExpansion(topname) );
+  const char* buffer = infile.Gets(); // Scan past first line.
+  int ncols = -1;
+  char topname[1024];
+  double toptemp = 0.0;
+  int err = 0;
+  while ( (buffer = infile.Gets()) != 0 ) {
+    ncols = sscanf(buffer, "%s %lf", topname, &toptemp);
+    if (ncols != 1 && ncols != 2) {
+      err = 1;
+      ErrorMsg("Malformed Hamiltonian dimension.\n");
+      break;
+    }
+    // Add the topology
+    if (topname[0] == '~')
+      tops_.push_back( tildeExpansion(std::string(topname)) );
     else
-      tops_.push_back( topname );
-    topname = infile.GetString();
+      tops_.push_back( std::string(topname) );
+    // Report the temperature
+    if (ncols > 1)
+      Msg("DBG: Temperature %f\n", toptemp);
   }
-  infile.Close();
   SetDescription("Varying topology files");
-  return 0;
+  infile.Close();
+  return err;
 }
 
 // -----------------------------------------------------------------------------
