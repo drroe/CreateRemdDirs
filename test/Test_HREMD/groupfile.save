@@ -1,0 +1,2 @@
+-O -remlog rem.log -i INPUT/in.001 -p ../../AltDFC.01.PagF.TIP3P.ff14SB.parm7 -c ../../CRD/001.rst7 -o OUTPUT/rem.out.001 -inf INFO/reminfo.001 -r RST/001.rst7 -x TRAJ/rem.crd.001 -l LOG/logfile.001
+-O -remlog rem.log -i INPUT/in.002 -p ../../AltDFC.02.PagF.TIP3P.ff14SB.parm7 -c ../../CRD/002.rst7 -o OUTPUT/rem.out.002 -inf INFO/reminfo.002 -r RST/002.rst7 -x TRAJ/rem.crd.002 -l LOG/logfile.002
