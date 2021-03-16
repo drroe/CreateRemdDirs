@@ -161,12 +161,12 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
     if (debug_ > 0) mdinFile_.PrintNamelists();
     std::string valname = mdinFile_.GetNamelistVar("&cntrl", "irest");
     if (!valname.empty()) {
-      Msg("Warning: Using 'irest' in '%s'\n", mdin_file_.c_str());
+      Msg("Warning: Using 'irest = %s' in '%s'\n", valname.c_str(), mdin_file_.c_str());
       override_irest_ = true;
     }
     valname = mdinFile_.GetNamelistVar("&cntrl", "ntx");
     if (!valname.empty()) {
-      Msg("Warning: Using 'ntx' in '%s'\n", mdin_file_.c_str());
+      Msg("Warning: Using 'ntx = %s' in '%s'\n", valname.c_str(), mdin_file_.c_str());
       override_ntx_ = true;
     }
     // Add any &cntrl variables to additionalInput_
