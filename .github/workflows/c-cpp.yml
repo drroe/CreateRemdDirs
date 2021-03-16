@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: CreateRemdDirs Tests 
 
 on:
   push:
@@ -7,15 +7,33 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
+  linux_build:
     runs-on: ubuntu-latest
+    name: Build
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: ["gnu", "clang"]
+        
+    env:
+        COMPILER: ${{ matrix.compiler }}
+        BUILD_TYPE: "install"
+        TEST_TYPE: "test" 
 
     steps:
-    - uses: actions/checkout@v2
-    - name: configure
-      run: ./configure
-    - name: make install
-      run: make install
-    - name: make test
-      run: make test
+      - name: Install prerequisite packages
+        run: |
+          sudo apt-get install libnetcdf-dev \
+                               netcdf-bin \
+                               clang
+
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Compile and test CreateRemdDirs
+        shell: bash -lex {0}
+        run: |
+          ./configure ${COMPILER}
+          make -j2 install
+          make $TEST_TYPE
+
