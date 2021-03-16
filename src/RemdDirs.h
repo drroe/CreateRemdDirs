@@ -1,9 +1,10 @@
 #ifndef INC_REMDDIRS_H
 #define INC_REMDDIRS_H
-#include "ReplicaDimension.h"
 #include "Groups.h"
 #include "FileRoutines.h" // StrArray
 #include "MdinFile.h"
+class ReplicaDimension;
+/// Class responsible for creating run input and script
 class RemdDirs {
   public:
     RemdDirs();
@@ -21,11 +22,8 @@ class RemdDirs {
     enum RUNTYPE { MD=0, TREMD, HREMD, PHREMD, MREMD };
     static const std::string groupfileName_;
     static const std::string remddimName_;
-
-    std::string const& Topology() const {
-      if (top_dim_ == -1) return top_file_;
-      return Dims_[top_dim_]->TopName( 0 );
-    }
+    /// \return Name of first topology file from the top_dim_ dimension.
+    std::string const& Topology() const;
 
     int LoadDimension(std::string const&);
     std::string RefFileName(std::string const&) const;

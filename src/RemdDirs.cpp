@@ -4,6 +4,7 @@
 #include "Messages.h"
 #include "TextFile.h"
 #include "StringRoutines.h"
+#include "ReplicaDimension.h"
 
 /** CONSTRUCTOR */
 RemdDirs::RemdDirs() :
@@ -29,6 +30,12 @@ RemdDirs::RemdDirs() :
 RemdDirs::~RemdDirs() {
   for (DimArray::const_iterator dim = Dims_.begin(); dim != Dims_.end(); ++dim)
     if (*dim != 0) delete *dim;
+}
+
+/** \return First topology file from the top_dim_ dimension. */
+std::string const& RemdDirs::Topology() const {
+  if (top_dim_ == -1) return top_file_;
+    return Dims_[top_dim_]->TopName( 0 );
 }
 
 void RemdDirs::OptHelp() {
