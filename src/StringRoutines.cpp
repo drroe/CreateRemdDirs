@@ -52,3 +52,14 @@ std::string NoTrailingWhitespace(std::string const& line) {
   RemoveTrailingWhitespace(duplicate);
   return duplicate;
 }
+
+/// Remove all whitespace from string.
+void RemoveAllWhitespace(std::string& line) {
+  if (line.empty()) return;
+  std::string tmp( line );
+  line.clear();
+  for (std::string::const_iterator it = tmp.begin(); it != tmp.end(); ++it) {
+    if (isspace(*it) || *it == '\n' || *it == '\r') continue;
+    line += *it;
+  }
+}
