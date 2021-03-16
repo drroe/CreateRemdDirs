@@ -1,0 +1,13 @@
+MD 6 ps
+ &cntrl
+    imin = 0, nstlim = 3000, dt = 0.002000,
+    ig = -1,
+    temp0 = 330.000000, tempi = 330.000000,
+   ntx = 5, irest = 1, ntwx = 5000, ntwv = -1, 
+   ioutfm = 1, ntpr = 500, ntwr = 50000, iwrap = 0, 
+   nscm = 0, ntc = 2, ntf = 2, ntb = 1, 
+   cut = 8.0, tol = 0.000001, ntt = 0, ntr = 0, 
+ &end
+ &ewald
+   dsum_tol = 0.000001, 
+ &end

@@ -10,4 +10,6 @@ std::string doubleToString(double);
 void RemoveTrailingWhitespace(std::string &);
 /// \return string stripped of trailing whitespace.
 std::string NoTrailingWhitespace(std::string const&);
+/// Remove all whitespace from a string
+void RemoveAllWhitespace(std::string&);
 #endif

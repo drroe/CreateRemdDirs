@@ -5,6 +5,7 @@
 #include "TextFile.h"
 #include "StringRoutines.h"
 
+/** CONSTRUCTOR */
 RemdDirs::RemdDirs() :
   nstlim_(-1),
   ig_(-1),
@@ -156,21 +157,55 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
   override_ntx_ = false;
   additionalInput_.clear();
   if (!mdin_file_.empty()) {
-    TextFile MDIN;
-    if (MDIN.OpenRead(mdin_file_)) return 1;
-    const char* buffer;
-    while ( (buffer = MDIN.Gets()) != 0) {
-      if (strstr(buffer, "irest ") != 0 || strstr(buffer, "irest=") != 0) {
-        Msg("Warning: Using 'irest' in '%s'\n", mdin_file_.c_str());
-        override_irest_ = true;
-      }
-      if (strstr(buffer, "ntx ") != 0 || strstr(buffer, "ntx=") != 0) {
-        Msg("Warning: Using 'ntx' in '%s'\n", mdin_file_.c_str());
-        override_ntx_ = true;
-      }
-      additionalInput_.append( buffer );
+    if (mdinFile_.ParseFile( mdin_file_ )) return 1;
+    if (debug_ > 0) mdinFile_.PrintNamelists();
+    std::string valname = mdinFile_.GetNamelistVar("&cntrl", "irest");
+    if (!valname.empty()) {
+      Msg("Warning: Using 'irest = %s' in '%s'\n", valname.c_str(), mdin_file_.c_str());
+      override_irest_ = true;
     }
-    MDIN.Close();
+    valname = mdinFile_.GetNamelistVar("&cntrl", "ntx");
+    if (!valname.empty()) {
+      Msg("Warning: Using 'ntx = %s' in '%s'\n", valname.c_str(), mdin_file_.c_str());
+      override_ntx_ = true;
+    }
+    // Add any &cntrl variables to additionalInput_
+    for (MdinFile::const_iterator nl = mdinFile_.nl_begin(); nl != mdinFile_.nl_end(); ++nl)
+    {
+      if (nl->first == "&cntrl") {
+        unsigned int col = 0;
+        for (MdinFile::token_iterator tkn = nl->second.begin(); tkn != nl->second.end(); ++tkn)
+        {
+          // Avoid vars which will be set
+          if (tkn->first == "imin" ||
+              tkn->first == "nstlim" ||
+              tkn->first == "dt" ||
+              tkn->first == "ig" ||
+              tkn->first == "temp0" ||
+              tkn->first == "tempi" ||
+              tkn->first == "numexchg" ||
+              tkn->first == "solvph"
+             )
+          {
+            Msg("Warning: Not using variable '%s' found in '%s'\n", tkn->first.c_str(), mdin_file_.c_str());
+            continue;
+          }
+          if (col == 0)
+            additionalInput_.append("   ");
+          
+          additionalInput_.append( tkn->first + " = " + tkn->second + ", " );
+          col++;
+          if (col == 4) {
+            additionalInput_.append("\n");
+            col = 0;
+          }
+        }
+        if (col != 0)
+          additionalInput_.append("\n");
+      } else
+        Msg("Warning: MDIN file contains additonal namelist '%s'\n", nl->first.c_str());
+    }
+
     if (override_irest_ != override_ntx_) {
       ErrorMsg("Both 'irest' and 'ntx' must be in '%s' if either are.\n", mdin_file_.c_str());
       return 1;
@@ -593,6 +628,29 @@ std::string RemdDirs::RefFileName(std::string const& EXT) const {
   return repRef;
 }
 
+void RemdDirs::WriteNamelist(TextFile& MDIN, std::string const& namelist,
+                             MdinFile::TokenArray const& tokens)
+const
+{
+  MDIN.Printf(" %s\n", namelist.c_str());
+  unsigned int col = 0;
+  for (MdinFile::token_iterator tkn = tokens.begin(); tkn != tokens.end(); ++tkn)
+  {
+    if (col == 0)
+      MDIN.Printf("   ");
+    
+    MDIN.Printf("%s = %s, ", tkn->first.c_str(), tkn->second.c_str());
+    col++;
+    if (col == 4) {
+      MDIN.Printf("\n");
+      col = 0;
+    }
+  }
+  if (col != 0)
+    MDIN.Printf("\n");
+  MDIN.Printf(" &end\n");
+}
+
 // RemdDirs::CreateRemd()
 int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir) {
   typedef std::vector<unsigned int> Iarray;
@@ -695,6 +753,10 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
     for (unsigned int id = 0; id != Dims_.size(); id++)
       Dims_[id]->WriteMdin(Indices[id], MDIN);
     MDIN.Printf(" &end\n");
+    // Add any additional namelists
+    for (MdinFile::const_iterator nl = mdinFile_.nl_begin(); nl != mdinFile_.nl_end(); ++nl)
+      if (nl->first != "&cntrl")
+        WriteNamelist(MDIN, nl->first, nl->second);
     MDIN.Close();
     // Write to groupfile. Determine restart.
     std::string INPUT_CRD;
@@ -836,6 +898,11 @@ int RemdDirs::MakeMdinForMD(std::string const& fname, int run_num,
     Msg("    Using NMR restraints.\n");
   }
   MDIN.Printf(" &end\n");
+  // Add any additional namelists
+  for (MdinFile::const_iterator nl = mdinFile_.nl_begin(); nl != mdinFile_.nl_end(); ++nl)
+    if (nl->first != "&cntrl")
+      WriteNamelist(MDIN, nl->first, nl->second);
+
   if (!rst_file_.empty()) {
     // Restraints
     std::string rf_name(rst_file_ + EXT);
@@ -874,6 +941,9 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
   // Ensure that coords file exists for first run.
   if (run_num == start_run) {
     if (n_md_runs_ < 2) {
+      // If not specified, try to find a previous run
+      if (crd_dir_.empty())
+        crd_dir_ = "../run." + integerToString(run_num-1, 3) + "/mdrst.rst7";
       if (!fileExists(crd_dir_)) {
         ErrorMsg("Coords file '%s' not found. Must specify absolute path"
                  " or path relative to '%s'\n", crd_dir_.c_str(), run_dir.c_str());
