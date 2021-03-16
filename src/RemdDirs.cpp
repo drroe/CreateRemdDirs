@@ -941,6 +941,9 @@ int RemdDirs::CreateMD(int start_run, int run_num, std::string const& run_dir) {
   // Ensure that coords file exists for first run.
   if (run_num == start_run) {
     if (n_md_runs_ < 2) {
+      // If not specified, try to find a previous run
+      if (crd_dir_.empty())
+        crd_dir_ = "../run." + integerToString(run_num-1, 3) + "/mdrst.rst7";
       if (!fileExists(crd_dir_)) {
         ErrorMsg("Coords file '%s' not found. Must specify absolute path"
                  " or path relative to '%s'\n", crd_dir_.c_str(), run_dir.c_str());
