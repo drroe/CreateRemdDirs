@@ -3,7 +3,7 @@ Automatically generate input for running M-REMD simulations (and more) in Amber.
 
 Build Status
 ============
-* GitHub Actions: [![GitHub Actions Status](https://github.com/drroe/CreateRemdDirs/actions/workflows/merge-gate.yml/badge.svg)](https://github.com/drroe/CreateRemdDirs/actions)
+* GitHub Actions: [![GitHub Actions Status](https://github.com/drroe/CreateRemdDirs/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/drroe/CreateRemdDirs/actions)
 
 About CreateRemdDirs
 ====================
