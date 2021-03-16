@@ -11,7 +11,7 @@ class Submit {
    static void OptHelp();
    int ReadOptions(std::string const&);
    int CheckOptions();
-   int SubmitRuns(std::string const&, StrArray const&, int, bool) const;
+   int SubmitRuns(std::string const&, StrArray const&, int, bool, std::string const&) const;
    int SubmitAnalysis(std::string const&, int, int, bool) const;
    int SubmitArchive(std::string const&, int, int, bool) const;
    void SetTesting(bool t) { testing_ = t; }
