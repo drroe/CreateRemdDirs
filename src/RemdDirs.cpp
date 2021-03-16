@@ -4,8 +4,8 @@
 #include "Messages.h"
 #include "TextFile.h"
 #include "StringRoutines.h"
-#include "MdinFile.h"
 
+/** CONSTRUCTOR */
 RemdDirs::RemdDirs() :
   nstlim_(-1),
   ig_(-1),
@@ -157,20 +157,19 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
   override_ntx_ = false;
   additionalInput_.clear();
   if (!mdin_file_.empty()) {
-    MdinFile mdinFile;
-    if (mdinFile.ParseFile( mdin_file_ )) return 1;
-    std::string valname = mdinFile.GetNamelistVar("&cntrl", "irest");
+    if (mdinFile_.ParseFile( mdin_file_ )) return 1;
+    std::string valname = mdinFile_.GetNamelistVar("&cntrl", "irest");
     if (!valname.empty()) {
       Msg("Warning: Using 'irest' in '%s'\n", mdin_file_.c_str());
       override_irest_ = true;
     }
-    valname = mdinFile.GetNamelistVar("&cntrl", "ntx");
+    valname = mdinFile_.GetNamelistVar("&cntrl", "ntx");
     if (!valname.empty()) {
       Msg("Warning: Using 'ntx' in '%s'\n", mdin_file_.c_str());
       override_ntx_ = true;
     }
     // Add any &cntrl variables to additionalInput_
-    for (MdinFile::const_iterator nl = mdinFile.nl_begin(); nl != mdinFile.nl_end(); ++nl)
+    for (MdinFile::const_iterator nl = mdinFile_.nl_begin(); nl != mdinFile_.nl_end(); ++nl)
     {
       if (nl->first == "&cntrl") {
         unsigned int col = 0;

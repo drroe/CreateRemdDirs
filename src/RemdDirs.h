@@ -3,6 +3,7 @@
 #include "ReplicaDimension.h"
 #include "Groups.h"
 #include "FileRoutines.h" // StrArray
+#include "MdinFile.h"
 class RemdDirs {
   public:
     RemdDirs();
@@ -45,6 +46,7 @@ class RemdDirs {
     double temp0_;                ///< Simulation temperature.
 
     typedef std::vector<ReplicaDimension*> DimArray;
+    MdinFile mdinFile_;           ///< Used to parse input from Amber MDIN file
     DimArray Dims_;               ///< Hold any replica dimensions
     unsigned int totalReplicas_;  /// Total # of replicas based on dimensions
     int top_dim_;                 ///< Set to index of temp0 dim or -1 = global temp

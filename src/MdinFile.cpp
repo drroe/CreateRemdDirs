@@ -28,7 +28,7 @@ MdinFile::StatType MdinFile::TokenizeLine(TokenArray& Tokens, std::string const&
   if (pch != 0) {
     while (pch != 0) {
       std::string elt(pch);
-      Msg("DEBUG: elt='%s'\n", elt.c_str());
+      //Msg("DEBUG: elt='%s'\n", elt.c_str());
       RemoveAllWhitespace(elt);
       if (!elt.empty()) {
         if (elt[0] == '&') {
@@ -66,7 +66,7 @@ int MdinFile::AddToNamelist(std::string const& line) {
   if (stat == ERR) return 1;
 
   if (currentNamelist_.empty()) {
-    Msg("Current name list is empty.\n");
+    //Msg("DEBUG: Current name list is empty.\n");
     return 0;
   }
 
@@ -74,7 +74,7 @@ int MdinFile::AddToNamelist(std::string const& line) {
   NLmap::iterator it = NameLists_.lower_bound( currentNamelist_ );
   if (it == NameLists_.end() || it->first != currentNamelist_ )
   {
-    Msg("New namelist: %s\n", currentNamelist_.c_str());
+    //Msg("DEBUG: New namelist: %s\n", currentNamelist_.c_str());
     it = NameLists_.insert(it, NLpair(currentNamelist_, TokenArray()));
   }
   // Add tokens to current name list
@@ -85,6 +85,7 @@ int MdinFile::AddToNamelist(std::string const& line) {
 
 /** Parse input from MDIN file. */
 int MdinFile::ParseFile(std::string const& fname) {
+  NameLists_.clear();
   TextFile MDIN;
 
   if (MDIN.OpenRead(fname)) {
