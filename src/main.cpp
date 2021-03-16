@@ -15,6 +15,7 @@ static void CmdLineHelp() {
       "  -b <start run>: Run # to start at.\n"
       "  -e <stop run> : Run # to end at.\n"
       "  -c <dir>      : Start coords directory (run creation only).\n"
+      "  -j <id>       : Have first run depend on given job id (run submission only).\n"
       "  -s            : Allow job submission in addition to input creation.\n"
       "  -O            : Overwrite.\n"
       "  -t            : Test only; do not submit.\n"
@@ -63,6 +64,7 @@ int main(int argc, char** argv) {
   int start_run = -1;
   int stop_run = -1;
   std::string crd_dir;
+  std::string previous_jobid;
   bool needsMdin = true;
   bool overwrite = false;
   bool checkFirst = true;
@@ -82,6 +84,8 @@ int main(int argc, char** argv) {
       crd_dir.assign( argv[++iarg] );
     else if (Arg == "-d" && iarg+1 != argc)       // Debug level
       debug = atoi(argv[++iarg]);
+    else if (Arg == "-j" && iarg+1 != argc)       // Previous job id
+      previous_jobid.assign(argv[++iarg]);
     else if (Arg == "-h" || Arg == "--help") {    // Print help and exit
       Help(false);
       return 0;
@@ -201,7 +205,7 @@ int main(int argc, char** argv) {
     if (submit.ReadOptions( qfile )) return 1;
     if (submit.CheckOptions()) return 1;
     if (InputEnabled[RUNS]) {
-      if (submit.SubmitRuns(TopDir, RunDirs, start_run, overwrite)) return 1;
+      if (submit.SubmitRuns(TopDir, RunDirs, start_run, overwrite, previous_jobid)) return 1;
     }
     if (InputEnabled[ANALYZE]) {
       if (submit.SubmitAnalysis(TopDir, start_run, stop_run, overwrite)) return 1;

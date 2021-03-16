@@ -35,7 +35,9 @@ void Submit::OptHelp() {
       "  FLAG <flag>        : Any additional queue flags.\n\n");
 }
 
-int Submit::SubmitRuns(std::string const& TopDir, StrArray const& RunDirs, int start, bool overwrite) const
+int Submit::SubmitRuns(std::string const& TopDir, StrArray const& RunDirs, int start, bool overwrite,
+                       std::string const& prev_jobidIn)
+const
 {
   Run_->Info();
   std::string user = NoTrailingWhitespace( UserName() );
@@ -46,7 +48,9 @@ int Submit::SubmitRuns(std::string const& TopDir, StrArray const& RunDirs, int s
                              submitScript + " > " + jobIdFilename);
   std::string runScriptName("RunMD.sh");
   // Create run script for each run directory
-  std::string previous_jobid;
+  if (!prev_jobidIn.empty())
+    Msg("First submission will depend on job id %s\n", prev_jobidIn.c_str());
+  std::string previous_jobid = prev_jobidIn;
   int run_num;
   if (start != -1)
     run_num = start;
