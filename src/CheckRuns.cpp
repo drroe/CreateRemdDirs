@@ -42,6 +42,7 @@ static inline std::string Ext(std::string const& name) {
   return  name.substr(found);
 }
 
+#ifdef HAS_NETCDF
 /** Given two arrays of file names of different size try to determine
   * where they differ based on extension.
   */
@@ -61,6 +62,7 @@ static void CompareStrArray(StrArray const& a1, StrArray const& a2) {
   if (idx < a2.size())
     ErrorMsg("Differs at '%s'\n", a2[idx].c_str());
 }
+#endif
 
 int CheckRuns(std::string const& TopDir, StrArray const& RunDirs, bool firstOnly) {
 #ifdef HAS_NETCDF
