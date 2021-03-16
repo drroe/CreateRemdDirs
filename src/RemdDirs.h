@@ -29,6 +29,7 @@ class RemdDirs {
 
     int LoadDimension(std::string const&);
     std::string RefFileName(std::string const&) const;
+    void WriteNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
     int CreateRemd(int, int, std::string const&);
     int CreateMD(int, int, std::string const&);
     int WriteRunMD(std::string const&) const;

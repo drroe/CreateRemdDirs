@@ -627,6 +627,29 @@ std::string RemdDirs::RefFileName(std::string const& EXT) const {
   return repRef;
 }
 
+void RemdDirs::WriteNamelist(TextFile& MDIN, std::string const& namelist,
+                             MdinFile::TokenArray const& tokens)
+const
+{
+  MDIN.Printf(" %s\n", namelist.c_str());
+  unsigned int col = 0;
+  for (MdinFile::token_iterator tkn = tokens.begin(); tkn != tokens.end(); ++tkn)
+  {
+    if (col == 0)
+      MDIN.Printf("   ");
+    
+    MDIN.Printf("%s = %s, ", tkn->first.c_str(), tkn->second.c_str());
+    col++;
+    if (col == 4) {
+      MDIN.Printf("\n");
+      col = 0;
+    }
+  }
+  if (col != 0)
+    MDIN.Printf("\n");
+  MDIN.Printf(" &end\n");
+}
+
 // RemdDirs::CreateRemd()
 int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir) {
   typedef std::vector<unsigned int> Iarray;
@@ -729,6 +752,10 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
     for (unsigned int id = 0; id != Dims_.size(); id++)
       Dims_[id]->WriteMdin(Indices[id], MDIN);
     MDIN.Printf(" &end\n");
+    // Add any additional namelists
+    for (MdinFile::const_iterator nl = mdinFile_.nl_begin(); nl != mdinFile_.nl_end(); ++nl)
+      if (nl->first != "&cntrl")
+        WriteNamelist(MDIN, nl->first, nl->second);
     MDIN.Close();
     // Write to groupfile. Determine restart.
     std::string INPUT_CRD;
@@ -870,6 +897,11 @@ int RemdDirs::MakeMdinForMD(std::string const& fname, int run_num,
     Msg("    Using NMR restraints.\n");
   }
   MDIN.Printf(" &end\n");
+  // Add any additional namelists
+  for (MdinFile::const_iterator nl = mdinFile_.nl_begin(); nl != mdinFile_.nl_end(); ++nl)
+    if (nl->first != "&cntrl")
+      WriteNamelist(MDIN, nl->first, nl->second);
+
   if (!rst_file_.empty()) {
     // Restraints
     std::string rf_name(rst_file_ + EXT);
