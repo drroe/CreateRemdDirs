@@ -1,0 +1,7 @@
+CRD_FILE    ../../CRD/002.rst7
+#CRD_FILE    ../../Test_MD_RST
+DIMENSION   ../Test_HREMD/relative.Hamiltonians.dat 
+NSTLIM      500
+DT          0.002
+NUMEXCHG    100
+MDIN_FILE   ../pme.remd.gamma1.opts
