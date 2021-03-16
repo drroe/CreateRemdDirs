@@ -26,6 +26,8 @@ class MdinFile {
 
     /// Parse the given Amber MDIN file into namelists and variables
     int ParseFile(std::string const&);
+    /// Print namelists and variables to STDOUT
+    void PrintNamelists() const;
     /// \return Value for variable in specified namelist if present, empty otherwise.
     std::string GetNamelistVar(std::string const&, std::string const&) const;
   private:

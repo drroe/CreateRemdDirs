@@ -158,6 +158,7 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
   additionalInput_.clear();
   if (!mdin_file_.empty()) {
     if (mdinFile_.ParseFile( mdin_file_ )) return 1;
+    if (debug_ > 0) mdinFile_.PrintNamelists();
     std::string valname = mdinFile_.GetNamelistVar("&cntrl", "irest");
     if (!valname.empty()) {
       Msg("Warning: Using 'irest' in '%s'\n", mdin_file_.c_str());

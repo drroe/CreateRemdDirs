@@ -131,14 +131,18 @@ int MdinFile::ParseFile(std::string const& fname) {
     buffer = MDIN.Gets();
   }
 
-  for (NLmap::const_iterator nl = NameLists_.begin(); nl != NameLists_.end(); ++nl)
-  {
-    Msg("DEBUG: NameList: %s\n", nl->first.c_str());
-    for (TokenArray::const_iterator it = nl->second.begin(); it != nl->second.end(); ++it)
-      Msg("\t%s = %s\n", it->first.c_str(), it->second.c_str());
-  }
   MDIN.Close();
   return 0;
+}
+
+/** Print namelists and variables to STDOUT. */
+void MdinFile::PrintNamelists() const {
+  for (NLmap::const_iterator nl = NameLists_.begin(); nl != NameLists_.end(); ++nl)
+  {
+    Msg("\tMDIN NameList: %s\n", nl->first.c_str());
+    for (TokenArray::const_iterator it = nl->second.begin(); it != nl->second.end(); ++it)
+      Msg("\t\t%s = %s\n", it->first.c_str(), it->second.c_str());
+  }
 }
 
 /** \return Value for variable in specified namelist. */
