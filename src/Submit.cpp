@@ -11,6 +11,7 @@ Submit::~Submit() {
 
 void Submit::OptHelp() {
   Msg("Queue job submission input file variables:\n"
+      "  INPUT_FILE <file>  : Read additional options from <file>.\n"
       "  JOBNAME <name>     : Job name in queueing system (required).\n"
       "  NODES <#>          : Number of nodes needed.\n"
       "  PPN <#>            : Processors per node needed.\n"
