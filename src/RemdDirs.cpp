@@ -4,6 +4,7 @@
 #include "Messages.h"
 #include "TextFile.h"
 #include "StringRoutines.h"
+#include "MdinFile.h"
 
 RemdDirs::RemdDirs() :
   nstlim_(-1),
@@ -156,6 +157,8 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
   override_ntx_ = false;
   additionalInput_.clear();
   if (!mdin_file_.empty()) {
+    MdinFile mdinFile;
+    if (mdinFile.ParseFile( mdin_file_ )) return 1;
     TextFile MDIN;
     if (MDIN.OpenRead(mdin_file_)) return 1;
     const char* buffer;
