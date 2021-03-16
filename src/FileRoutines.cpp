@@ -76,7 +76,7 @@ StrArray ExpandToFilenames(std::string const& fnameArg) {
 }
 
 // fileExists()
-/** Return true if file can be opened "r".  */
+/** \return true if file can be opened "r".  */
 bool fileExists(std::string const& filenameIn) {
   // Perform tilde expansion
   std::string fname = tildeExpansion(filenameIn);
@@ -88,6 +88,21 @@ bool fileExists(std::string const& filenameIn) {
   }
   fclose(infile);
   return true;
+}
+
+/** \return 1 if file is a directory, 0 if not, -1 if error. */
+int IsDirectory(std::string const& filenameIn) {
+  if (filenameIn.empty()) return -1;
+  struct stat frame_stat;
+  if (stat(filenameIn.c_str(), &frame_stat) == -1) {
+    ErrorMsg( "Could not find file status for %s\n", filenameIn.c_str());
+    //if (debug_>0)
+    perror("     Error from stat: ");
+    return -1;
+  }
+  if (frame_stat.st_mode & S_IFDIR)
+    return 1;
+  return 0;
 }
 
 int CheckExists(const char* type, std::string const& fname) {

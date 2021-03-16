@@ -773,8 +773,14 @@ int RemdDirs::CreateRemd(int start_run, int run_num, std::string const& run_dir)
       INPUT_CRD = "../run." + integerToString(run_num-1, width) +
                   "/RST/" + EXT + ".rst7";
     if (start_run == run_num && !fileExists( INPUT_CRD )) {
-      ErrorMsg("Coords %s not found.\n", INPUT_CRD.c_str());
-      return 1;
+      // Check if crd_dir_ exists by itself
+      if (fileExists(crd_dir_) && IsDirectory(crd_dir_)==0) {
+        Msg("\tUsing '%s' for all input coordinates.\n", crd_dir_.c_str());
+        INPUT_CRD = crd_dir_;
+      } else {
+        ErrorMsg("Coords %s not found.\n", INPUT_CRD.c_str());
+        return 1;
+      }
     }
     if (debug_ > 1)
       Msg("\t\tINPCRD: %s\n", INPUT_CRD.c_str());

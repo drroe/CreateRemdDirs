@@ -6,6 +6,7 @@ std::string tildeExpansion(std::string const&);
 typedef std::vector<std::string> StrArray;
 StrArray ExpandToFilenames(std::string const&);
 bool fileExists(std::string const&);
+int IsDirectory(std::string const&);
 int CheckExists(const char*, std::string const&);
 int Mkdir(std::string const&);
 std::string GetWorkingDir();
