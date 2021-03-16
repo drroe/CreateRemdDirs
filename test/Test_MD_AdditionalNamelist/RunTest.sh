@@ -6,8 +6,6 @@ CleanFiles run.000
 
 OPTLINE="-i md.opts -b 0 -e 0"
 RunTest "Single MD Additional namelist test"
-#DoTest ../mdsingle.groupfile.save run.000/groupfile
-#DoTest ../RunMD.sh.save run.000/RunMD.sh
-#DoTest mdsingle.in.save run.000/md.in
+DoTest additionalNamelist.md.in.save run.000/md.in
 
 EndTest
