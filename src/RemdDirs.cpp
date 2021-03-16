@@ -159,21 +159,53 @@ int RemdDirs::ReadOptions(std::string const& input_file, int start) {
   if (!mdin_file_.empty()) {
     MdinFile mdinFile;
     if (mdinFile.ParseFile( mdin_file_ )) return 1;
-    TextFile MDIN;
-    if (MDIN.OpenRead(mdin_file_)) return 1;
-    const char* buffer;
-    while ( (buffer = MDIN.Gets()) != 0) {
-      if (strstr(buffer, "irest ") != 0 || strstr(buffer, "irest=") != 0) {
-        Msg("Warning: Using 'irest' in '%s'\n", mdin_file_.c_str());
-        override_irest_ = true;
-      }
-      if (strstr(buffer, "ntx ") != 0 || strstr(buffer, "ntx=") != 0) {
-        Msg("Warning: Using 'ntx' in '%s'\n", mdin_file_.c_str());
-        override_ntx_ = true;
-      }
-      additionalInput_.append( buffer );
+    std::string valname = mdinFile.GetNamelistVar("&cntrl", "irest");
+    if (!valname.empty()) {
+      Msg("Warning: Using 'irest' in '%s'\n", mdin_file_.c_str());
+      override_irest_ = true;
     }
-    MDIN.Close();
+    valname = mdinFile.GetNamelistVar("&cntrl", "ntx");
+    if (!valname.empty()) {
+      Msg("Warning: Using 'ntx' in '%s'\n", mdin_file_.c_str());
+      override_ntx_ = true;
+    }
+    // Add any &cntrl variables to additionalInput_
+    for (MdinFile::const_iterator nl = mdinFile.nl_begin(); nl != mdinFile.nl_end(); ++nl)
+    {
+      if (nl->first == "&cntrl") {
+        unsigned int col = 0;
+        for (MdinFile::token_iterator tkn = nl->second.begin(); tkn != nl->second.end(); ++tkn)
+        {
+          // Avoid vars which will be set
+          if (tkn->first == "imin" ||
+              tkn->first == "nstlim" ||
+              tkn->first == "dt" ||
+              tkn->first == "ig" ||
+              tkn->first == "temp0" ||
+              tkn->first == "tempi" ||
+              tkn->first == "numexchg" ||
+              tkn->first == "solvph"
+             )
+          {
+            Msg("Warning: Not using variable '%s' found in '%s'\n", tkn->first.c_str(), mdin_file_.c_str());
+            continue;
+          }
+          if (col == 0)
+            additionalInput_.append("   ");
+          
+          additionalInput_.append( tkn->first + " = " + tkn->second + ", " );
+          col++;
+          if (col == 4) {
+            additionalInput_.append("\n");
+            col = 0;
+          }
+        }
+        if (col != 0)
+          additionalInput_.append("\n");
+      } else
+        Msg("Warning: MDIN file contains additonal namelist '%s'\n", nl->first.c_str());
+    }
+
     if (override_irest_ != override_ntx_) {
       ErrorMsg("Both 'irest' and 'ntx' must be in '%s' if either are.\n", mdin_file_.c_str());
       return 1;

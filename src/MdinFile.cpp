@@ -136,5 +136,27 @@ int MdinFile::ParseFile(std::string const& fname) {
     for (TokenArray::const_iterator it = nl->second.begin(); it != nl->second.end(); ++it)
       Msg("\t%s = %s\n", it->first.c_str(), it->second.c_str());
   }
+  MDIN.Close();
   return 0;
+}
+
+/** \return Value for variable in specified namelist. */
+std::string MdinFile::GetNamelistVar(std::string const& namelist, std::string const& varname)
+const
+{
+  std::string valname;
+  NLmap::const_iterator it = NameLists_.find( namelist );
+  if (it == NameLists_.end()) {
+    Msg("Warning: Namelist '%s' not found.\n", namelist.c_str());
+    return valname;
+  }
+
+  for (TokenArray::const_iterator tkn = it->second.begin(); tkn != it->second.end(); ++tkn)
+  {
+    if (tkn->first == varname) {
+      valname = tkn->second;
+      break;
+    }
+  }
+  return valname;
 }
