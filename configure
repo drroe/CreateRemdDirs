@@ -202,5 +202,9 @@ CXXFLAGS=$CXXFLAGS
 LDFLAGS=$LDFLAGS
 EOF
 
+echo "Cleaning source directories."
+cd src && make clean > make.log 2>&1
+rm make.log
+
 echo ""
 exit 0

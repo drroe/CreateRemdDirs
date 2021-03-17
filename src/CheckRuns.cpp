@@ -134,7 +134,9 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
         continue;
       }
       // Loop over output and trajectory files.
+#     ifdef HAS_NETCDF
       int badFrameCount = -1;
+#     endif
       int numBadFrameCount = 0;
       bool check_restarts = false;
       StrArray::const_iterator tname = traj_files.begin();
@@ -257,8 +259,8 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
           *runStat = false;
           continue;
         }
-        double rst_time0 = 0.0;
 #       ifdef HAS_NETCDF
+        double rst_time0 = 0.0;
         for (StrArray::const_iterator rfile = restart_files.begin();
                                       rfile != restart_files.end(); ++rfile)
         {
