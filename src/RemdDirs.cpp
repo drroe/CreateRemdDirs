@@ -278,7 +278,7 @@ int RemdDirs::Setup(std::string const& crdDirIn, bool needsMdin) {
       runDescription_.assign( Dims_[0]->name() );
     } else {
       runType_ = MREMD;
-      DimArray::const_iterator dim = Dims_.begin();
+      //DimArray::const_iterator dim = Dims_.begin();
       runDescription_.assign( "MREMD" );
     }
     // Count total # of replicas, Do some error checking.
