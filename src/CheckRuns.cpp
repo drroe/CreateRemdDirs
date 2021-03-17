@@ -76,14 +76,24 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
     Msg("Checking all output/traj for all runs.\n");
   int debug = 0;
   int Nwarnings = 0;
+  std::vector<bool> run_is_ok(RunDirs.size(), false);
   // Loop over all run directories
-  for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir) {
-    if (ChangeDir( TopDir )) return 1;
+  std::vector<bool>::iterator runStat = run_is_ok.begin();
+  for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir, ++runStat)
+  {
+    if (ChangeDir( TopDir )) {
+      ErrorMsg("Could not change to top directory '%s'\n", TopDir.c_str());
+      return 1;
+    }
     if (!fileExists( *rdir ))
       Msg("Warning: '%s' does not exist.\n", rdir->c_str());
     else {
+      *runStat = true;
       Msg("  %s:", rdir->c_str());
-      ChangeDir( *rdir );
+      if (ChangeDir( *rdir )) {
+        ErrorMsg("Could not change to run directory '%s'\n", rdir->c_str());
+        return 1;
+      }
       // Try to determine the run type based on the output files.
       RunType runType = UNKNOWN;
       // REMD? 
@@ -105,7 +115,8 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
       Msg(" %zu output files.\n", output_files.size());
       if (output_files.empty() || runType == UNKNOWN) {
         ErrorMsg("Output file(s) not found.\n");
-        return 1;
+        *runStat = false;
+        continue;
       }
       // Determine where the trajectory files are.
       StrArray traj_files;
@@ -122,7 +133,8 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
         ErrorMsg("Number of output files %zu != # of traj files %zu.\n",
                  output_files.size(), traj_files.size());
         CompareStrArray( output_files, traj_files );
-        return 1;
+        *runStat = false;
+        continue;
       }
       // Loop over output and trajectory files.
       int badFrameCount = -1;
@@ -135,15 +147,21 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
       {
         if (debug > 0) Msg("    '%s'\n", fname->c_str());
         // Determine how many frames should be written by the output file.
+        // Read the '2. CONTROL DATA FOR THE RUN' section of MDOUT. Look
+        // for '5. TIMINGS' to ensure run completed.
         TextFile mdout;
-        if (mdout.OpenRead( *fname )) return 1;
+        if (mdout.OpenRead( *fname )) {
+          ErrorMsg("Could not open output file '%s'\n", fname->c_str());
+          return 1;
+        }
+        bool end_mdout_reached = false;
         int readInput = 0;
         int nstlim = 0;
         double dt = 0;
         int numexchg = 0;
         int ntwx = 0;
         int expectedFrames = 0;
-        const char* SEP = " ,=";
+        const char* SEP = " ,=\r\n";
         int ncols = mdout.GetColumns(SEP);
         while (ncols > -1) {
           if (readInput == 0 && ncols > 2) {
@@ -151,35 +169,54 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
               readInput = 1;
           } else if (readInput == 1 && ncols > 1) {
             if (mdout.Token(0) == "3." && mdout.Token(1) == "ATOMIC")
+              readInput = 2;
+            else {
+              for (int col = 0; col != ncols - 1; col++) {
+                if (mdout.Token(col) == "nstlim")
+                  nstlim = atoi( mdout.Token(col+1).c_str() );
+                else if (mdout.Token(col) == "dt")
+                  dt = atof( mdout.Token(col+1).c_str() );
+                else if (mdout.Token(col) == "numexchg")
+                  numexchg = atoi( mdout.Token(col+1).c_str() );
+                else if (mdout.Token(col) == "ntwx")
+                  ntwx = atoi( mdout.Token(col+1).c_str() );
+              }
+            }
+          } else if (readInput == 2 && ncols > 1) {
+            if (mdout.Token(0) == "5." && mdout.Token(1) == "TIMINGS") {
+              end_mdout_reached = true;
               break;
-            for (int col = 0; col != ncols - 1; col++) {
-              if (mdout.Token(col) == "nstlim")
-                nstlim = atoi( mdout.Token(col+1).c_str() );
-              else if (mdout.Token(col) == "dt")
-                dt = atof( mdout.Token(col+1).c_str() );
-              else if (mdout.Token(col) == "numexchg")
-                numexchg = atoi( mdout.Token(col+1).c_str() );
-              else if (mdout.Token(col) == "ntwx")
-                ntwx = atoi( mdout.Token(col+1).c_str() );
             }
           }
           ncols = mdout.GetColumns(SEP);
         }
         mdout.Close();
-        //Msg("\tnstlim= %i\n", nstlim);
-        //Msg("\tdt= %g\n", dt);
-        //Msg("\tnumexchg= %i\n", numexchg);
-        //Msg("\tntwx= %i\n", ntwx);
+        if (end_mdout_reached)
+          Msg("\tRun completed.\n");
+        else {
+          Msg("\tRun did not complete.\n");
+          *runStat = false;
+        }
+        Msg("\tnstlim= %i\n", nstlim);
+        Msg("\tdt= %g\n", dt);
+        if (runType == REMD) Msg("\tnumexchg= %i\n", numexchg);
+        Msg("\tntwx= %i\n", ntwx);
         if (numexchg == 0) numexchg = 1;
         double totalTime = ((double)nstlim * dt) * (double)numexchg;
         expectedFrames = (nstlim * numexchg) / ntwx;
-        if (debug > 0) {
+        //if (debug > 0) {
           Msg("\tTotal time: %g ps\n", totalTime);
           Msg("\tFrames: %i\n", expectedFrames);
-        }
+        //}
+
+        // Trajectory check.
         // Get actual number of frames from NetCDF file.
         int ncid = -1;
-        if ( checkNCerr(nc_open(tname->c_str(), NC_NOWRITE, &ncid)) ) return 1;
+        if ( checkNCerr(nc_open(tname->c_str(), NC_NOWRITE, &ncid)) ) {
+          ErrorMsg("Could not open trajectory file '%s'\n", tname->c_str());
+          *runStat = false;
+          continue;
+        }
         int dimID;
         size_t slength = 0;
         if ( checkNCerr(nc_inq_dimid(ncid, "frame", &dimID))  ) return 1;
@@ -202,8 +239,11 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
         }
         if (firstOnly) break;
       } // END loop over output files for run
-      if (numBadFrameCount > 0)
+      if (numBadFrameCount > 0) {
         Msg("Warning: Frame count did not match for %i replicas.\n", numBadFrameCount);
+        *runStat = false;
+      }
+      // Check restarts for REMD run if any OUTPUT/TRAJ files were bad.
       if (check_restarts) {
         StrArray restart_files = ExpandToFilenames("RST/*.rst7");
         if (restart_files.empty())
@@ -212,7 +252,8 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
           ErrorMsg("Number of restart files %zu != # output files %zu\n",
                    restart_files.size(), output_files.size());
           CompareStrArray( restart_files, output_files );
-          return 1;
+          *runStat = false;
+          continue;
         }
         double rst_time0 = 0.0;
         for (StrArray::const_iterator rfile = restart_files.begin();
@@ -229,7 +270,8 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
           } else if ( fabs(rst_time0 - rsttime) > 0.00000000000001 ) {
             ErrorMsg("File '%s' time %g does not match initial restart time %g\n",
                      rfile->c_str(), rsttime, rst_time0);
-            return 1;
+            *runStat = false;
+            continue;
           }
           // Check first 2 coordinates
           int natom;
@@ -251,10 +293,11 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
             double dy = Coords[1] - Coords[4];
             double dz = Coords[2] - Coords[5];
             double dist2 = (dx * dx) + (dy * dy) + (dz * dz);
-            if (dist2 < 0.1) {
+            if (dist2 < 0.0001) {
               ErrorMsg("First two coordinates in restart '%s' overlap. Probable corruption.\n",
                         rfile->c_str());
-              return 1;
+              *runStat = false;
+              continue;
             }
             // Get box info if present
             int cellVID = -1;
@@ -268,15 +311,24 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
               if (dist2 > box2) {
                 ErrorMsg("First two coordinates distance > box size in restart '%s'."
                          " Probable corruption.\n", rfile->c_str());
-                return 1;
+                *runStat = false;
+                continue;
               }
             }
           }
           nc_close( ncid );
         }
       }
-    }
+    } // END run directory exists
   } // END loop over runs
+  unsigned int n_bad_runs = 0;
+  for (std::vector<bool>::const_iterator it = run_is_ok.begin(); it != run_is_ok.end(); ++it)
+    if (!(*it))
+      ++n_bad_runs;
+  if (n_bad_runs > 0) {
+    ErrorMsg("%u of %zu runs had problems.\n", n_bad_runs, RunDirs.size());
+    return 1;
+  }
   if (Nwarnings == 0)
     Msg("  All checks OK.\n");
   else
