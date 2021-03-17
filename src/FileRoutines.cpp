@@ -90,6 +90,14 @@ bool fileExists(std::string const& filenameIn) {
   return true;
 }
 
+int CheckExists(const char* type, std::string const& fname) {
+  if (fname.empty() || !fileExists(fname)) {
+    ErrorMsg("%s not found: '%s'\n", type, fname.c_str());
+    return 1;
+  }
+  return 0;
+}
+
 /** \return 1 if file is a directory, 0 if not, -1 if error. */
 int IsDirectory(std::string const& filenameIn) {
   if (filenameIn.empty()) return -1;
@@ -102,14 +110,6 @@ int IsDirectory(std::string const& filenameIn) {
   }
   if (frame_stat.st_mode & S_IFDIR)
     return 1;
-  return 0;
-}
-
-int CheckExists(const char* type, std::string const& fname) {
-  if (fname.empty() || !fileExists(fname)) {
-    ErrorMsg("%s not found: '%s'\n", type, fname.c_str());
-    return 1;
-  }
   return 0;
 }
 
