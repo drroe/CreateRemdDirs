@@ -12,8 +12,8 @@ class CheckRuns {
 #   ifdef HAS_NETCDF
     static int checkNCerr(int);
     static int GetDimInfo(int, const char*, int&);
-    static void CompareStrArray(StrArray const&, StrArray const&);
 #   endif
+    static void CompareStrArray(StrArray const&, StrArray const&);
     /// \return Extension of given file name.
     static std::string Ext(std::string const&);
 };

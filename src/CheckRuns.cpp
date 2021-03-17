@@ -45,7 +45,6 @@ std::string CheckRuns::Ext(std::string const& name) {
   return  name.substr(found);
 }
 
-#ifdef HAS_NETCDF
 /** Given two arrays of file names of different size try to determine
   * where they differ based on extension.
   */
@@ -65,11 +64,9 @@ void CheckRuns::CompareStrArray(StrArray const& a1, StrArray const& a2) {
   if (idx < a2.size())
     ErrorMsg("Differs at '%s'\n", a2[idx].c_str());
 }
-#endif
 
 /** Check trajectories and output files for specified runs. */
 int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool firstOnly) {
-#ifdef HAS_NETCDF
   if (firstOnly)
     Msg("Checking only first output/traj for all runs.\n");
   else
@@ -206,10 +203,11 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
         expectedFrames = (nstlim * numexchg) / ntwx;
         //if (debug > 0) {
           Msg("\tTotal time: %g ps\n", totalTime);
-          Msg("\tFrames: %i\n", expectedFrames);
+          Msg("\tExpected Frames: %i\n", expectedFrames);
         //}
 
         // Trajectory check.
+#       ifdef HAS_NETCDF
         // Get actual number of frames from NetCDF file.
         int ncid = -1;
         if ( checkNCerr(nc_open(tname->c_str(), NC_NOWRITE, &ncid)) ) {
@@ -223,7 +221,8 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
         if ( checkNCerr(nc_inq_dimlen(ncid, dimID, &slength)) ) return 1;
         int actualFrames = (int)slength;
         nc_close( ncid );
-        if (debug > 0) Msg("\tActual Frames: %i\n", actualFrames);
+        //if (debug > 0)
+          Msg("\tActual Frames: %i\n", actualFrames);
         // If run did not complete, check restart files if replica.
         if (expectedFrames != actualFrames) {
           ++numBadFrameCount;
@@ -237,6 +236,9 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
         } else {
           if (debug > 0) Msg("\tOK.\n");
         }
+#       else
+        Msg("Compiled without NetCDF; skipping trajectory check.\n");
+#       endif /* HAS_NETCDF */
         if (firstOnly) break;
       } // END loop over output files for run
       if (numBadFrameCount > 0) {
@@ -256,6 +258,7 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
           continue;
         }
         double rst_time0 = 0.0;
+#       ifdef HAS_NETCDF
         for (StrArray::const_iterator rfile = restart_files.begin();
                                       rfile != restart_files.end(); ++rfile)
         {
@@ -317,8 +320,11 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
             }
           }
           nc_close( ncid );
-        }
-      }
+        } // END loop over restart files
+#       else
+        Msg("Compiled without NetCDF. Skipping restart check.\n");
+#       endif /* HAS_NETCDF */
+      } // END check restarts
     } // END run directory exists
   } // END loop over runs
   unsigned int n_bad_runs = 0;
@@ -333,8 +339,6 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
     Msg("  All checks OK.\n");
   else
     Msg("  Runs seem OK, but some warnings were encountered.\n");
-# else
-  Msg("Warning: Compiled without NetCDF. Checking of runs is disabled.\n");
-# endif
+
   return 0;
 }
