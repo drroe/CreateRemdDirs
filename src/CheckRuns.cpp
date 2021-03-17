@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstdlib>
+#include <cstring> // strncmp
 #ifdef HAS_NETCDF
 # include "netcdf.h"
 #endif
@@ -254,7 +255,7 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
               readInput = 1;
           } else if (readInput == 1 && ncols > 1) {
             if (mdout.Token(0) == "3." && mdout.Token(1) == "ATOMIC")
-              readInput = 2;
+              break;
             else {
               for (int col = 0; col != ncols - 1; col++) {
                 if (mdout.Token(col) == "nstlim")
@@ -267,13 +268,17 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
                   ntwx = atoi( mdout.Token(col+1).c_str() );
               }
             }
-          } else if (readInput == 2 && ncols > 1) {
-            if (mdout.Token(0) == "5." && mdout.Token(1) == "TIMINGS") {
-              end_mdout_reached = true;
-              break;
-            }
           }
           ncols = mdout.GetColumns(SEP);
+        }
+        // Scan down to '5. TIMINGS'
+        const char* ptr = mdout.Gets();
+        while (ptr != 0) {
+          if (strncmp("   5.  TIMINGS", ptr, 14)==0) {
+            end_mdout_reached = true;
+            break;
+          }
+          ptr = mdout.Gets();
         }
         mdout.Close();
         if (end_mdout_reached)
