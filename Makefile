@@ -19,4 +19,4 @@ uninstall:
 	/bin/rm config.h
 
 test::
-	cd test && $(MAKE) test
+	cd test && $(MAKE) all 
