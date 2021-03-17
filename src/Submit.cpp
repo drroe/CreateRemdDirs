@@ -270,32 +270,32 @@ int Submit::ReadOptions(std::string const& fnameIn, QueueOpts& Qopt) {
     if (debug_ > 0)
       Msg("Opt: '%s'   Args: '%s'\n", line.c_str(), Args.c_str());
 
-      // Process options
-      if (line == "ANALYZE_FILE") {
-        if (Analyze_ != 0) {
-          ErrorMsg("Only one ANALYZE_FILE allowed.\n");
-          return 1;
-        }
-        Analyze_ = new QueueOpts(Qopt);
-        if (ReadOptions( Args, *Analyze_ )) return 1;
-      } else if (line == "ARCHIVE_FILE") {
-        if (Archive_ != 0) {
-          ErrorMsg("Only one ARCHIVE_FILE allowed.\n");
-          return 1;
-        }
-        Archive_ = new QueueOpts(Qopt);
-        if (ReadOptions( Args, *Archive_ )) return 1;
-      } else if (line == "INPUT_FILE") {
-        // Try to prevent recursion.
-        std::string fn = tildeExpansion( Args );
-        if (fn == fname) {
-          ErrorMsg("An input file may not read from itself (%s).\n", Args.c_str());
-          return 1;
-        }
-        if (ReadOptions( Args, Qopt )) return 1;
-      } else {
-        if (Qopt.ProcessOption(line, Args)) return 1;
+    // Process options
+    if (line == "ANALYZE_FILE") {
+      if (Analyze_ != 0) {
+        ErrorMsg("Only one ANALYZE_FILE allowed.\n");
+        return 1;
       }
+      Analyze_ = new QueueOpts(Qopt);
+      if (ReadOptions( Args, *Analyze_ )) return 1;
+    } else if (line == "ARCHIVE_FILE") {
+      if (Archive_ != 0) {
+        ErrorMsg("Only one ARCHIVE_FILE allowed.\n");
+        return 1;
+      }
+      Archive_ = new QueueOpts(Qopt);
+      if (ReadOptions( Args, *Archive_ )) return 1;
+    } else if (line == "INPUT_FILE") {
+      // Try to prevent recursion.
+      std::string fn = tildeExpansion( Args );
+      if (fn == fname) {
+        ErrorMsg("An input file may not read from itself (%s).\n", Args.c_str());
+        return 1;
+      }
+      if (ReadOptions( Args, Qopt )) return 1;
+    } else {
+      if (Qopt.ProcessOption(line, Args)) return 1;
+    }
   }
 
   return 0;
