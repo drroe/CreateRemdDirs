@@ -175,7 +175,7 @@ int CheckRuns::CheckRunFiles(bool firstOnly) {
       }
     }
   }
-  Msg(" %zu output files.\n", output_files.size());
+  if (debug_ > 0) Msg(" %zu output files.\n", output_files.size());
   if (output_files.empty() || runType == UNKNOWN) {
     ErrorMsg("Output file(s) not found.\n");
     //*runStat = false;
@@ -263,10 +263,10 @@ int CheckRuns::CheckRunFiles(bool firstOnly) {
       ptr = mdout.Gets();
     }
     mdout.Close();
-    if (end_mdout_reached)
-      Msg("\tRun completed.\n");
-    else {
-      Msg("\tRun did not complete.\n");
+    if (end_mdout_reached) {
+      if (debug_ > 0) Msg("\tRun completed.\n");
+    } else {
+      if (debug_ > 0) Msg("\tRun did not complete.\n");
       //*runStat = false;
       iRunStat = 1;
     }
@@ -279,10 +279,10 @@ int CheckRuns::CheckRunFiles(bool firstOnly) {
     if (numexchg == 0) numexchg = 1;
     double totalTime = ((double)nstlim * dt) * (double)numexchg;
     expectedFrames = (nstlim * numexchg) / ntwx;
-    //if (debug_ > 0) {
+    if (debug_ > 0) {
       Msg("\tTotal time: %g ps\n", totalTime);
       Msg("\tExpected Frames: %i\n", expectedFrames);
-    //}
+    }
 
     // Trajectory check.
 #   ifdef HAS_NETCDF
@@ -299,15 +299,16 @@ int CheckRuns::CheckRunFiles(bool firstOnly) {
     if ( checkNCerr(nc_inq_dimlen(ncid, dimID, &slength)) ) return -1;
     actualFrames = (int)slength;
     nc_close( ncid );
-    //if (debug_ > 0)
+    if (debug_ > 0)
       Msg("\tActual Frames: %i\n", actualFrames);
     // If run did not complete, check restart files if replica.
     if (expectedFrames != actualFrames) {
       ++numBadFrameCount;
       ++Nwarnings_;
       if (badFrameCount != actualFrames) { // To avoid repeated checkall warnings
-        Msg("Warning: # actual frames %i != # expected frames %i.\n",
-            actualFrames, expectedFrames);
+        if (debug_ > 0)
+          Msg("Warning: # actual frames %i != # expected frames %i.\n",
+              actualFrames, expectedFrames);
         badFrameCount = actualFrames;
       }
       if (runType == REMD) check_restarts = true;
@@ -315,11 +316,13 @@ int CheckRuns::CheckRunFiles(bool firstOnly) {
       if (debug_ > 0) Msg("\tOK.\n");
     }
 #   endif /* HAS_NETCDF */
+    Msg("%04li %4i %12g %12i %12i\n", fname-output_files.begin()+1, iRunStat, totalTime,
+        actualFrames, expectedFrames);
     if (firstOnly) break;
   } // END loop over output/trajectory files for run
 
   if (numBadFrameCount > 0) {
-    Msg("Warning: Frame count did not match for %i replicas.\n", numBadFrameCount);
+    if (debug_ > 0) Msg("Warning: Frame count did not match for %i replicas.\n", numBadFrameCount);
     //*runStat = false;
     iRunStat = 1;
   }
@@ -334,6 +337,7 @@ int CheckRuns::CheckRunFiles(bool firstOnly) {
       iRunStat = 1;
     }
   } // END check restarts
+  
   return iRunStat;
 }
 
@@ -344,11 +348,12 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
   else
     Msg("Checking all output/traj for all runs.\n");
 # ifndef HAS_NETCDF
-  Msg("Warning: Compiled without NetCDF; skipping trajectory/restart checks.\n");
+  Msg("Warning: Compiled without NetCDF; cannot get actual # frames, skipping trajectory/restart checks.\n");
 # endif
   Nwarnings_ = 0;
   std::vector<bool> run_is_ok(RunDirs.size(), false);
   // Loop over all run directories
+  Msg("%-4s %4s %12s %12s %12s\n", "#", "Stat", "Time(ps)", "Frames", "Expected");
   std::vector<bool>::iterator runStat = run_is_ok.begin();
   for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir, ++runStat)
   {
@@ -360,7 +365,7 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
       Msg("Warning: '%s' does not exist.\n", rdir->c_str());
     else {
       *runStat = true;
-      Msg("  %s:", rdir->c_str());
+      Msg("  %s:\n", rdir->c_str());
       if (ChangeDir( *rdir )) {
         ErrorMsg("Could not change to run directory '%s'\n", rdir->c_str());
         return 1;
