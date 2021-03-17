@@ -32,31 +32,49 @@ CompileError() {
   exit 1
 }
 
-# TestCxxProgram "TestName" "Lib"
+# TestCxxProgram {required|optional} <TestName> [<Lib>]
 # Test compile test program testp.cpp
 TestCxxProgram() {
-  echo "$1"
-  COMPILELINE="$CXX $CXXFLAGS -o testp testp.cpp $2"
+  echo "$2"
+  COMPILELINE="$CXX $CXXFLAGS -o testp testp.cpp $3"
   $COMPILELINE > /dev/null 2> compile.err
   if [[ $? -ne 0 ]] ; then
-    CompileError "$COMPILELINE"
+    if [ "$1" = 'required' ] ; then
+      CompileError "$COMPILELINE"
+    fi
+    return 1
   fi
   ./testp | grep "Testing" > /dev/null
   if [[ $? -ne 0 ]] ; then
-    CompileError "$COMPILELINE"
+    if [ "$1" = 'required' ] ; then
+      CompileError "$COMPILELINE"
+    fi
+    return 1
   fi
   /bin/rm -f testp.cpp testp compile.err
   echo "  OK"
+  return 0
 }
 
 TestNetcdf() {
   if [[ ! -z $NETCDFLIB ]] ; then
+    compile_stat=''
+    if [ $NETCDF_SPECIFIED -eq 1 ] ; then
+      compile_stat='required'
+    else
+      compile_stat='optional'
+    fi
     cat > testp.cpp <<EOF
 #include <cstdio>
 #include "netcdf.h"
 int main() { printf("Testing\n"); printf("%s\n",nc_strerror(0)); return 0; }
 EOF
-    TestCxxProgram "Checking NetCDF" "$NETCDFLIB"
+    TestCxxProgram "$compile_stat" "Checking NetCDF" "$NETCDFLIB"
+    if [ $? -ne 0 ] ; then
+      # If we are here netcdf is optional and failed. Disabled it.
+      echo "  NetCDF not found. Disabling."
+      NETCDFLIB=""
+    fi
   fi
 }
 
@@ -65,7 +83,7 @@ TestCompile() {
 #include <cstdio>
 int main() { printf("Testing\n"); return 0; }
 EOF
-  TestCxxProgram "Testing C++ compiler"
+  TestCxxProgram 'required' "Testing C++ compiler"
 }
 
 # ------------------------------------------------------------------------------
@@ -88,6 +106,7 @@ else
 fi
 NETCDFLIB=-lnetcdf
 NETCDF_HOME=""
+NETCDF_SPECIFIED=0
 DIRECTIVES=""
 INCLUDE=""
 LFS="-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
@@ -113,6 +132,7 @@ while [[ ! -z $1 ]] ; do
       DBG_FLAG=-g
       ;;
     "--with-netcdf" )
+      NETCDF_SPECIFIED=1
       INCLUDE="$INCLUDE -I$VALUE/include"
       NETCDF_HOME="$VALUE"
       echo "Using NETCDF in $NETCDF_HOME"
@@ -167,11 +187,6 @@ if [[ $NO_OPT -eq 1 ]] ; then
   OPTFLAGS=""
 fi
 
-# Set up directives
-if [[ ! -z $NETCDFLIB ]] ; then
-  DIRECTIVES="$DIRECTIVES -DHAS_NETCDF"
-fi
-
 # Set up NETCDF linking
 if [[ ! -z $NETCDF_HOME && ! -z $NETCDFLIB ]] ; then
   # Try to link statically if possible
@@ -183,14 +198,19 @@ if [[ ! -z $NETCDF_HOME && ! -z $NETCDFLIB ]] ; then
 fi
 
 # Set up compiler flags
-CXXFLAGS="$DBG_FLAG $OPTFLAGS $DIRECTIVES $LFS $INCLUDE"
-
-# Set up linking flags
-LDFLAGS="$NETCDFLIB"
+CXXFLAGS="$DBG_FLAG $OPTFLAGS $LFS $INCLUDE"
 
 # Test compilers
 TestCompile
 TestNetcdf
+
+# Set up directives
+if [[ ! -z $NETCDFLIB ]] ; then
+  DIRECTIVES="$DIRECTIVES -DHAS_NETCDF"
+fi
+
+# Set up linking flags
+LDFLAGS="$NETCDFLIB"
 
 # Write config.h
 cat > config.h <<EOF
@@ -199,8 +219,13 @@ cat > config.h <<EOF
 
 CXX=$CXX
 CXXFLAGS=$CXXFLAGS
+DIRECTIVES=$DIRECTIVES
 LDFLAGS=$LDFLAGS
 EOF
+
+echo "Cleaning source directories."
+cd src && make clean > make.log 2>&1
+rm make.log
 
 echo ""
 exit 0

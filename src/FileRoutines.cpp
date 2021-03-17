@@ -48,7 +48,10 @@ std::string tildeExpansion(std::string const& filenameIn) {
 }
 
 // ExpandToFilenames()
-StrArray ExpandToFilenames(std::string const& fnameArg) {
+/** Expand given expression with file name wildcards into an array of
+  * strings. Optionally print warnings.
+  */
+StrArray ExpandToFilenames(std::string const& fnameArg, bool printWarnings) {
   StrArray fnames;
   if (fnameArg.empty()) return fnames;
 # ifdef __PGI
@@ -66,13 +69,19 @@ StrArray ExpandToFilenames(std::string const& fnameArg) {
   if ( err == 0 ) {
     for (unsigned int i = 0; i < (size_t)globbuf.gl_pathc; i++)
       fnames.push_back( globbuf.gl_pathv[i] );
-  } else if (err == GLOB_NOMATCH )
-    Msg("Warning: %s matches no files.\n", fnameArg.c_str());
-  else
+  } else if (err == GLOB_NOMATCH ) {
+    if (printWarnings)
+      Msg("Warning: %s matches no files.\n", fnameArg.c_str());
+  } else
     ErrorMsg("Problem occurred trying to find %s\n", fnameArg.c_str());
   if ( globbuf.gl_pathc > 0 ) globfree(&globbuf);
 # endif
   return fnames;
+}
+
+/** Version of ExpandToFilenames that prints warnings. */
+StrArray ExpandToFilenames(std::string const& fnameArg) {
+  return ExpandToFilenames(fnameArg, true);
 }
 
 // fileExists()
@@ -90,6 +99,14 @@ bool fileExists(std::string const& filenameIn) {
   return true;
 }
 
+int CheckExists(const char* type, std::string const& fname) {
+  if (fname.empty() || !fileExists(fname)) {
+    ErrorMsg("%s not found: '%s'\n", type, fname.c_str());
+    return 1;
+  }
+  return 0;
+}
+
 /** \return 1 if file is a directory, 0 if not, -1 if error. */
 int IsDirectory(std::string const& filenameIn) {
   if (filenameIn.empty()) return -1;
@@ -102,14 +119,6 @@ int IsDirectory(std::string const& filenameIn) {
   }
   if (frame_stat.st_mode & S_IFDIR)
     return 1;
-  return 0;
-}
-
-int CheckExists(const char* type, std::string const& fname) {
-  if (fname.empty() || !fileExists(fname)) {
-    ErrorMsg("%s not found: '%s'\n", type, fname.c_str());
-    return 1;
-  }
   return 0;
 }
 
