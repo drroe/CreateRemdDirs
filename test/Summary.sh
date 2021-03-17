@@ -8,13 +8,15 @@ N_TESTS=`ls */$TEST_RESULTS 2> /dev/null | wc -l`
 # Count the number of TEST_ERROR files.
 N_ERR=`ls */$TEST_ERROR 2> /dev/null | wc -l`
 
-echo ""
+echo "-----------------------------------------"
 STAT=0
 if [ $N_ERR -gt 0 ] ; then
   echo "$N_ERR of $N_TESTS tests failed."
+  echo ""
   STAT=1
+  ls */$TEST_ERROR
 else
   echo "All $N_TESTS tests completed."
 fi
-echo ""
+echo "-----------------------------------------"
 exit $STAT
