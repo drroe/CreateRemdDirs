@@ -200,9 +200,6 @@ fi
 # Set up compiler flags
 CXXFLAGS="$DBG_FLAG $OPTFLAGS $LFS $INCLUDE"
 
-# Set up linking flags
-LDFLAGS="$NETCDFLIB"
-
 # Test compilers
 TestCompile
 TestNetcdf
@@ -211,6 +208,9 @@ TestNetcdf
 if [[ ! -z $NETCDFLIB ]] ; then
   DIRECTIVES="$DIRECTIVES -DHAS_NETCDF"
 fi
+
+# Set up linking flags
+LDFLAGS="$NETCDFLIB"
 
 # Write config.h
 cat > config.h <<EOF
