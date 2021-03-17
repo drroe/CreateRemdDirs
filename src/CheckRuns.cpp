@@ -178,7 +178,7 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
       }
       // Try to determine the run type based on the output files.
       RunType runType = UNKNOWN;
-      // REMD? 
+      // Determine where the output files are. 
       StrArray output_files = ExpandToFilenames("OUTPUT/rem.out.*", false);
       if (!output_files.empty()) {
         runType = REMD;
@@ -210,7 +210,7 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
         traj_files.push_back("mdcrd.nc");
       else
         ErrorMsg("Trajectory file(s) not found.");
-       
+
       if (traj_files.size() != output_files.size()) {
         ErrorMsg("Number of output files %zu != # of traj files %zu.\n",
                  output_files.size(), traj_files.size());
@@ -218,6 +218,7 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
         *runStat = false;
         continue;
       }
+
       // Loop over output and trajectory files.
 #     ifdef HAS_NETCDF
       int badFrameCount = -1;
@@ -327,11 +328,13 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
         Msg("Compiled without NetCDF; skipping trajectory check.\n");
 #       endif /* HAS_NETCDF */
         if (firstOnly) break;
-      } // END loop over output files for run
+      } // END loop over output/trajectory files for run
+
       if (numBadFrameCount > 0) {
         Msg("Warning: Frame count did not match for %i replicas.\n", numBadFrameCount);
         *runStat = false;
       }
+
       // Check restarts for REMD run if any OUTPUT/TRAJ files were bad.
       if (check_restarts) {
         int retval = CheckRemdRestarts(output_files);
