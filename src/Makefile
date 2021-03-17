@@ -19,7 +19,7 @@ CreateRemdDirs: $(OBJECTS)
 	$(CXX) -o CreateRemdDirs $(OBJECTS) $(LDFLAGS)
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(DIRECTIVES) -o $@ $<
 
 clean:
 	/bin/rm -f $(OBJECTS) FindDepend.o CreateRemdDirs
