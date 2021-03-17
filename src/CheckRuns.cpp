@@ -7,6 +7,9 @@
 #include "Messages.h"
 #include "TextFile.h"
 
+/** CONSTRUCTOR */
+CheckRuns::CheckRuns() {}
+
 #ifdef HAS_NETCDF
 int CheckRuns::checkNCerr(int ncerr) {
   if ( ncerr != NC_NOERR ) {

@@ -181,7 +181,8 @@ int main(int argc, char** argv) {
     // If analysis or archive input requested, run check unless explicitly told not to.
     if (InputEnabled[ANALYZE] || InputEnabled[ARCHIVE]) {
       if (runCheck) {
-        if (CheckRuns( TopDir, RunDirs, checkFirst )) return 1;
+        CheckRuns runChecker;
+        if (runChecker.DoCheck( TopDir, RunDirs, checkFirst )) return 1;
       } else
         Msg("Warning: Not running check on run directories.\n");
       create.CreateAnalyzeArchive(TopDir, RunDirs, start_run, stop_run, overwrite, runCheck,
@@ -190,7 +191,8 @@ int main(int argc, char** argv) {
   }
   // ----- Run Check -----------------------------
   if (ModeEnabled[CHECK]) {
-    if (CheckRuns( TopDir, RunDirs, checkFirst )) return 1;
+    CheckRuns runChecker;
+    if (runChecker.DoCheck( TopDir, RunDirs, checkFirst )) return 1;
   }
   // ----- Job submission ------------------------
   if (ModeEnabled[SUBMIT]) {
