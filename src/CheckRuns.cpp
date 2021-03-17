@@ -147,8 +147,6 @@ int CheckRuns::CheckRemdRestarts(StrArray const& output_files) {
     }
     nc_close( ncid );
   } // END loop over restart files
-# else
-  Msg("Compiled without NetCDF. Skipping restart check.\n");
 # endif /* HAS_NETCDF */
   return 0;
 }
@@ -230,6 +228,7 @@ int CheckRuns::CheckRunFiles(bool firstOnly) {
     int numexchg = 0;
     int ntwx = 0;
     int expectedFrames = 0;
+    int actualFrames = -1;
     const char* SEP = " ,=\r\n";
     int ncols = mdout.GetColumns(SEP);
     while (ncols > -1) {
@@ -271,10 +270,12 @@ int CheckRuns::CheckRunFiles(bool firstOnly) {
       //*runStat = false;
       iRunStat = 1;
     }
-    Msg("\tnstlim= %i\n", nstlim);
-    Msg("\tdt= %g\n", dt);
-    if (runType == REMD) Msg("\tnumexchg= %i\n", numexchg);
-    Msg("\tntwx= %i\n", ntwx);
+    if (debug_ > 0) {
+      Msg("\tnstlim= %i\n", nstlim);
+      Msg("\tdt= %g\n", dt);
+      if (runType == REMD) Msg("\tnumexchg= %i\n", numexchg);
+      Msg("\tntwx= %i\n", ntwx);
+    }
     if (numexchg == 0) numexchg = 1;
     double totalTime = ((double)nstlim * dt) * (double)numexchg;
     expectedFrames = (nstlim * numexchg) / ntwx;
@@ -296,7 +297,7 @@ int CheckRuns::CheckRunFiles(bool firstOnly) {
     size_t slength = 0;
     if ( checkNCerr(nc_inq_dimid(ncid, "frame", &dimID))  ) return -1;
     if ( checkNCerr(nc_inq_dimlen(ncid, dimID, &slength)) ) return -1;
-    int actualFrames = (int)slength;
+    actualFrames = (int)slength;
     nc_close( ncid );
     //if (debug_ > 0)
       Msg("\tActual Frames: %i\n", actualFrames);
@@ -313,8 +314,6 @@ int CheckRuns::CheckRunFiles(bool firstOnly) {
     } else {
       if (debug_ > 0) Msg("\tOK.\n");
     }
-#   else
-    Msg("Compiled without NetCDF; skipping trajectory check.\n");
 #   endif /* HAS_NETCDF */
     if (firstOnly) break;
   } // END loop over output/trajectory files for run
@@ -344,6 +343,9 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
     Msg("Checking only first output/traj for all runs.\n");
   else
     Msg("Checking all output/traj for all runs.\n");
+# ifndef HAS_NETCDF
+  Msg("Warning: Compiled without NetCDF; skipping trajectory/restart checks.\n");
+# endif
   Nwarnings_ = 0;
   std::vector<bool> run_is_ok(RunDirs.size(), false);
   // Loop over all run directories
