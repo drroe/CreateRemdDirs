@@ -76,6 +76,7 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
     Msg("Checking all output/traj for all runs.\n");
   int debug = 0;
   int Nwarnings = 0;
+  // Loop over all run directories
   for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir) {
     if (ChangeDir( TopDir )) return 1;
     if (!fileExists( *rdir ))
@@ -83,24 +84,40 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
     else {
       Msg("  %s:", rdir->c_str());
       ChangeDir( *rdir );
-      bool is_md = false;
-      // Determine where the output file(s) are.
-      StrArray output_files = ExpandToFilenames("OUTPUT/rem.out.*");
-      if (output_files.empty()) {
-        output_files = ExpandToFilenames("md.out.*");
-        is_md = true;
+      // Try to determine the run type based on the output files.
+      RunType runType = UNKNOWN;
+      // REMD? 
+      StrArray output_files = ExpandToFilenames("OUTPUT/rem.out.*", false);
+      if (!output_files.empty()) {
+        runType = REMD;
+      } else {
+        // Not REMD. Multiple MD?
+        output_files = ExpandToFilenames("md.out.*", false);
+        if (!output_files.empty()) {
+          runType = MULTI_MD;
+        } else {
+          if (fileExists("md.out")) {
+            output_files.push_back("md.out");
+            runType = SINGLE_MD;
+          }
+        }
       }
       Msg(" %zu output files.\n", output_files.size());
-      if (output_files.empty()) {
-        ErrorMsg("Output files not found.\n");
+      if (output_files.empty() || runType == UNKNOWN) {
+        ErrorMsg("Output file(s) not found.\n");
         return 1;
       }
       // Determine where the trajectory files are.
       StrArray traj_files;
-      if (!is_md)
-        traj_files = ExpandToFilenames("TRAJ/rem.crd.*");
+      if (runType == REMD)
+        traj_files = ExpandToFilenames("TRAJ/rem.crd.*", false);
+      else if (runType == MULTI_MD)
+        traj_files = ExpandToFilenames("md.nc.*", false);
+      else if (fileExists("mdcrd.nc"))
+        traj_files.push_back("mdcrd.nc");
       else
-        traj_files = ExpandToFilenames("md.nc.*");
+        ErrorMsg("Trajectory file(s) not found.");
+       
       if (traj_files.size() != output_files.size()) {
         ErrorMsg("Number of output files %zu != # of traj files %zu.\n",
                  output_files.size(), traj_files.size());
@@ -179,7 +196,7 @@ int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool 
                 actualFrames, expectedFrames);
             badFrameCount = actualFrames;
           }
-          if (!is_md) check_restarts = true;
+          if (runType == REMD) check_restarts = true;
         } else {
           if (debug > 0) Msg("\tOK.\n");
         }

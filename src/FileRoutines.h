@@ -6,7 +6,9 @@
 std::string tildeExpansion(std::string const&);
 /// Array of strings
 typedef std::vector<std::string> StrArray;
-/// Expand the given wildcard expression to an array of file names
+/// Expand the given wildcard expression to an array of file names; optionally print warnings.
+StrArray ExpandToFilenames(std::string const&, bool);
+/// Expand the given wildcard expression to an array of file names; print all warnings.
 StrArray ExpandToFilenames(std::string const&);
 /// \return True if the file can be opened
 bool fileExists(std::string const&);
