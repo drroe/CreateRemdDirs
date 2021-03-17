@@ -100,17 +100,18 @@ while [[ ! -z $1 ]] ; do
   shift
 done
 
-# TODO Determine Binary location
+if [ -z "$SUMMARY" ] ; then
+  # TODO Determine Binary location
+  if [[ ! -f "$BIN" ]] ; then
+    echo "$BIN not found."
+    exit 1
+  fi
 
-if [[ ! -f "$BIN" ]] ; then
-  echo "$BIN not found."
-  exit 1
-fi
-
-DIFFCMD=`which diff`
-if [[ -z $DIFFCMD ]] ; then
-  echo "diff command not found."
-  exit 1
+  DIFFCMD=`which diff`
+  if [[ -z $DIFFCMD ]] ; then
+    echo "diff command not found."
+    exit 1
+  fi
 fi
 
 TEST_RESULTS=Test_Results.dat

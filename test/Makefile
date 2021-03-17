@@ -1,6 +1,6 @@
 # Test makefile
 
-all: test
+all: test summary
 
 ALLTESTS=test.relative \
          test.absolute \
@@ -56,6 +56,9 @@ test.additionalnamelist:
 	@-cd Test_MD_AdditionalNamelist && ./RunTest.sh $(OPT)
 
 test: $(ALLTESTS)
+
+summary: Summary.sh
+	@./Summary.sh
 
 test.vg:
 	$(MAKE) test OPT="$(OPT) vg"
