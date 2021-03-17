@@ -8,7 +8,7 @@
 #include "TextFile.h"
 
 #ifdef HAS_NETCDF
-static inline int checkNCerr(int ncerr) {
+int CheckRuns::checkNCerr(int ncerr) {
   if ( ncerr != NC_NOERR ) {
     ErrorMsg("NETCDF: %s\n", nc_strerror(ncerr));
     return 1;
@@ -16,7 +16,7 @@ static inline int checkNCerr(int ncerr) {
   return 0;
 }
 
-static inline int GetDimInfo(int ncid, const char* attribute, int& length) {
+int CheckRuns::GetDimInfo(int ncid, const char* attribute, int& length) {
   int dimID;
   size_t slength = 0;
   length = 0;
@@ -35,7 +35,7 @@ static inline int GetDimInfo(int ncid, const char* attribute, int& length) {
 }
 #endif
 
-static inline std::string Ext(std::string const& name) {
+std::string CheckRuns::Ext(std::string const& name) {
   size_t found = name.find_last_of(".");
   if (found == std::string::npos)
     return std::string("");
@@ -46,7 +46,7 @@ static inline std::string Ext(std::string const& name) {
 /** Given two arrays of file names of different size try to determine
   * where they differ based on extension.
   */
-static void CompareStrArray(StrArray const& a1, StrArray const& a2) {
+void CheckRuns::CompareStrArray(StrArray const& a1, StrArray const& a2) {
   unsigned int max = (unsigned int)std::min(a1.size(), a2.size());
   unsigned int idx = 0;
   for (idx = 0; idx != max; idx++) {
@@ -64,7 +64,8 @@ static void CompareStrArray(StrArray const& a1, StrArray const& a2) {
 }
 #endif
 
-int CheckRuns(std::string const& TopDir, StrArray const& RunDirs, bool firstOnly) {
+/** Check trajectories and output files for specified runs. */
+int CheckRuns::DoCheck(std::string const& TopDir, StrArray const& RunDirs, bool firstOnly) {
 #ifdef HAS_NETCDF
   if (firstOnly)
     Msg("Checking only first output/traj for all runs.\n");
