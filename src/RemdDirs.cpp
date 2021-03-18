@@ -7,6 +7,7 @@
 #include "ReplicaDimension.h"
 
 using namespace Messages;
+using namespace StringRoutines;
 
 /** CONSTRUCTOR */
 RemdDirs::RemdDirs() :

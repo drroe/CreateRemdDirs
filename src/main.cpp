@@ -161,10 +161,10 @@ int main(int argc, char** argv) {
   if (TopDir.empty()) return 1;
   Msg("Working Dir: %s\n", TopDir.c_str());
   // Create array of run directories
-  int runWidth = std::max( DigitWidth(stop_run), 3 );
+  int runWidth = std::max( StringRoutines::DigitWidth(stop_run), 3 );
   StrArray RunDirs;
   for (int run = start_run; run <= stop_run; ++run)
-    RunDirs.push_back( "run." + integerToString(run, runWidth) );
+    RunDirs.push_back( "run." + StringRoutines::integerToString(run, runWidth) );
 
   // ----- Input Creation ------------------------
   if (ModeEnabled[CREATE]) {

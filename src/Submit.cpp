@@ -4,6 +4,7 @@
 #include "StringRoutines.h"
 
 using namespace Messages;
+using namespace StringRoutines;
 
 Submit::~Submit() {
   if (Run_ != 0) delete Run_;
