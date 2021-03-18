@@ -21,13 +21,20 @@ int Manager::InitManager(std::string const& inputFileName) {
   while (ncols > -1) {
     if (ncols > 0) {
       if (input.Token(0)[0] != '#') {
-        // Expect <system dir>, <description>
-        if (ncols > 1) {
+        if ( input.Token(0) == "system" ) {
+          // Expect system <system dir>, <description>
+          if (ncols < 3) {
+            std::string errline;
+            for (int col = 1; col < ncols; col++)
+              errline.append(" "+input.Token(col));
+            ErrorMsg("Not enough columns for 'system': %s\n", errline.c_str());
+            return 1;
+          }
           // All columns beyond the first are description
-          std::string description = input.Token(1);
-          for (int col = 2; col < ncols; col++)
+          std::string description = input.Token(2);
+          for (int col = 3; col < ncols; col++)
             description.append(" " + input.Token(col));
-          Msg("System: %s  Description: '%s'\n", input.Token(0).c_str(), description.c_str());
+          Msg("System: %s  Description: '%s'\n", input.Token(1).c_str(), description.c_str());
         }
       }
     }
