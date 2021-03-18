@@ -6,6 +6,8 @@
 #include "StringRoutines.h"
 #include "ReplicaDimension.h"
 
+using namespace Messages;
+
 /** CONSTRUCTOR */
 RemdDirs::RemdDirs() :
   nstlim_(-1),

@@ -1,6 +1,8 @@
 #include "Groups.h"
 #include "Messages.h"
 
+using namespace Messages;
+
 int Groups::SetupGroups(unsigned int Ndims) {
   dimGroups_.clear();
   dimGroups_.resize( Ndims );

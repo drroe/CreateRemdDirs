@@ -9,6 +9,8 @@
 #include "FileRoutines.h"
 #include "Messages.h"
 
+using namespace Messages;
+
 // tildeExpansion()
 /** Use glob.h to perform tilde expansion on a filename, returning the
   * expanded filename. If the file does not exist or globbing fails return an

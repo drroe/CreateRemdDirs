@@ -5,6 +5,8 @@
 #include "Messages.h"
 #include "StringRoutines.h"
 
+using namespace Messages;
+
 const std::string ReplicaDimension::emptystring_ = "";
 
 // Should correspong to ExchType

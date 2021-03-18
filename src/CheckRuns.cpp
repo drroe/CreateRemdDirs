@@ -8,6 +8,8 @@
 #include "Messages.h"
 #include "TextFile.h"
 
+using namespace Messages;
+
 /** CONSTRUCTOR */
 CheckRuns::CheckRuns() :
   debug_(0)

@@ -3,6 +3,8 @@
 #include "Messages.h"
 #include "StringRoutines.h"
 
+using namespace Messages;
+
 Submit::~Submit() {
   if (Run_ != 0) delete Run_;
   if (Analyze_ != 0) delete Analyze_;

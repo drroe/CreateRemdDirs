@@ -6,6 +6,8 @@
 #include "FileRoutines.h"
 #include "StringRoutines.h"
 
+using namespace Messages;
+
 static const char* VERSION = "1.03";
 
 static void CmdLineHelp() {

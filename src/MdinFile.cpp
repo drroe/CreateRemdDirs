@@ -4,6 +4,8 @@
 #include "Messages.h"
 #include "StringRoutines.h"
 
+using namespace Messages;
+
 /** CONSTRUCTOR */
 MdinFile::MdinFile() {}
 
