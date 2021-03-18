@@ -2,6 +2,8 @@
 #include "Messages.h"
 #include "TextFile.h"
 
+using namespace Messages;
+
 Manager::Manager() {}
 
 /** Initialize with input file. */

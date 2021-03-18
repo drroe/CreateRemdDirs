@@ -2,6 +2,8 @@
 #include "FileRoutines.h"
 #include "Messages.h"
 
+using namespace Messages;
+
 /** CONSTRUCTOR */
 System::System() {}
 
@@ -30,6 +32,7 @@ System& System::operator=(System const& rhs) {
 
 /** Search for run directories in dirname_ */
 int System::FindRuns() {
+  using namespace FileRoutines;
   ChangeDir( topDir_ );
   ChangeDir( dirname_ );
   StrArray runDirs = ExpandToFilenames("run.*");
