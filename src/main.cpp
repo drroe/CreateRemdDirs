@@ -9,7 +9,7 @@
 using namespace Messages;
 using namespace FileRoutines;
 
-static const char* VERSION = "1.03";
+static const char* VERSION = "1.04";
 
 static void CmdLineHelp() {
   Msg("Command line options:\n"
