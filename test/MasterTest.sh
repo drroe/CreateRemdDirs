@@ -124,7 +124,7 @@ if [ -z "$SUMMARY" ] ; then
       HAS_NETCDF=1
     fi
   done
-  echo "DEBUG: HAS_NETCDF $HAS_NETCDF"
+  #echo "DEBUG: HAS_NETCDF $HAS_NETCDF"
 
   DIFFCMD=`which diff`
   if [[ -z $DIFFCMD ]] ; then
