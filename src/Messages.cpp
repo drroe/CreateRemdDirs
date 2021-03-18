@@ -1,7 +1,8 @@
+#include "Messages.h"
 #include <cstdio>
 #include <cstdarg>
 
-void ErrorMsg(const char* format, ...) {
+void Messages::ErrorMsg(const char* format, ...) {
   fprintf(stderr,"Error: ");
   va_list args;
   va_start(args, format);
@@ -9,7 +10,7 @@ void ErrorMsg(const char* format, ...) {
   va_end(args);
 }
 
-void Msg(const char* format, ...) {
+void Messages::Msg(const char* format, ...) {
   va_list args;
   va_start(args, format);
   vfprintf(stdout,format,args);

@@ -9,13 +9,15 @@
 #include "FileRoutines.h"
 #include "Messages.h"
 
+using namespace Messages;
+
 // tildeExpansion()
 /** Use glob.h to perform tilde expansion on a filename, returning the
   * expanded filename. If the file does not exist or globbing fails return an
   * empty string. Do not print an error message if the file does not exist
   * so that this routine and fileExists() can be used to silently check files.
   */
-std::string tildeExpansion(std::string const& filenameIn) {
+std::string FileRoutines::tildeExpansion(std::string const& filenameIn) {
   if (filenameIn.empty()) {
     ErrorMsg("tildeExpansion: null filename specified.\n");
     return std::string("");
@@ -51,7 +53,7 @@ std::string tildeExpansion(std::string const& filenameIn) {
 /** Expand given expression with file name wildcards into an array of
   * strings. Optionally print warnings.
   */
-StrArray ExpandToFilenames(std::string const& fnameArg, bool printWarnings) {
+FileRoutines::StrArray FileRoutines::ExpandToFilenames(std::string const& fnameArg, bool printWarnings) {
   StrArray fnames;
   if (fnameArg.empty()) return fnames;
 # ifdef __PGI
@@ -80,13 +82,13 @@ StrArray ExpandToFilenames(std::string const& fnameArg, bool printWarnings) {
 }
 
 /** Version of ExpandToFilenames that prints warnings. */
-StrArray ExpandToFilenames(std::string const& fnameArg) {
+FileRoutines::StrArray FileRoutines::ExpandToFilenames(std::string const& fnameArg) {
   return ExpandToFilenames(fnameArg, true);
 }
 
 // fileExists()
 /** \return true if file can be opened "r".  */
-bool fileExists(std::string const& filenameIn) {
+bool FileRoutines::fileExists(std::string const& filenameIn) {
   // Perform tilde expansion
   std::string fname = tildeExpansion(filenameIn);
   if (fname.empty()) return false;
@@ -99,7 +101,7 @@ bool fileExists(std::string const& filenameIn) {
   return true;
 }
 
-int CheckExists(const char* type, std::string const& fname) {
+int FileRoutines::CheckExists(const char* type, std::string const& fname) {
   if (fname.empty() || !fileExists(fname)) {
     ErrorMsg("%s not found: '%s'\n", type, fname.c_str());
     return 1;
@@ -108,7 +110,7 @@ int CheckExists(const char* type, std::string const& fname) {
 }
 
 /** \return 1 if file is a directory, 0 if not, -1 if error. */
-int IsDirectory(std::string const& filenameIn) {
+int FileRoutines::IsDirectory(std::string const& filenameIn) {
   if (filenameIn.empty()) return -1;
   struct stat frame_stat;
   if (stat(filenameIn.c_str(), &frame_stat) == -1) {
@@ -122,7 +124,7 @@ int IsDirectory(std::string const& filenameIn) {
   return 0;
 }
 
-int Mkdir(std::string const& dname) {
+int FileRoutines::Mkdir(std::string const& dname) {
   if (!fileExists(dname)) {
     //Msg("Creating directory '%s'\n", dname.c_str());
     if (mkdir( dname.c_str(), S_IRWXU ) != 0) {
@@ -134,7 +136,7 @@ int Mkdir(std::string const& dname) {
   return 0;
 }
 
-std::string GetWorkingDir() {
+std::string FileRoutines::GetWorkingDir() {
   char buffer[1024];
   if (getcwd(buffer, 1024) == 0) {
     ErrorMsg("Getting current working dir name: %s\n", strerror( errno ));
@@ -143,7 +145,7 @@ std::string GetWorkingDir() {
   return ( std::string(buffer) );
 }
 
-int ChangeDir(std::string const& dname) {
+int FileRoutines::ChangeDir(std::string const& dname) {
   if (dname.empty()) {
     ErrorMsg("Cannot change dir; dir name is empty.\n");
     return 1;
@@ -155,12 +157,12 @@ int ChangeDir(std::string const& dname) {
   return 0;
 }
 
-int ChangePermissions(std::string const& fname) {
+int FileRoutines::ChangePermissions(std::string const& fname) {
   // For now only 775
   return chmod(fname.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 }
 
-std::string UserName() {
+std::string FileRoutines::UserName() {
   char buffer[1024];
   FILE* fp = popen("whoami", "r");
   if (fp == 0) return std::string();

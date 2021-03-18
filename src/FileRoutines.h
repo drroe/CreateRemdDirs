@@ -2,6 +2,7 @@
 #define INC_FILEROUTINES_H
 #include <string>
 #include <vector>
+namespace FileRoutines {
 /// Expand any tildes in the given filename
 std::string tildeExpansion(std::string const&);
 /// Array of strings
@@ -26,4 +27,5 @@ int ChangeDir(std::string const&);
 int ChangePermissions(std::string const&);
 /// \return The current user name
 std::string UserName();
+}
 #endif
