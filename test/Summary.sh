@@ -14,7 +14,12 @@ if [ $N_ERR -gt 0 ] ; then
   echo "$N_ERR of $N_TESTS tests failed."
   echo ""
   STAT=1
-  ls */$TEST_ERROR
+  for FILE in `ls */$TEST_ERROR` ; do
+    echo "-----------------------------------------"
+    echo "$FILE:"
+    cat $FILE
+    echo "-----------------------------------------"
+  done
 else
   echo "All $N_TESTS tests completed."
 fi
