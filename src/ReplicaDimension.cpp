@@ -5,6 +5,8 @@
 #include "Messages.h"
 #include "StringRoutines.h"
 
+using namespace Messages;
+
 const std::string ReplicaDimension::emptystring_ = "";
 
 // Should correspong to ExchType
@@ -67,7 +69,7 @@ int TopologyDim::LoadDim(std::string const& fname) {
     }
     // Add the topology
     if (topname[0] == '~')
-      tops_.push_back( tildeExpansion(std::string(topname)) );
+      tops_.push_back( FileRoutines::tildeExpansion(std::string(topname)) );
     else
       tops_.push_back( std::string(topname) );
     // Optionally add the temperature

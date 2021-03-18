@@ -4,6 +4,8 @@
 #include "TextFile.h"
 #include "Messages.h"
 
+using namespace Messages;
+
 TextFile::~TextFile() { Close(); }
 
 int TextFile::OpenRead(std::string const& fname) {

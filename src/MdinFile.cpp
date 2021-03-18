@@ -4,6 +4,8 @@
 #include "Messages.h"
 #include "StringRoutines.h"
 
+using namespace Messages;
+
 /** CONSTRUCTOR */
 MdinFile::MdinFile() {}
 
@@ -29,7 +31,7 @@ MdinFile::StatType MdinFile::TokenizeLine(TokenArray& Tokens, std::string const&
     while (pch != 0) {
       std::string elt(pch);
       //Msg("DEBUG: elt='%s'\n", elt.c_str());
-      RemoveAllWhitespace(elt);
+      StringRoutines::RemoveAllWhitespace(elt);
       if (!elt.empty()) {
         if (elt[0] == '&') {
           // Namelist beginning or end
@@ -106,7 +108,7 @@ int MdinFile::ParseFile(std::string const& fname) {
   buffer = MDIN.Gets();
   if (buffer != 0) {
     line2 = std::string(buffer);
-    RemoveAllWhitespace( line2 );
+    StringRoutines::RemoveAllWhitespace( line2 );
     if (line2 == "&cntrl") {
       is_full_mdin = true;
       currentNamelist_.assign("&cntrl");

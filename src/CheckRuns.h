@@ -6,7 +6,7 @@ class CheckRuns {
   public:
     CheckRuns();
     /// Check runs in given directory with given subdirectories; optionally only checking first run
-    int DoCheck(std::string const&, StrArray const&, bool);
+    int DoCheck(std::string const&, FileRoutines::StrArray const&, bool);
   private:
     enum RunType { UNKNOWN = 0, REMD, SINGLE_MD, MULTI_MD };
 
@@ -15,11 +15,11 @@ class CheckRuns {
     static int checkNCerr(int);
     static int GetDimInfo(int, const char*, int&);
 #   endif
-    static void CompareStrArray(StrArray const&, StrArray const&);
+    static void CompareStrArray(FileRoutines::StrArray const&, FileRoutines::StrArray const&);
     /// \return Extension of given file name.
     static std::string Ext(std::string const&);
     /// Check REMD restarts
-    static int CheckRemdRestarts(StrArray const&);
+    static int CheckRemdRestarts(FileRoutines::StrArray const&);
     /// Check Output/Traj files
     int CheckRunFiles(bool);
 
