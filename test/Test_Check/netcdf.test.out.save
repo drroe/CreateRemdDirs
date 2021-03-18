@@ -1,0 +1,9 @@
+  START            : 0
+  STOP             : 0
+Working Dir:
+Checking only first output/traj for all runs.
+#    Stat     Time(ps)       Frames     Expected
+  run.000:
+0001    0           20           20           20
+  All checks OK.
+

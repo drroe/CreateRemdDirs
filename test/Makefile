@@ -13,8 +13,9 @@ ALLTESTS=test.relative \
          test.qsub.mremd \
          test.override \
          test.hremd \
+         test.hremd.singlecrd \
          test.additionalnamelist \
-         test.hremd.singlecrd
+         test.check
 
 test.relative:
 	@-cd Test_MREMD_Relative && ./RunTest.sh $(OPT)
@@ -54,6 +55,9 @@ test.hremd.singlecrd:
 
 test.additionalnamelist:
 	@-cd Test_MD_AdditionalNamelist && ./RunTest.sh $(OPT)
+
+test.check:
+	@-cd Test_Check && ./RunTest.sh $(OPT)
 
 test: $(ALLTESTS)
 

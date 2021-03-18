@@ -44,6 +44,14 @@ static void Help(bool extended) {
   }
 }
 
+static void Defines() {
+  Msg("Defines:");
+# ifdef HAS_NETCDF
+  Msg(" -DHAS_NETCDF");
+# endif
+  Msg("\n");
+}
+
 // =============================================================================
 /** There are three types of modes available:
   * 1) Creation: Input is created for MD runs, analysis, and/or archiving.
@@ -130,6 +138,9 @@ int main(int argc, char** argv) {
     } else if (Arg == "-s") {                     // Enable SUBMIT mode in addition to creation.
       ModeEnabled[CREATE] = true;
       ModeEnabled[SUBMIT] = true;
+    } else if (Arg == "--defines") {
+      Defines();
+      return 0;
     } else if (Arg == "-v" || Arg == "--version") {
       return 0;
     } else {

@@ -79,6 +79,20 @@ EndTest() {
 }
 
 # ------------------------------------------------------------------------------
+# Remove the first 4 lines from test output
+# Also remove Working Dir: since this can vary on different platforms
+TrimTestOutputHeader() {
+  awk 'BEGIN{ line=1; }{
+    if ($1 == "Working" && $2 == "Dir:")
+      print $1 " " $2;
+    else if (line > 4)
+      print $0;
+    line++;
+  }' $OUTPUT > trimmed.$OUTPUT
+  mv trimmed.$OUTPUT $OUTPUT
+}
+
+# ------------------------------------------------------------------------------
 ERR=0
 NUMTEST=0
 BIN=../../bin/CreateRemdDirs
@@ -106,6 +120,15 @@ if [ -z "$SUMMARY" ] ; then
     echo "$BIN not found."
     exit 1
   fi
+  # Get defines
+  HAS_NETCDF=0
+  DEFINES=`$BIN --defines | grep "Defines:"`
+  for DEFINE in $DEFINES ; do
+    if [ "$DEFINE" = '-DHAS_NETCDF' ] ; then
+      HAS_NETCDF=1
+    fi
+  done
+  #echo "DEBUG: HAS_NETCDF $HAS_NETCDF"
 
   DIFFCMD=`which diff`
   if [[ -z $DIFFCMD ]] ; then
