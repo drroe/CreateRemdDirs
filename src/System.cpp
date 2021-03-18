@@ -1,6 +1,7 @@
 #include "System.h"
 #include "FileRoutines.h"
 #include "Messages.h"
+#include "Run.h"
 
 using namespace Messages;
 
@@ -40,7 +41,15 @@ int System::FindRuns() {
 
   Msg("Run directories:\n");
   for (StrArray::const_iterator it = runDirs.begin(); it != runDirs.end(); ++it)
+  {
+    ChangeDir( *it );
     Msg("\t%s\n", it->c_str());
+    StrArray output_files;
+    Run::Type runType = Run::DetectType(output_files);
+    Msg("\tType: %s\n", Run::typeStr(runType));
+    ChangeDir( topDir_ );
+    ChangeDir( dirname_ );
+  }
 
   return 0;
 }

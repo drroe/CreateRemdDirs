@@ -11,6 +11,8 @@ class Run {
     virtual ~Run() {}
 
     Run(Type t) : type_(t) {}
+    /// \return Description of given type
+    static const char* typeStr(Type);
     /// \return Detected run type base on output files in the run directory.
     static Type DetectType(FileRoutines::StrArray&);
   private:
