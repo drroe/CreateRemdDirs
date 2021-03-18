@@ -145,12 +145,17 @@ int main(int argc, char** argv) {
   if (!InputEnabled[RUNS] && !InputEnabled[ANALYZE] && !InputEnabled[ARCHIVE])
     InputEnabled[RUNS] = true;
 
-  // If start_run and stop_run are both -1, see if systems.opts exists.
+  // Get current directory
+  std::string TopDir = GetWorkingDir();
+  if (TopDir.empty()) return 1;
+
+  // If start_run and stop_run are both -1, see if systems.opts exists
+  // for Manager mode.
   if (start_run == -1 && stop_run == -1) {
     if (fileExists( systems_file )) {
       Msg("Entering manager mode.\n");
       Manager manager;
-      if (manager.InitManager( systems_file )) return 1;
+      if (manager.InitManager( TopDir, systems_file )) return 1;
       return 0;
     }
   }
@@ -167,8 +172,7 @@ int main(int argc, char** argv) {
     ErrorMsg("STOP_RUN < START_RUN\n");
     return 1;
   }
-  std::string TopDir = GetWorkingDir();
-  if (TopDir.empty()) return 1;
+
   Msg("Working Dir: %s\n", TopDir.c_str());
   // Create array of run directories
   int runWidth = std::max( DigitWidth(stop_run), 3 );
