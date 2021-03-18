@@ -8,8 +8,6 @@ class CheckRuns {
     /// Check runs in given directory with given subdirectories; optionally only checking first run
     int DoCheck(std::string const&, FileRoutines::StrArray const&, bool);
   private:
-    enum RunType { UNKNOWN = 0, REMD, SINGLE_MD, MULTI_MD };
-
     class ResultType;
 #   ifdef HAS_NETCDF
     static int checkNCerr(int);

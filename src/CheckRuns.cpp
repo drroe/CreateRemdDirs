@@ -7,6 +7,7 @@
 #include "CheckRuns.h"
 #include "Messages.h"
 #include "TextFile.h"
+#include "Run.h"
 
 using namespace Messages;
 using namespace FileRoutines;
@@ -161,34 +162,20 @@ int CheckRuns::CheckRemdRestarts(StrArray const& output_files) {
   */
 int CheckRuns::CheckRunFiles(bool firstOnly) {
   // Try to determine the run type based on the output files.
-  RunType runType = UNKNOWN;
-  // Determine where the output files are. 
-  StrArray output_files = ExpandToFilenames("OUTPUT/rem.out.*", false);
-  if (!output_files.empty()) {
-    runType = REMD;
-  } else {
-    // Not REMD. Multiple MD?
-    output_files = ExpandToFilenames("md.out.*", false);
-    if (!output_files.empty()) {
-      runType = MULTI_MD;
-    } else {
-      if (fileExists("md.out")) {
-        output_files.push_back("md.out");
-        runType = SINGLE_MD;
-      }
-    }
-  }
+  StrArray output_files;
+  Run::Type runType = Run::DetectType( output_files );
+
   if (debug_ > 0) Msg(" %zu output files.\n", output_files.size());
-  if (output_files.empty() || runType == UNKNOWN) {
+  if (output_files.empty() || runType == Run::UNKNOWN) {
     ErrorMsg("Output file(s) not found.\n");
     //*runStat = false;
     return 1;
   }
   // Determine where the trajectory files are.
   StrArray traj_files;
-  if (runType == REMD)
+  if (runType == Run::REMD)
     traj_files = ExpandToFilenames("TRAJ/rem.crd.*", false);
-  else if (runType == MULTI_MD)
+  else if (runType == Run::MULTI_MD)
     traj_files = ExpandToFilenames("md.nc.*", false);
   else if (fileExists("mdcrd.nc"))
     traj_files.push_back("mdcrd.nc");
@@ -276,7 +263,7 @@ int CheckRuns::CheckRunFiles(bool firstOnly) {
     if (debug_ > 0) {
       Msg("\tnstlim= %i\n", nstlim);
       Msg("\tdt= %g\n", dt);
-      if (runType == REMD) Msg("\tnumexchg= %i\n", numexchg);
+      if (runType == Run::REMD) Msg("\tnumexchg= %i\n", numexchg);
       Msg("\tntwx= %i\n", ntwx);
     }
     if (numexchg == 0) numexchg = 1;
@@ -314,7 +301,7 @@ int CheckRuns::CheckRunFiles(bool firstOnly) {
               actualFrames, expectedFrames);
         badFrameCount = actualFrames;
       }
-      if (runType == REMD) check_restarts = true;
+      if (runType == Run::REMD) check_restarts = true;
     } else {
       if (debug_ > 0) Msg("\tOK.\n");
     }
