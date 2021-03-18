@@ -1,6 +1,6 @@
   START            : 0
   STOP             : 0
-Working Dir: /u/droe/GitHub/CreateRemdDirs/test/Test_Check
+Working Dir:
 Checking only first output/traj for all runs.
 #    Stat     Time(ps)       Frames     Expected
   run.000:

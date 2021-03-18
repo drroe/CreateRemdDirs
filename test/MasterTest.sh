@@ -80,9 +80,13 @@ EndTest() {
 
 # ------------------------------------------------------------------------------
 # Remove the first 4 lines from test output
+# Also remove Working Dir: since this can vary on different platforms
 TrimTestOutputHeader() {
   awk 'BEGIN{ line=1; }{
-    if (line > 4) print $0;
+    if ($1 == "Working" && $2 == "Dir:")
+      print $1 " " $2;
+    else if (line > 4)
+      print $0;
     line++;
   }' $OUTPUT > trimmed.$OUTPUT
   mv trimmed.$OUTPUT $OUTPUT
