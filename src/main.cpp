@@ -5,6 +5,7 @@
 #include "Messages.h"
 #include "FileRoutines.h"
 #include "StringRoutines.h"
+#include "Manager.h"
 
 static const char* VERSION = "1.03";
 
@@ -71,6 +72,7 @@ int main(int argc, char** argv) {
   bool runCheck = true;
   bool testOnly = false;
   std::string qfile = "qsub.opts";
+  std::string systems_file = "systems.opts";
   // Get command line options
   for (int iarg = 1; iarg < argc; iarg++) {
     std::string Arg( argv[iarg] );
@@ -142,6 +144,16 @@ int main(int argc, char** argv) {
     ModeEnabled[CREATE] = true;
   if (!InputEnabled[RUNS] && !InputEnabled[ANALYZE] && !InputEnabled[ARCHIVE])
     InputEnabled[RUNS] = true;
+
+  // If start_run and stop_run are both -1, see if systems.opts exists.
+  if (start_run == -1 && stop_run == -1) {
+    if (fileExists( systems_file )) {
+      Msg("Entering manager mode.\n");
+      Manager manager;
+      if (manager.InitManager( systems_file )) return 1;
+      return 0;
+    }
+  }
 
   // Write options
   Msg("  START            : %i\n", start_run);
