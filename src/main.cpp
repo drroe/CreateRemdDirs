@@ -7,6 +7,7 @@
 #include "StringRoutines.h"
 
 using namespace Messages;
+using namespace FileRoutines;
 
 static const char* VERSION = "1.03";
 

@@ -5,6 +5,7 @@
 
 using namespace Messages;
 using namespace StringRoutines;
+using namespace FileRoutines;
 
 Submit::~Submit() {
   if (Run_ != 0) delete Run_;

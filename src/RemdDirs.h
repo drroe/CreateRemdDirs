@@ -14,8 +14,8 @@ class RemdDirs {
     int ReadOptions(std::string const&,int);
     int Setup(std::string const&, bool);
     void Info() const;
-    int CreateRuns(std::string const&, StrArray const&, int, bool);
-    int CreateAnalyzeArchive(std::string const&, StrArray const&, int, int, bool, bool, bool, bool);
+    int CreateRuns(std::string const&, FileRoutines::StrArray const&, int, bool);
+    int CreateAnalyzeArchive(std::string const&, FileRoutines::StrArray const&, int, int, bool, bool, bool, bool);
 
     void SetDebug(int d) { debug_ = d; }
   private:

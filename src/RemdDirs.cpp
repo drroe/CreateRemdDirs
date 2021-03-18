@@ -8,6 +8,7 @@
 
 using namespace Messages;
 using namespace StringRoutines;
+using namespace FileRoutines;
 
 /** CONSTRUCTOR */
 RemdDirs::RemdDirs() :
