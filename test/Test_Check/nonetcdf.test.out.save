@@ -1,0 +1,10 @@
+  START            : 0
+  STOP             : 0
+Working Dir: /u/droe/GitHub/CreateRemdDirs/test/Test_Check
+Checking only first output/traj for all runs.
+Warning: Compiled without NetCDF; cannot get actual # frames, skipping trajectory/restart checks.
+#    Stat     Time(ps)       Frames     Expected
+  run.000:
+0001    0           20           -1           20
+  All checks OK.
+
