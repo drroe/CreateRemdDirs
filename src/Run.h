@@ -1,5 +1,6 @@
 #ifndef INC_RUN_H
 #define INC_RUN_H
+#include <string>
 #include "FileRoutines.h" // StrArray
 /// Abstract base class for a run
 class Run {
@@ -15,7 +16,10 @@ class Run {
     static const char* typeStr(Type);
     /// \return Detected run type base on output files in the run directory.
     static Type DetectType(FileRoutines::StrArray&);
+
+    void SetRunDir(std::string const& r) { rundir_ = r; }
   private:
     Type type_;
+    std::string rundir_; ///< Run directory
 };
 #endif

@@ -2,11 +2,19 @@
 #include "FileRoutines.h"
 #include "Messages.h"
 #include "Run.h"
+// ----- Run types -----
+#include "Run_Single.h"
 
 using namespace Messages;
 
 /** CONSTRUCTOR */
 System::System() {}
+
+/** DESTRUCTOR */
+System::~System() {
+  for (std::vector<Run*>::iterator it = Runs_.begin(); it != Runs_.end(); ++it)
+    delete *it;
+}
 
 /** CONSTRUCTOR - toplevel dir, dirname, description */
 System::System(std::string const& top, std::string const& dirname, std::string const& description) :
@@ -49,6 +57,20 @@ int System::FindRuns() {
     Msg("\tType: %s\n", Run::typeStr(runType));
     ChangeDir( topDir_ );
     ChangeDir( dirname_ );
+
+    // Allocate run
+    Run* run = 0;
+    switch (runType) {
+      case Run::SINGLE_MD : run = Run_Single::Alloc(); break;
+    }
+    if (run == 0) {
+      ErrorMsg("Run allocation failed.\n");
+      return 1;
+    }
+
+    run->SetRunDir( *it );
+
+    Runs_.push_back( run );
   }
 
   return 0;

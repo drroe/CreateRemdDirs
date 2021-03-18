@@ -10,5 +10,5 @@ CheckRuns.o : CheckRuns.cpp CheckRuns.h FileRoutines.h Messages.h Run.h TextFile
 Submit.o : Submit.cpp FileRoutines.h Messages.h StringRoutines.h Submit.h TextFile.h
 MdinFile.o : MdinFile.cpp MdinFile.h Messages.h StringRoutines.h TextFile.h
 Manager.o : Manager.cpp Manager.h Messages.h System.h TextFile.h
-System.o : System.cpp FileRoutines.h Messages.h Run.h System.h
+System.o : System.cpp FileRoutines.h Messages.h Run.h Run_Single.h System.h
 Run.o : Run.cpp FileRoutines.h Run.h
