@@ -23,7 +23,11 @@ int Manager::InitManager(std::string const& inputFileName) {
       if (input.Token(0)[0] != '#') {
         // Expect <system dir>, <description>
         if (ncols > 1) {
-          Msg("System: %s  Description: '%s'\n", input.Token(0).c_str(), input.Token(1).c_str());
+          // All columns beyond the first are description
+          std::string description = input.Token(1);
+          for (int col = 2; col < ncols; col++)
+            description.append(" " + input.Token(col));
+          Msg("System: %s  Description: '%s'\n", input.Token(0).c_str(), description.c_str());
         }
       }
     }
