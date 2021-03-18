@@ -106,6 +106,15 @@ if [ -z "$SUMMARY" ] ; then
     echo "$BIN not found."
     exit 1
   fi
+  # Get defines
+  HAS_NETCDF=0
+  DEFINES=`$BIN --defines | grep "Defines:"`
+  for DEFINE in $DEFINES ; do
+    if [ "$DEFINE" = '-DHAS_NETCDF' ] ; then
+      HAS_NETCDF=1
+    fi
+  done
+  echo "DEBUG: HAS_NETCDF $HAS_NETCDF"
 
   DIFFCMD=`which diff`
   if [[ -z $DIFFCMD ]] ; then
