@@ -35,6 +35,7 @@ int Manager::InitManager(std::string const& inputFileName) {
           for (int col = 3; col < ncols; col++)
             description.append(" " + input.Token(col));
           Msg("System: %s  Description: '%s'\n", input.Token(1).c_str(), description.c_str());
+          systems_.push_back( System(input.Token(1), description) );
         }
       }
     }

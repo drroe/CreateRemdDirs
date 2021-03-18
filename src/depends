@@ -1,4 +1,4 @@
-main.o : main.cpp CheckRuns.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h RemdDirs.h StringRoutines.h Submit.h TextFile.h
+main.o : main.cpp CheckRuns.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h RemdDirs.h StringRoutines.h Submit.h System.h TextFile.h
 FileRoutines.o : FileRoutines.cpp FileRoutines.h Messages.h
 Messages.o : Messages.cpp
 RemdDirs.o : RemdDirs.cpp FileRoutines.h Groups.h MdinFile.h Messages.h RemdDirs.h ReplicaDimension.h StringRoutines.h TextFile.h
@@ -9,4 +9,5 @@ StringRoutines.o : StringRoutines.cpp StringRoutines.h
 CheckRuns.o : CheckRuns.cpp CheckRuns.h FileRoutines.h Messages.h TextFile.h
 Submit.o : Submit.cpp FileRoutines.h Messages.h StringRoutines.h Submit.h TextFile.h
 MdinFile.o : MdinFile.cpp MdinFile.h Messages.h StringRoutines.h TextFile.h
-Manager.o : Manager.cpp Manager.h Messages.h TextFile.h
+Manager.o : Manager.cpp Manager.h Messages.h System.h TextFile.h
+System.o : System.cpp System.h
