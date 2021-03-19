@@ -86,6 +86,20 @@ EOF
   TestCxxProgram 'required' "Testing C++ compiler"
 }
 
+TestCcCompile() {
+  echo "Testing C compiler"
+  cat > testp.c <<EOF
+#include <stdio.h>
+int main() { printf("Testing\n"); return 0; }
+EOF
+  $CC -o testp testp.c > /dev/null 2> compile.err
+  if [ $? -ne 0 ] ; then
+    echo "Compilation with $CC failed."
+    CompileError "$CC -o testp testp.c"
+  fi
+  echo "  OK"
+}
+
 # ------------------------------------------------------------------------------
 if [[ $1 = "--help"  || $1 = "-h" ]] ; then
   Usage
@@ -147,30 +161,35 @@ case "$COMPILER" in
     "g++" )
       echo "Using gnu compilers"
       CXX=g++
+      CC=gcc
       OPTFLAGS="-O3 -Wall"
       PICFLAG="-fPIC"
       ;;
     "clang++" )
       echo "Using clang compilers"
       CXX=clang++
+      CC=clang
       OPTFLAGS="-O3 -Weverything"
       PICFLAG="-fPIC"
       ;;
     "icpc" )
       echo "Using intel compilers"
       CXX=icpc
+      CC=icc
       OPTFLAGS="-O3 -Wall"
       PICFLAG="-fpic"
       ;;
     "pgc++" )
       echo "Using PGI compilers"
       CXX=pgc++
+      CC=pgcc
       OPTFLAGS="-O2"
       PICFLAG="-fpic"
       ;;
     "CC" )
       echo "Using Cray compilers"
       CXX=CC
+      CC=cc
       OPTFLAGS=""
       PICFLAG="-fpic"
       ;;
@@ -180,6 +199,7 @@ esac
 # Use cray wrappers
 if [[ $USECRAY -eq 1 ]] ; then
   CXX=CC
+  CC=cc
 fi
 
 # Remove optimizations
@@ -202,6 +222,7 @@ CXXFLAGS="$DBG_FLAG $OPTFLAGS $LFS $INCLUDE"
 
 # Test compilers
 TestCompile
+TestCcCompile
 TestNetcdf
 
 # Set up directives
@@ -219,6 +240,7 @@ cat > config.h <<EOF
 
 CXX=$CXX
 CXXFLAGS=$CXXFLAGS
+CC=$CC
 DIRECTIVES=$DIRECTIVES
 LDFLAGS=$LDFLAGS
 EOF
