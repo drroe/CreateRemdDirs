@@ -1,7 +1,7 @@
-#include <cstring>
 #include "MdinFile.h"
 #include "TextFile.h"
 #include "Messages.h"
+#include "Cols.h"
 #include "StringRoutines.h"
 
 using namespace Messages;
@@ -15,46 +15,34 @@ MdinFile::StatType MdinFile::TokenizeLine(TokenArray& Tokens, std::string const&
   if (inputString.empty()) 
     return EMPTY_LINE;
 
-  // Copy inputString to temp since it is destroyed by tokenize.
-  size_t inputStringSize = inputString.size();
-  if (inputStringSize < 1) return EMPTY_LINE;
-  char* tempString = new char[ inputStringSize+1 ];
-  inputString.copy( tempString, inputStringSize, 0 );
-  tempString[ inputStringSize ] = '\0'; // copy() does not append null 
-  // Remove newline char from tempString if present
-  if ( tempString[ inputStringSize - 1 ] == '\n' )
-    tempString[ inputStringSize - 1 ] = '\0';
+  Cols cols;
+  if (cols.Split(inputString, separator)) return EMPTY_LINE;
 
-  // Begin tokenization
-  char* pch = strtok(tempString, separator);
-  if (pch != 0) {
-    while (pch != 0) {
-      std::string elt(pch);
+  // Loop over tokens
+  for (Cols::const_iterator col = cols.begin(); col != cols.end(); ++col)
+  {
       //Msg("DEBUG: elt='%s'\n", elt.c_str());
-      StringRoutines::RemoveAllWhitespace(elt);
-      if (!elt.empty()) {
-        if (elt[0] == '&') {
+      if (!col->empty()) {
+        if ((*col)[0] == '&') {
           // Namelist beginning or end
-          if (elt == "&end") {
+          if (*col == "&end") {
             namelist.clear();
             return NAMELIST_END;
           } else {
-            namelist.assign(elt);
+            namelist.assign(*col);
             return NEW_NAMELIST;
           }
         } else {
-          size_t found = elt.find_last_of("=");
+          size_t found = col->find_last_of("=");
           if (found == std::string::npos) {
-            ErrorMsg("Namelist token does not contain '=': %s\n", elt.c_str());
+            ErrorMsg("Namelist token does not contain '=': %s\n", col->c_str());
             return ERR;
           }
-          std::string varname = elt.substr(0, found);
-          std::string valname = elt.substr(found+1);
+          std::string varname = col->substr(0, found);
+          std::string valname = col->substr(found+1);
           Tokens.push_back( TokenType(varname, valname) );
         }
       }
-      pch = strtok(0, separator);
-    }
   }
 
   return OK;

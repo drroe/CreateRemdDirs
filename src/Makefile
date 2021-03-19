@@ -1,6 +1,6 @@
 include ../config.h
 
-SOURCES=main.cpp FileRoutines.cpp Messages.cpp RemdDirs.cpp TextFile.cpp ReplicaDimension.cpp Groups.cpp StringRoutines.cpp CheckRuns.cpp Submit.cpp MdinFile.cpp Manager.cpp System.cpp Run.cpp Run_Single.cpp NC.cpp Simulation.cpp Tokens.cpp
+SOURCES=main.cpp FileRoutines.cpp Messages.cpp RemdDirs.cpp TextFile.cpp ReplicaDimension.cpp Groups.cpp StringRoutines.cpp CheckRuns.cpp Submit.cpp MdinFile.cpp Manager.cpp System.cpp Run.cpp Run_Single.cpp NC.cpp Simulation.cpp Cols.cpp
 
 OBJECTS=$(SOURCES:.cpp=.o)
 
