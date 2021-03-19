@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
       Msg("Entering manager mode.\n");
       Manager manager;
       if (manager.InitManager( TopDir, systems_file )) return 1;
-      return 0;
+      return manager.Prompt();
     }
   }
 

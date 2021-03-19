@@ -222,6 +222,9 @@ if [[ ! -z $NETCDF_HOME && ! -z $NETCDFLIB ]] ; then
   fi
 fi
 
+# Set up any external libraries
+INCLUDE="$INCLUDE -I../external -I../external/readline"
+
 # Set up compiler flags
 CXXFLAGS="$DBG_FLAG $OPTFLAGS $LFS $INCLUDE"
 
@@ -229,9 +232,6 @@ CXXFLAGS="$DBG_FLAG $OPTFLAGS $LFS $INCLUDE"
 TestCompile
 TestCcCompile
 TestNetcdf
-
-# Build any external libraries
-
 
 # Set up directives
 if [[ ! -z $NETCDFLIB ]] ; then

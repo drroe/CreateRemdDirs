@@ -15,11 +15,14 @@ uninstall: clean
 
 all: CreateRemdDirs
 
-CreateRemdDirs: $(OBJECTS)
-	$(CXX) -o CreateRemdDirs $(OBJECTS) $(LDFLAGS)
+CreateRemdDirs: $(OBJECTS) ../external/readline/libreadline.a
+	$(CXX) -o CreateRemdDirs $(OBJECTS) $(LDFLAGS) ../external/readline/libreadline.a
 
 .cpp.o:
 	$(CXX) -c $(CXXFLAGS) $(DIRECTIVES) -o $@ $<
+
+../external/readline/libreadline.a:
+	cd ../external && $(MAKE) libreadline
 
 clean:
 	/bin/rm -f $(OBJECTS) FindDepend.o CreateRemdDirs
