@@ -55,8 +55,6 @@ int System::FindRuns() {
     StrArray output_files;
     Run::Type runType = Run::DetectType(output_files);
     Msg("\tType: %s\n", Run::typeStr(runType));
-    ChangeDir( topDir_ );
-    ChangeDir( dirname_ );
 
     // Allocate run
     Run* run = 0;
@@ -68,9 +66,12 @@ int System::FindRuns() {
       return 1;
     }
 
-    run->SetRunDir( *it );
+    run->SetupRun( *it, output_files );
 
     Runs_.push_back( run );
+    // Change directory back
+    ChangeDir( topDir_ );
+    ChangeDir( dirname_ );
   }
 
   return 0;

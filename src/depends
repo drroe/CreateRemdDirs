@@ -6,9 +6,12 @@ TextFile.o : TextFile.cpp Messages.h TextFile.h
 ReplicaDimension.o : ReplicaDimension.cpp FileRoutines.h Messages.h ReplicaDimension.h StringRoutines.h TextFile.h
 Groups.o : Groups.cpp Groups.h Messages.h TextFile.h
 StringRoutines.o : StringRoutines.cpp StringRoutines.h
-CheckRuns.o : CheckRuns.cpp CheckRuns.h FileRoutines.h Messages.h Run.h TextFile.h
+CheckRuns.o : CheckRuns.cpp CheckRuns.h FileRoutines.h Messages.h NC.h Run.h TextFile.h
 Submit.o : Submit.cpp FileRoutines.h Messages.h StringRoutines.h Submit.h TextFile.h
 MdinFile.o : MdinFile.cpp MdinFile.h Messages.h StringRoutines.h TextFile.h
 Manager.o : Manager.cpp Manager.h Messages.h System.h TextFile.h
-System.o : System.cpp FileRoutines.h Messages.h Run.h Run_Single.h System.h
+System.o : System.cpp FileRoutines.h Messages.h Run.h Run_Single.h Simulation.h System.h
 Run.o : Run.cpp FileRoutines.h Run.h
+Run_Single.o : Run_Single.cpp FileRoutines.h Messages.h Run.h Run_Single.h Simulation.h
+NC.o : NC.cpp Messages.h NC.h
+Simulation.o : Simulation.cpp Messages.h NC.h Simulation.h TextFile.h
