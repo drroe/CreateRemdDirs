@@ -1,5 +1,10 @@
 #!/bin/bash
 
+WORKDIR=`pwd`
+SRCDIR=`dirname $0`
+echo "DEBUG: Workdir: $WORKDIR"
+echo "DEBUG: Srcdir : $SRCDIR"
+
 # Configure script for CreateRemdDirs
 
 Usage() {
@@ -225,6 +230,9 @@ TestCompile
 TestCcCompile
 TestNetcdf
 
+# Build any external libraries
+
+
 # Set up directives
 if [[ ! -z $NETCDFLIB ]] ; then
   DIRECTIVES="$DIRECTIVES -DHAS_NETCDF"
@@ -246,7 +254,7 @@ LDFLAGS=$LDFLAGS
 EOF
 
 echo "Cleaning source directories."
-cd src && make clean > make.log 2>&1
+make cleansource > make.log 2>&1
 rm make.log
 
 echo ""
