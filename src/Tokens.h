@@ -16,6 +16,10 @@ class Tokens {
     std::string GetToken(const char*);
     /// \return Next unmarked token.
     std::string NextToken();
+
+    typedef std::vector<std::string>::const_iterator const_iterator;
+    const_iterator begin() const { return tokens_.begin(); }
+    const_iterator end()   const { return tokens_.end(); }
   private:
     typedef std::vector<std::string> Sarray;
     Sarray tokens_;
