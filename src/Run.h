@@ -16,8 +16,11 @@ class Run {
     static const char* typeStr(Type);
     /// \return Detected run type base on output files in the run directory.
     static Type DetectType(FileRoutines::StrArray&);
-
-    void SetRunDir(std::string const& r) { rundir_ = r; }
+    /// Set up run based on given output file array
+    int SetupRun(std::string const&, FileRoutines::StrArray const&);
+  protected:
+    /// Every run type needs an internal setup from given output file array
+    virtual int InternalSetup(FileRoutines::StrArray const&) = 0;
   private:
     Type type_;
     std::string rundir_; ///< Run directory
