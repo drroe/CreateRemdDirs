@@ -3,6 +3,7 @@
 #include <cstring> // strncmp
 #ifdef HAS_NETCDF
 # include "netcdf.h"
+# include "NC.h"
 #endif
 #include "CheckRuns.h"
 #include "Messages.h"
@@ -16,34 +17,6 @@ using namespace FileRoutines;
 CheckRuns::CheckRuns() :
   debug_(0)
 {}
-
-#ifdef HAS_NETCDF
-int CheckRuns::checkNCerr(int ncerr) {
-  if ( ncerr != NC_NOERR ) {
-    ErrorMsg("NETCDF: %s\n", nc_strerror(ncerr));
-    return 1;
-  }
-  return 0;
-}
-
-int CheckRuns::GetDimInfo(int ncid, const char* attribute, int& length) {
-  int dimID;
-  size_t slength = 0;
-  length = 0;
-  // Get dimid 
-  if ( checkNCerr(nc_inq_dimid(ncid, attribute, &dimID)) ) {
-    ErrorMsg("Getting dimID for attribute %s\n", attribute);
-    return -1;
-  }
-  // get Dim length 
-  if ( checkNCerr(nc_inq_dimlen(ncid, dimID, &slength)) ) {
-    ErrorMsg("Getting length for attribute %s\n",attribute);
-    return -1;
-  }
-  length = (int) slength;
-  return dimID;
-}
-#endif
 
 std::string CheckRuns::Ext(std::string const& name) {
   size_t found = name.find_last_of(".");
@@ -94,9 +67,9 @@ int CheckRuns::CheckRemdRestarts(StrArray const& output_files) {
   {
     int ncid = -1, timeVID = -1;
     double rsttime = -1.0;
-    if ( checkNCerr(nc_open(rfile->c_str(), NC_NOWRITE, &ncid)) ) return -1; // TODO Ascii
-    if ( checkNCerr(nc_inq_varid(ncid, "time", &timeVID)      ) ) return -1;
-    if ( checkNCerr(nc_get_var_double(ncid, timeVID, &rsttime)) ) return -1;
+    if ( NC::CheckErr(nc_open(rfile->c_str(), NC_NOWRITE, &ncid)) ) return -1; // TODO Ascii
+    if ( NC::CheckErr(nc_inq_varid(ncid, "time", &timeVID)      ) ) return -1;
+    if ( NC::CheckErr(nc_get_var_double(ncid, timeVID, &rsttime)) ) return -1;
     if (rfile == restart_files.begin()) {
       rst_time0 = rsttime;
       Msg("\tInitial restart time: %g\n", rst_time0);
@@ -107,19 +80,19 @@ int CheckRuns::CheckRemdRestarts(StrArray const& output_files) {
       return 1;
     }
     // Check first 2 coordinates
-    int natom;
-    int atomDID = GetDimInfo(ncid, "atom", natom);
+    unsigned int natom;
+    int atomDID = NC::GetDimInfo(ncid, "atom", natom);
     if (atomDID < 0) return -1;
     if (natom > 1) {
       size_t start[2], count[2];
       int coordVID = -1;
-      if ( checkNCerr(nc_inq_varid(ncid, "coordinates", &coordVID)) ) return -1;
+      if ( NC::CheckErr(nc_inq_varid(ncid, "coordinates", &coordVID)) ) return -1;
       start[0] = 0;
       start[1] = 0;
       count[0] = 2; // Only 2 atoms
       count[1] = 3;
       double Coords[6]; // Hold first 2 coord sets
-      if ( checkNCerr(nc_get_vara_double(ncid, coordVID, start, count, Coords)) )
+      if ( NC::CheckErr(nc_get_vara_double(ncid, coordVID, start, count, Coords)) )
         return -1;
       // Calculate distance
       double dx = Coords[0] - Coords[3];
@@ -137,7 +110,7 @@ int CheckRuns::CheckRemdRestarts(StrArray const& output_files) {
       if ( nc_inq_varid(ncid, "cell_lengths", &cellVID) == NC_NOERR ) {
         count[0] = 3;
         count[1] = 0;
-        if ( checkNCerr(nc_get_vara_double(ncid, cellVID, start, count, Coords)) )
+        if ( NC::CheckErr(nc_get_vara_double(ncid, cellVID, start, count, Coords)) )
           return -1;
         // Calc max distance allowed by box
         double box2 = (Coords[0]*Coords[0]) + (Coords[1]*Coords[1]) + (Coords[2]*Coords[2]);
@@ -278,15 +251,15 @@ int CheckRuns::CheckRunFiles(bool firstOnly) {
 #   ifdef HAS_NETCDF
     // Get actual number of frames from NetCDF file.
     int ncid = -1;
-    if ( checkNCerr(nc_open(tname->c_str(), NC_NOWRITE, &ncid)) ) {
+    if ( NC::CheckErr(nc_open(tname->c_str(), NC_NOWRITE, &ncid)) ) {
       ErrorMsg("Could not open trajectory file '%s'\n", tname->c_str());
       //*runStat = false;
       return 1;
     }
     int dimID;
     size_t slength = 0;
-    if ( checkNCerr(nc_inq_dimid(ncid, "frame", &dimID))  ) return -1;
-    if ( checkNCerr(nc_inq_dimlen(ncid, dimID, &slength)) ) return -1;
+    if ( NC::CheckErr(nc_inq_dimid(ncid, "frame", &dimID))  ) return -1;
+    if ( NC::CheckErr(nc_inq_dimlen(ncid, dimID, &slength)) ) return -1;
     actualFrames = (int)slength;
     nc_close( ncid );
     if (debug_ > 0)
