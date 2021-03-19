@@ -7,6 +7,7 @@
 
 using namespace Messages;
 
+/** CONSTRUCTOR */
 Manager::Manager() {}
 
 /** Initialize with input file. */
@@ -55,6 +56,7 @@ int Manager::InitManager(std::string const& CurrentDir, std::string const& input
 
 /** Process given command. */
 Manager::RetType Manager::ProcessCommand(std::string const& inp) {
+  Msg("[%s]\n", inp.c_str());
   if (inp == "q" || inp == "quit")
     return QUIT;
   else {
