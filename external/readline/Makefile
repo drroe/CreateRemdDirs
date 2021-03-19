@@ -1,5 +1,5 @@
 # Makefile for readline bundled with cpptraj.
-include ../../external.config.h
+include ../../config.h
 DIRECTIVES   += -DHAVE_CONFIG_H
 INCLUDE      += -I.
 DEL_FILE      = /bin/rm -f
