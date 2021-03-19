@@ -1,13 +1,13 @@
-#include "Tokens.h"
+#include "Cols.h"
 #include <cstring>
 #include "StringRoutines.h"
 
 /** CONSTRUCTOR */
-Tokens::Tokens() {}
+Cols::Cols() {}
 
-/** Tokenize line */
-int Tokens::Tokenize(std::string const& inputString, const char* SEP) {
-  tokens_.clear();
+/** Columnize line */
+int Cols::Split(std::string const& inputString, const char* SEP) {
+  columns_.clear();
   marked_.clear();
   if (inputString.empty()) 
     return 0;
@@ -29,7 +29,7 @@ int Tokens::Tokenize(std::string const& inputString, const char* SEP) {
       std::string elt(pch);
       //Msg("DEBUG: elt='%s'\n", elt.c_str());
       StringRoutines::RemoveAllWhitespace(elt);
-      tokens_.push_back( elt );
+      columns_.push_back( elt );
       marked_.push_back( false );
       pch = strtok(0, SEP);
     }
