@@ -55,6 +55,10 @@ uninstall: clean
 clean:
 	$(DEL_FILE) *.o $(TARGET)
 
+.c.o:
+	@echo CC $<
+	@$(CC) $(DIRECTIVES) $(INCLUDE) $(CFLAGS) -c -o $@ $<
+
 # Dependencies
 bind.o : bind.c ansi_stdlib.h config.h history.h posixjmp.h posixstat.h rlconf.h rldefs.h rlprivate.h rlshell.h rlstdc.h rltypedefs.h xmalloc.h
 callback.o : callback.c ansi_stdlib.h config.h posixjmp.h rlconf.h rldefs.h rlprivate.h rlstdc.h xmalloc.h
