@@ -36,3 +36,13 @@ int Cols::Split(std::string const& inputString, const char* SEP) {
   }
   return 0;
 }
+
+std::string Cols::NextColumn() {
+  for (unsigned int idx = 0; idx != columns_.size(); idx++) {
+    if (!marked_[idx]) {
+      marked_[idx] = true;
+      return columns_[idx];
+    }
+  }
+  return std::string("");
+}

@@ -1,6 +1,7 @@
 #include "Manager.h"
 #include "Messages.h"
 #include "TextFile.h"
+#include "Cols.h"
 #include <cstdlib> // free
 #include <readline.h>
 #include <history.h>
@@ -57,10 +58,15 @@ int Manager::InitManager(std::string const& CurrentDir, std::string const& input
 /** Process given command. */
 Manager::RetType Manager::ProcessCommand(std::string const& inp) {
   Msg("[%s]\n", inp.c_str());
-  if (inp == "q" || inp == "quit")
+
+  Cols line;
+  line.Split(inp, " \n\r");
+
+  std::string cmd = line.NextColumn();
+  if (cmd == "q" || cmd == "quit")
     return QUIT;
   else {
-    Msg("Warning: Unrecognized command: %s\n", inp.c_str());
+    Msg("Warning: Unrecognized command: %s\n", cmd.c_str());
     return ERR;
   }
   return OK;
