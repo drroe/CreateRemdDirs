@@ -16,3 +16,6 @@ Run_SingleMD.o : Run_SingleMD.cpp FileRoutines.h Messages.h Run.h Run_SingleMD.h
 NC.o : NC.cpp Messages.h NC.h
 Simulation.o : Simulation.cpp Messages.h NC.h Simulation.h TextFile.h
 Cols.o : Cols.cpp Cols.h StringRoutines.h
+Commands.o : Commands.cpp Cmd.h CmdList.h Cols.h Commands.h Exec.h Exec_Quit.h Manager.h Messages.h System.h
+Cmd.o : Cmd.cpp Cmd.h Exec.h
+CmdList.o : CmdList.cpp Cmd.h CmdList.h

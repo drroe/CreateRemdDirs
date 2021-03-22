@@ -62,13 +62,11 @@ int System::FindRuns() {
       case Run::SINGLE_MD : run = Run_SingleMD::Alloc(); break;
     }
     if (run == 0) {
-      ErrorMsg("Run allocation failed.\n");
-      return 1;
+      Msg("Warning: Run allocation failed.\n");
+    } else {
+      run->SetupRun( *it, output_files );
+      Runs_.push_back( run );
     }
-
-    run->SetupRun( *it, output_files );
-
-    Runs_.push_back( run );
     // Change directory back
     ChangeDir( topDir_ );
     ChangeDir( dirname_ );
