@@ -7,15 +7,63 @@
 #include <readline.h>
 #include <history.h>
 #include <cstdarg>
-#include <cstdlib> // free
+#include <cstdlib> // free, malloc
+#include <cstring> // strcpy, strncmp
 // ----- Commands -----
 #include "Exec_Quit.h"
 
 using namespace Messages;
 
+// ----- For readline tab completion -------------
 /// Array of command names for tab completion
 static std::vector<const char*> names_ = std::vector<const char*>();
 
+// duplicate_string()
+static char* duplicate_string(const char* s) {
+  char* r = (char*)malloc(strlen(s) + 1);
+  strcpy(r, s);
+  return r;
+}
+
+// command_generator()
+/** Generator function for command completion.  STATE lets us know whether
+  * to start from scratch; without any state (i.e. STATE == 0), then we
+  * start at the top of the list.
+  */
+static char* command_generator(const char* text, int state) {
+  static int list_index, len;
+  const char *name;
+
+  // If this is a new word to complete, initialize now. This includes
+  // saving the length of TEXT for efficiency, and initializing the index
+  // variable to 0.
+  if (!state) {
+    list_index = 0;
+    len = strlen(text);
+  }
+
+  // Return the next name which partially matches from the command list.
+  while ( (name = names_[list_index]) != 0 )
+  {
+    list_index++;
+    if (strncmp(name, text, len) == 0)
+      return (duplicate_string(name));
+  }
+
+  // If no names matched, then return NULL.
+  return 0;
+}
+
+// command_completion()
+static char** command_completion(const char* text, int start, int end) {
+  char** matches = 0;
+  // If this word is at the start of the line, assume it is a command.
+  if (start == 0 || (strncmp(rl_line_buffer, "help ", 5)==0))
+    matches = rl_completion_matches(text, command_generator);
+  return matches;
+}
+
+// -----------------------------------------------
 /// Master list of commands
 static CmdList commands_ = CmdList();
 
@@ -44,9 +92,11 @@ static void AddCmd(Exec* oIn, int nKeys, ...) {
 
 /** Initialize all commands. */
 void Commands::InitCommands() {
+  // Tell the completer we want a crack first
+  rl_attempted_completion_function = command_completion;
+  // Add all commands
   AddCmd(new Exec_Quit(), 1, "quit");
-
-  // Add null ptr to indicate end of command key addresses for ReadLine
+  // Add null ptr to indicate end of command key addresses for readline 
   names_.push_back( 0 );
 }
 
@@ -81,7 +131,6 @@ Exec::RetType Commands::ProcessCommand(std::string const& inp, Manager& manager)
   Exec::RetType retVal = cmd.CmdExec()->Execute( manager, line );
   return retVal;
 }
-
 
 /** Command-line prompt for manager mode. */
 int Commands::Prompt(Manager& manager) {
