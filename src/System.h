@@ -6,6 +6,7 @@ class Run;
 /// Hold information on runs for a system
 class System {
   public:
+    typedef std::vector<Run*> RunArray;
     /// CONSTRUCTOR
     System();
     /// DESTRUCTOR
@@ -22,8 +23,10 @@ class System {
 
     /// Print system info
     void PrintInfo() const;
+    /// \return Run Array
+    RunArray const& Runs() const { return Runs_; }
   private:
-    std::vector<Run*> Runs_;  ///< Array of runs for the system
+    RunArray Runs_;           ///< Array of runs for the system
     std::string topDir_;      ///< Top level directory
     std::string dirname_;     ///< Directory containing runs for the system
     std::string description_; ///< Description of the system

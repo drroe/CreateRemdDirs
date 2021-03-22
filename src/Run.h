@@ -11,6 +11,8 @@ class Run {
     /// Virtual because inherited
     virtual ~Run() {}
 
+    virtual void RunInfo() const = 0;
+
     Run(Type t) : type_(t) {}
     /// \return Description of given type
     static const char* typeStr(Type);
@@ -23,6 +25,8 @@ class Run {
     virtual int InternalSetup(FileRoutines::StrArray const&) = 0;
     /// \return setup directory
     std::string const& SetupDirName() const { return setupDir_; }
+    /// \return run dir name
+    std::string const& RunDirName() const { return rundir_; }
   private:
     Type type_;
     std::string rundir_;   ///< Run directory. May be relative.

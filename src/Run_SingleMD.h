@@ -9,6 +9,8 @@ class Run_SingleMD : public Run {
 
     static Run* Alloc() { return (Run*)new Run_SingleMD(); }
     //Run* Copy() const;
+
+    void RunInfo() const;
   private:
     int InternalSetup(FileRoutines::StrArray const&);
 

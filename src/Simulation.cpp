@@ -18,6 +18,7 @@ Simulation::Simulation() :
   expected_exchanges_(-1),
   traj_write_freq_(0),
   expected_frames_(0),
+  actual_frames_(-1),
   completed_(false)
 {}
 
@@ -42,7 +43,7 @@ int Simulation::SetupFromFiles(std::string const& outfilename,
   expected_exchanges_ = -1;
   traj_write_freq_ = 0;
   expected_frames_ = 0;
-  int actualFrames = -1;
+  actual_frames_ = -1;
 
   int readInput = 0;
   const char* SEP = " ,=\r\n";
@@ -118,19 +119,19 @@ int Simulation::SetupFromFiles(std::string const& outfilename,
   unsigned int slength; 
   int dimID = NC::GetDimInfo(ncid, "frame", slength);
   if (dimID == -1) return 1;
-  actualFrames = (int)slength;
+  actual_frames_ = (int)slength;
   nc_close( ncid );
   if (debug > 0)
-    Msg("\tActual Frames: %i\n", actualFrames);
+    Msg("\tActual Frames: %i\n", actual_frames_);
   // If run did not complete, check restart files if replica.
-  if (expected_frames_ != actualFrames) {
+  if (expected_frames_ != actual_frames_) {
     //++numBadFrameCount;
     //++Nwarnings_;
-    //if (badFrameCount != actualFrames) { // To avoid repeated checkall warnings
+    //if (badFrameCount != actual_frames_) { // To avoid repeated checkall warnings
       if (debug > 0)
         Msg("Warning: # actual frames %i != # expected frames %i.\n",
-            actualFrames, expected_frames_);
-      //badFrameCount = actualFrames;
+            actual_frames_, expected_frames_);
+      //badFrameCount = actual_frames_;
     //}
     //if (runType == Run::REMD) check_restarts = true;
   } else {
@@ -139,7 +140,7 @@ int Simulation::SetupFromFiles(std::string const& outfilename,
 # endif /* HAS_NETCDF */
   long int idx = 0;
   Msg("%04li %4i %12g %12i %12i\n", idx, (int)completed_, total_time_,
-      actualFrames, expected_frames_);
+      actual_frames_, expected_frames_);
 
   return 0;
 }

@@ -19,4 +19,4 @@ Cols.o : Cols.cpp Cols.h StringRoutines.h
 Commands.o : Commands.cpp Cmd.h CmdList.h Cols.h Commands.h Exec.h Exec_List.h Exec_Quit.h Manager.h Messages.h System.h
 Cmd.o : Cmd.cpp Cmd.h Exec.h
 CmdList.o : CmdList.cpp Cmd.h CmdList.h
-Exec_List.o : Exec_List.cpp Exec.h Exec_List.h Manager.h System.h
+Exec_List.o : Exec_List.cpp Exec.h Exec_List.h FileRoutines.h Manager.h Run.h System.h
