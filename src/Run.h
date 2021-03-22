@@ -23,6 +23,7 @@ class Run {
     virtual int InternalSetup(FileRoutines::StrArray const&) = 0;
   private:
     Type type_;
-    std::string rundir_; ///< Run directory
+    std::string rundir_;   ///< Run directory. May be relative.
+    std::string setupDir_; ///< Directory in which SetupRun gets invoked. Should be absolute run dir.
 };
 #endif

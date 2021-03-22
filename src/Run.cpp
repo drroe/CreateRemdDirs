@@ -34,8 +34,11 @@ Run::Type Run::DetectType(FileRoutines::StrArray& output_files) {
   return runType;
 }
 
-/// Set up run based on given output file array
+/** Set up run based on given output file array. Should
+  * be called inside the run directory.
+  */
 int Run::SetupRun(std::string const& runDir, FileRoutines::StrArray const& output_files) {
   rundir_ = runDir;
+  setupDir_ = FileRoutines::GetWorkingDir();
   return InternalSetup( output_files );
 }
