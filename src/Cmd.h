@@ -26,6 +26,10 @@ class Cmd {
     key_iterator keysEnd()   const { return keywords_.end();   }
     /// \return true if given key matches any of this commands keywords.
     bool KeyMatches(std::string const&) const;
+    /// \return True if command is empty
+    bool Empty() const { return (object_ == 0); }
+    /// \return Pointer to exec object
+    Exec* CmdExec() const { return object_; }
   private:
     Exec* object_;
     Sarray keywords_;
