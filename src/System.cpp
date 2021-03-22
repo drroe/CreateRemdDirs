@@ -3,7 +3,7 @@
 #include "Messages.h"
 #include "Run.h"
 // ----- Run types -----
-#include "Run_Single.h"
+#include "Run_SingleMD.h"
 
 using namespace Messages;
 
@@ -59,7 +59,7 @@ int System::FindRuns() {
     // Allocate run
     Run* run = 0;
     switch (runType) {
-      case Run::SINGLE_MD : run = Run_Single::Alloc(); break;
+      case Run::SINGLE_MD : run = Run_SingleMD::Alloc(); break;
     }
     if (run == 0) {
       ErrorMsg("Run allocation failed.\n");
