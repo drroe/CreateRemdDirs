@@ -6,6 +6,7 @@
 #include "FileRoutines.h"
 #include "StringRoutines.h"
 #include "Manager.h"
+#include "Commands.h"
 
 using namespace Messages;
 using namespace FileRoutines;
@@ -168,9 +169,10 @@ int main(int argc, char** argv) {
   if (start_run == -1 && stop_run == -1) {
     if (fileExists( systems_file )) {
       Msg("Entering manager mode.\n");
+      Commands::InitCommands();
       Manager manager;
       if (manager.InitManager( TopDir, systems_file )) return 1;
-      return manager.Prompt();
+      return Commands::Prompt(manager);
     }
   }
 

@@ -7,6 +7,7 @@
 #include <readline.h>
 #include <history.h>
 #include <cstdarg>
+#include <cstdlib> // free
 // ----- Commands -----
 #include "Exec_Quit.h"
 
@@ -44,6 +45,9 @@ static void AddCmd(Exec* oIn, int nKeys, ...) {
 /** Initialize all commands. */
 void Commands::InitCommands() {
   AddCmd(new Exec_Quit(), 1, "quit");
+
+  // Add null ptr to indicate end of command key addresses for ReadLine
+  names_.push_back( 0 );
 }
 
 /** Search for command. */
