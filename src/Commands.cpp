@@ -110,6 +110,26 @@ static Cmd const& SearchToken(std::string const& cmdArg) {
   return EMPTYCMD_;
 }
 
+/** Write help text. */
+void Help( Cols& line ) {
+  if (line.Ncolumns() == 1) {
+    Msg("Commands:\n");
+    for (CmdList::const_iterator cmd = commands_.begin(); cmd != commands_.end(); ++cmd)
+      for (Cmd::key_iterator key = cmd->keysBegin(); key != cmd->keysEnd(); ++key)
+        Msg("  %s", key->c_str());
+    Msg("\n");
+  } else {
+    std::string cmdArg = line.NextColumn();
+    Cmd const& cmd = SearchToken( cmdArg );
+    if (cmd.Empty())
+      Msg("Warning: No command named '%s'\n", cmdArg.c_str());
+    else {
+      std::string helpText = cmd.CmdExec()->Help( line );
+      Msg("%s\n", helpText.c_str());
+    }
+  }
+}
+
 /** Process given command. */
 Exec::RetType Commands::ProcessCommand(std::string const& inp, Manager& manager) {
   Msg("[%s]\n", inp.c_str());
@@ -118,6 +138,12 @@ Exec::RetType Commands::ProcessCommand(std::string const& inp, Manager& manager)
   line.Split(inp, " \n\r");
 
   std::string cmdArg = line.NextColumn();
+
+  // Do we just want help?
+  if (cmdArg == "help") {
+    Help( line );
+    return Exec::OK;
+  }
 
   // Look for command in command list.
   Cmd const& cmd = SearchToken( cmdArg );
