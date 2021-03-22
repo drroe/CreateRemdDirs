@@ -9,6 +9,7 @@ Run_SingleMD::Run_SingleMD() :
 /** Set up single MD run. */
 int Run_SingleMD::InternalSetup(FileRoutines::StrArray const& output_files)
 {
+  Messages::Msg("DEBUG: Run dir path: %s\n", SetupDirName().c_str());
   if (output_files.size() != 1) {
     Messages::ErrorMsg("Run_SingleMD::InternalSetup: output files array size is not 1 (%zu)\n", output_files.size());
     return 1;

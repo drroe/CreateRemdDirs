@@ -21,6 +21,8 @@ class Run {
   protected:
     /// Every run type needs an internal setup from given output file array
     virtual int InternalSetup(FileRoutines::StrArray const&) = 0;
+    /// \return setup directory
+    std::string const& SetupDirName() const { return setupDir_; }
   private:
     Type type_;
     std::string rundir_;   ///< Run directory. May be relative.
