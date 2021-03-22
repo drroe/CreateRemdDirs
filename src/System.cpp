@@ -77,5 +77,5 @@ int System::FindRuns() {
 
 /** Print system information. */
 void System::PrintInfo() const {
-  Msg("%s : %s\n", dirname_.c_str(), description_.c_str());
+  Msg("%s : %s (%zu runs)\n", dirname_.c_str(), description_.c_str(), Runs_.size());
 }
