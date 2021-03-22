@@ -19,6 +19,9 @@ class System {
 
     /// Find runs in dirname_
     int FindRuns();
+
+    /// Print system info
+    void PrintInfo() const;
   private:
     std::vector<Run*> Runs_;  ///< Array of runs for the system
     std::string topDir_;      ///< Top level directory

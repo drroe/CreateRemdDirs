@@ -74,3 +74,8 @@ int System::FindRuns() {
 
   return 0;
 }
+
+/** Print system information. */
+void System::PrintInfo() const {
+  Msg("%s : %s\n", dirname_.c_str(), description_.c_str());
+}

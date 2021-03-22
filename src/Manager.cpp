@@ -50,3 +50,10 @@ int Manager::InitManager(std::string const& CurrentDir, std::string const& input
 
   return 0;
 }
+
+/** List all the systems. */
+int Manager::List() const {
+  for (SystemArray::const_iterator it = systems_.begin(); it != systems_.end(); ++it)
+    it->PrintInfo();
+  return 0;
+}

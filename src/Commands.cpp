@@ -11,6 +11,7 @@
 #include <cstring> // strcpy, strncmp
 // ----- Commands -----
 #include "Exec_Quit.h"
+#include "Exec_List.h"
 
 using namespace Messages;
 
@@ -96,6 +97,7 @@ void Commands::InitCommands() {
   rl_attempted_completion_function = command_completion;
   // Add all commands
   AddCmd(new Exec_Quit(), 1, "quit");
+  AddCmd(new Exec_List(), 1, "list");
   // Add null ptr to indicate end of command key addresses for readline 
   names_.push_back( 0 );
 }

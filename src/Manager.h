@@ -9,14 +9,16 @@ class Manager {
     Manager();
     /// Initialize with current directory and systems file name
     int InitManager(std::string const&, std::string const&);
-    /// Manager command prompt
-    int Prompt();
+    /// List all current systems.
+    int List() const;
   private:
     enum RetType { OK = 0, ERR, QUIT };
     /// Process command
     RetType ProcessCommand(std::string const&);
 
-    std::vector<System> systems_; ///< Hold all systems in the systems file
+    typedef std::vector<System> SystemArray;
+
+    SystemArray systems_; ///< Hold all systems in the systems file
     std::string topDir_;          ///< The current (top) working directory
 };
 #endif
