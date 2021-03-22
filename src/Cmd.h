@@ -25,7 +25,7 @@ class Cmd {
     /// \return iterator to end of command keywords.
     key_iterator keysEnd()   const { return keywords_.end();   }
     /// \return true if given key matches any of this commands keywords.
-    bool KeyMatches(const char*) const;
+    bool KeyMatches(std::string const&) const;
   private:
     Exec* object_;
     Sarray keywords_;

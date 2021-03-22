@@ -6,8 +6,8 @@ void Cmd::Clear() {
   if (object_ != 0) delete object_;
 }
 
-bool Cmd::KeyMatches(const char* keyIn) const {
+bool Cmd::KeyMatches(std::string const& keyIn) const {
   for (key_iterator key = keywords_.begin(); key != keywords_.end(); ++key)
-    if ( key->compare( keyIn ) == 0 ) return true;
+    if ( *key == keyIn ) return true;
   return false;
 }
