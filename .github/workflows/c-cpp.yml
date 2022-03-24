@@ -34,6 +34,6 @@ jobs:
         shell: bash -lex {0}
         run: |
           ./configure ${COMPILER}
-          make -j2 install
+          make -j2 $BUILD_TYPE
           make $TEST_TYPE
 
