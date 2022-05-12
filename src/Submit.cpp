@@ -498,7 +498,7 @@ int Submit::QueueOpts::QsubHeader(TextFile& qout, int run_num, std::string const
   // ----- SLURM ---------------------------------
   else if (queueType_ == SLURM) {
     qout.Printf("#!/bin/bash\n#SBATCH -J %s\n", job_title.c_str());
-    if (nodes_ > 0) qout.Printf("$SBATCH -N %i\n", nodes_); 
+    if (nodes_ > 0) qout.Printf("#SBATCH -N %i\n", nodes_);
     qout.Printf("#SBATCH -t %s\n", walltime_.c_str());
     if (threads_ > 0) qout.Printf("#SBATCH -n %i\n", threads_);
     if (!email_.empty())
