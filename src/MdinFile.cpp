@@ -33,7 +33,7 @@ MdinFile::StatType MdinFile::TokenizeLine(TokenArray& Tokens, std::string const&
             return NEW_NAMELIST;
           }
         } else {
-          size_t found = elt.find_first_of("=");
+          size_t found = col->find_first_of("=");
           if (found == std::string::npos) {
             ErrorMsg("Namelist token does not contain '=': %s\n", col->c_str());
             return ERR;
