@@ -38,6 +38,21 @@ int Cols::Split(std::string const& inputString, const char* SEP) {
   return 0;
 }
 
+/** \return Unmarked column next to unmarked key. */
+std::string Cols::GetKey(std::string const& key) {
+  for (unsigned int idx = 0; idx != columns_.size(); idx++) {
+    if (!marked_[idx] && key == columns_[idx]) {
+      marked_[idx] = true;
+      idx++;
+      if (idx < columns_.size()) {
+        marked_[idx] = true;
+        return columns_[idx];
+      }
+    }
+  }
+  return std::string("");
+}
+
 std::string Cols::NextColumn() {
   for (unsigned int idx = 0; idx != columns_.size(); idx++) {
     if (!marked_[idx]) {

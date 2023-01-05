@@ -13,7 +13,7 @@ class Cols {
     /// \return current number of columns
     unsigned int Ncolumns() const { return columns_.size(); }
     /// \return Unmarked Column next to specified unmarked key.
-    std::string GetColumn(const char*);
+    std::string GetKey(std::string const&);
     /// \return Next unmarked column.
     std::string NextColumn();
 

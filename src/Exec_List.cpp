@@ -12,8 +12,8 @@ Exec_List::Exec_List() {}
 /** List all systems. */
 Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
   int tgtidx = -1;
-  std::string arg = args.NextColumn();
-  while (!arg.empty()) {
+  std::string arg = args.GetKey("system");
+  if (!arg.empty()) {
     if (StringRoutines::validInteger( arg )) {
       tgtidx = StringRoutines::convertToInteger( arg );
       if (tgtidx < 0 || tgtidx >= manager.Systems().size()) {
@@ -21,9 +21,9 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
         return ERR;
       }
     } else {
-      Msg("Warning: Unrecognized option: %s\n", arg.c_str());
+      ErrorMsg("%s is not a valid system index.\n", arg.c_str());
+      return ERR;
     }
-    arg = args.NextColumn();
   }
 
   int idx = 0;
