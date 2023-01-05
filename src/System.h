@@ -26,6 +26,9 @@ class System {
     /// \return Run Array
     RunArray const& Runs() const { return Runs_; }
   private:
+    /// Clear all runs
+    void clearRuns();
+
     RunArray Runs_;           ///< Array of runs for the system
     std::string topDir_;      ///< Top level directory
     std::string dirname_;     ///< Directory containing runs for the system

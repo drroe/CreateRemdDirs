@@ -10,10 +10,15 @@ using namespace Messages;
 /** CONSTRUCTOR */
 System::System() {}
 
-/** DESTRUCTOR */
-System::~System() {
+/** Clear all runs. */
+void System::clearRuns() {
   for (std::vector<Run*>::iterator it = Runs_.begin(); it != Runs_.end(); ++it)
     delete *it;
+}
+
+/** DESTRUCTOR */
+System::~System() {
+  clearRuns();
 }
 
 /** CONSTRUCTOR - toplevel dir, dirname, description */
@@ -28,7 +33,11 @@ System::System(System const& rhs) :
   topDir_(rhs.topDir_),
   dirname_(rhs.dirname_),
   description_(rhs.description_)
-{}
+{
+  Runs_.reserve( rhs.Runs_.size() );
+  for (std::vector<Run*>::const_iterator it = rhs.Runs_.begin(); it != rhs.Runs_.end(); ++it)
+    Runs_.push_back( (*it)->Copy() );
+}
 
 /** Assignment */
 System& System::operator=(System const& rhs) {
@@ -36,6 +45,11 @@ System& System::operator=(System const& rhs) {
   topDir_ = rhs.topDir_;
   dirname_ = rhs.dirname_;
   description_ = rhs.description_;
+  clearRuns();
+  Runs_.reserve( rhs.Runs_.size() );
+  for (std::vector<Run*>::const_iterator it = rhs.Runs_.begin(); it != rhs.Runs_.end(); ++it)
+    Runs_.push_back( (*it)->Copy() );
+
   return *this;
 }
 

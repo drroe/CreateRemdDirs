@@ -8,10 +8,22 @@ class Run {
     enum Type { UNKNOWN = 0, REMD, MULTI_MD, SINGLE_MD };
     /// CONSTRUCTOR
     Run() : type_(UNKNOWN) {}
+    /// COPY CONSTRUCTOR
+    Run(const Run& rhs) : type_(rhs.type_), rundir_(rhs.rundir_), setupDir_(rhs.setupDir_) {}
+    /// ASSIGNMENT
+    Run& operator=(const Run& rhs) {
+      if (&rhs == this) return *this;
+      type_ = rhs.type_;
+      rundir_ = rhs.rundir_;
+      setupDir_ = rhs.setupDir_;
+      return *this;
+    }
     /// Virtual because inherited
     virtual ~Run() {}
-
+    /// Print info about run to stdout
     virtual void RunInfo() const = 0;
+    /// \return Copy of run
+    virtual Run* Copy() const = 0;
 
     Run(Type t) : type_(t) {}
     /// \return Description of given type
