@@ -23,9 +23,7 @@ jobs:
     steps:
       - name: Install prerequisite packages
         run: |
-          sudo apt-get install libnetcdf-dev \
-                               netcdf-bin \
-                               clang
+          sudo apt-get install clang
 
       - name: Checkout source code
         uses: actions/checkout@v2
@@ -34,6 +32,6 @@ jobs:
         shell: bash -lex {0}
         run: |
           ./configure ${COMPILER}
-          make -j2 install
+          make -j2 $BUILD_TYPE
           make $TEST_TYPE
 

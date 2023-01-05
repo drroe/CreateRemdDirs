@@ -418,9 +418,16 @@ int Submit::QueueOpts::Check() const {
     ErrorMsg("MPI run command MPIRUN not set.\n");
     return 1;
   }
-  if (nodes_ < 1) {
-    ErrorMsg("Less than 1 node specified (use NODES option).\n");
-    return 1;
+  if (queueType_ == PBS) {
+    if (nodes_ < 1) {
+      ErrorMsg("Less than 1 node specified (use NODES option).\n");
+      return 1;
+    }
+  } else if (queueType_ == SLURM) {
+    if (nodes_ < 1 && threads_ < 1) {
+      ErrorMsg("Must specify either NODES or THREADS.\n");
+      return 1;
+    }
   }
   return 0;
 }
@@ -490,8 +497,9 @@ int Submit::QueueOpts::QsubHeader(TextFile& qout, int run_num, std::string const
   }
   // ----- SLURM ---------------------------------
   else if (queueType_ == SLURM) {
-    qout.Printf("#!/bin/bash\n#SBATCH -J %s\n#SBATCH -N %i\n#SBATCH -t %s\n",
-                job_title.c_str(), nodes_, walltime_.c_str()); 
+    qout.Printf("#!/bin/bash\n#SBATCH -J %s\n", job_title.c_str());
+    if (nodes_ > 0) qout.Printf("#SBATCH -N %i\n", nodes_);
+    qout.Printf("#SBATCH -t %s\n", walltime_.c_str());
     if (threads_ > 0) qout.Printf("#SBATCH -n %i\n", threads_);
     if (!email_.empty())
       qout.Printf("#SBATCH --mail-user=%s\n#SBATCH --mail-type=all\n", email_.c_str());
