@@ -1,4 +1,5 @@
 #include "StringRoutines.h"
+#include "Messages.h"
 #include <cmath>
 #include <sstream>
 
@@ -29,6 +30,35 @@ std::string StringRoutines::integerToString(int i, int width) {
   oss << std::right << i;
   return oss.str();
 }
+
+// validInteger()
+bool StringRoutines::validInteger(std::string const &argument) {
+  if (argument.empty()) return false;
+  std::string::const_iterator c;
+  if (argument[0]=='-' || argument[0]=='+') {
+    c = argument.begin()+1;
+    if (c == argument.end()) return false;
+  } else
+    c = argument.begin();
+  for (; c != argument.end(); ++c)
+    if (!isdigit(*c)) return false;
+  return true;
+}
+
+// convertToInteger()
+/** Convert the input string to an integer. */
+int StringRoutines::convertToInteger(std::string const &s) {
+  std::istringstream iss(s);
+  long int i;
+  iss >> i;
+  if (iss.fail()) {
+    Messages::ErrorMsg("Could not convert '%s' to integer.\n", s.c_str());
+    return 0;
+  }
+    //throw BadConversion("convertToInteger(\"" + s + "\")");
+  return (int)i;
+}
+
 
 std::string StringRoutines::doubleToString(double d) {
   std::ostringstream oss;

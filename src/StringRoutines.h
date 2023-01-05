@@ -6,6 +6,8 @@ namespace StringRoutines {
 int DigitWidth(long int);
 std::string integerToString(int);
 std::string integerToString(int,int);
+bool validInteger(std::string const&);
+int convertToInteger(std::string const&);
 std::string doubleToString(double);
 /// Remove any trailing whitespace from string.
 void RemoveTrailingWhitespace(std::string &);
