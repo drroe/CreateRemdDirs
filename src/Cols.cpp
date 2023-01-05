@@ -34,6 +34,7 @@ int Cols::Split(std::string const& inputString, const char* SEP) {
       pch = strtok(0, SEP);
     }
   }
+  delete[] tempString;
   return 0;
 }
 
