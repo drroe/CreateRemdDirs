@@ -34,13 +34,16 @@ int Manager::InitManager(std::string const& CurrentDir, std::string const& input
             ErrorMsg("Not enough columns for 'system': %s\n", errline.c_str());
             return 1;
           }
+          // If no Project yet, add default
+          if (projects_.empty())
+            projects_.push_back( Project() );
           // All columns beyond the first are description
           std::string description = input.Token(2);
           for (int col = 3; col < ncols; col++)
             description.append(" " + input.Token(col));
           Msg("System: %s  Description: '%s'\n", input.Token(1).c_str(), description.c_str());
-          systems_.push_back( System(CurrentDir, input.Token(1), description) );
-          if (systems_.back().FindRuns()) return 1;
+          projects_.back().AddSystem( System(CurrentDir, input.Token(1), description) );
+          if (projects_.back().LastSystem().FindRuns()) return 1;
         }
       }
     }
