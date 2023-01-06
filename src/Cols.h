@@ -14,6 +14,10 @@ class Cols {
     unsigned int Ncolumns() const { return columns_.size(); }
     /// \return Unmarked Column next to specified unmarked key.
     std::string GetKey(std::string const&);
+    /// \return true and mark column if key is present
+    bool HasKey(std::string const&);
+    /// Get unmarked column next to specified unmarked key as integer.
+    int GetKeyInteger(int&, std::string const&, int);
     /// \return Next unmarked column.
     std::string NextColumn();
 

@@ -1,7 +1,6 @@
 #include "Exec_List.h"
 #include "Manager.h"
 #include "Run.h"
-#include "StringRoutines.h"
 #include "Messages.h"
 #include "Cols.h"
 
@@ -11,42 +10,37 @@ Exec_List::Exec_List() {}
 
 /** List all systems. */
 Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
-  int tgtidx = -1;
-  std::string arg = args.GetKey("system");
-  if (!arg.empty()) {
-    if (StringRoutines::validInteger( arg )) {
-      tgtidx = StringRoutines::convertToInteger( arg );
-      //if (tgtidx < 0 || tgtidx >= manager.Systems().size()) {
-      //  ErrorMsg("System index %i is out of range.\n", tgtidx);
-      //  return ERR;
-      //}
-    } else {
-      ErrorMsg("%s is not a valid system index.\n", arg.c_str());
-      return ERR;
-    }
+  int tgtProjectIdx = -1;
+  int tgtSystemIdx = -1;
+
+  if (args.GetKeyInteger(tgtProjectIdx, "project", -1)) return ERR;
+  if (args.GetKeyInteger(tgtSystemIdx, "system", -1)) return ERR;
+  if (args.HasKey("all")) tgtSystemIdx = -2;
+
+  if (tgtProjectIdx > -1 && tgtProjectIdx >= manager.Projects().size()) {
+    ErrorMsg("Project index %i is out of range.\n", tgtProjectIdx);
+    return ERR;
   }
 
-  int idx = 0;
+  int pidx = 0;
   for (Manager::ProjectArray::const_iterator project = manager.Projects().begin();
                                              project != manager.Projects().end();
-                                           ++project, ++idx)
+                                           ++project, ++pidx)
   {
-    int sidx = 0;
-    Msg("Project: %s\n", project->name());
-    for (Project::SystemArray::const_iterator system = project->Systems().begin();
-                                              system != project->Systems().end();
-                                            ++system, ++sidx)
-    {
-      if (tgtidx < 0) {
-        Msg("  %i: ", sidx);
-        system->PrintInfo();
-      } else if (tgtidx == idx) {
-        Msg("  %i: ", sidx);
-        system->PrintInfo();
-        for (System::RunArray::const_iterator run = system->Runs().begin();
-                                              run != system->Runs().end(); ++run)
-          (*run)->RunInfo();
-        break;
+    if (tgtProjectIdx < 0 || tgtProjectIdx == pidx) {
+      Msg("Project %i: %s\n", pidx, project->name());
+      int sidx = 0;
+      for (Project::SystemArray::const_iterator system = project->Systems().begin();
+                                                system != project->Systems().end();
+                                              ++system, ++sidx)
+      {
+        if (tgtSystemIdx == -2 || tgtSystemIdx == sidx) {
+          Msg("  %i: ", sidx);
+          system->PrintInfo();
+          for (System::RunArray::const_iterator run = system->Runs().begin();
+                                                run != system->Runs().end(); ++run)
+            (*run)->RunInfo();
+        }
       }
     }
   }

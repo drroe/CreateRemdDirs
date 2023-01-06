@@ -1,6 +1,10 @@
 #include "Cols.h"
 #include <cstring>
 #include "StringRoutines.h"
+#include "Messages.h"
+
+using namespace StringRoutines;
+using namespace Messages;
 
 /** CONSTRUCTOR */
 Cols::Cols() {}
@@ -28,7 +32,7 @@ int Cols::Split(std::string const& inputString, const char* SEP) {
     while (pch != 0) {
       std::string elt(pch);
       //Msg("DEBUG: elt='%s'\n", elt.c_str());
-      StringRoutines::RemoveAllWhitespace(elt);
+      RemoveAllWhitespace(elt);
       columns_.push_back( elt );
       marked_.push_back( false );
       pch = strtok(0, SEP);
@@ -51,6 +55,35 @@ std::string Cols::GetKey(std::string const& key) {
     }
   }
   return std::string("");
+}
+
+/** \return true if key is present, mark it. */
+bool Cols::HasKey(std::string const& key) {
+  for (unsigned int idx = 0; idx != columns_.size(); idx++) {
+    if (!marked_[idx] && key == columns_[idx]) {
+      marked_[idx] = true;
+      return true;
+    }
+  }
+  return false;
+}
+
+/** \param ival Set to integer value of unmarked column next to unmarked key (or defaultVal).
+  * \return 1 if key was not a valid integer, 0 otherwise.
+  */
+int Cols::GetKeyInteger(int& ival, std::string const& key, int defaultVal) {
+  std::string arg = GetKey( key );
+  if (!arg.empty()) {
+    if (validInteger(arg)) {
+      ival = convertToInteger( arg );
+      return 0;
+    } else {
+      ErrorMsg("%s is not a valid integer.\n", arg.c_str());
+      return 1;
+    }
+  }
+  ival = defaultVal;
+  return 0;
 }
 
 std::string Cols::NextColumn() {
