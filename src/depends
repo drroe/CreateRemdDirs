@@ -6,7 +6,6 @@ Commands.o : Commands.cpp Cmd.h CmdList.h Cols.h Commands.h Exec.h Exec_List.h E
 Exec_List.o : Exec_List.cpp Cols.h Exec.h Exec_List.h FileRoutines.h Manager.h Messages.h Project.h Run.h System.h
 Exec_Quit.o : Exec_Quit.cpp Exec.h Exec_Quit.h Messages.h
 FileRoutines.o : FileRoutines.cpp FileRoutines.h Messages.h
-FindDepend.o : FindDepend.cpp
 Groups.o : Groups.cpp Groups.h Messages.h TextFile.h
 main.o : main.cpp CheckRuns.h Commands.h Exec.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h RemdDirs.h StringRoutines.h Submit.h System.h TextFile.h
 Manager.o : Manager.cpp Manager.h Messages.h Project.h System.h TextFile.h

@@ -7,7 +7,6 @@ Commands.cpp \
 Exec_List.cpp \
 Exec_Quit.cpp \
 FileRoutines.cpp \
-FindDepend.cpp \
 Groups.cpp \
 main.cpp \
 Manager.cpp \
