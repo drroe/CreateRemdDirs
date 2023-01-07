@@ -4,7 +4,7 @@
 class Exec_List : public Exec {
   public:
     Exec_List();
-    std::string Help() const { return "List systems."; }
+    void Help() const;
     RetType Execute(Manager&, Cols&) const;
 };
 #endif

@@ -8,6 +8,11 @@ using namespace Messages;
 
 Exec_List::Exec_List() {}
 
+void Exec_List::Help() const {
+  Msg("\t[project <idx>] [system <idx>]\n"
+      "  List projects/systems.\n");
+}
+
 /** List all systems. */
 Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
   int tgtProjectIdx = -1;

@@ -125,10 +125,8 @@ void Help( Cols& line ) {
     Cmd const& cmd = SearchToken( cmdArg );
     if (cmd.Empty())
       Msg("Warning: No command named '%s'\n", cmdArg.c_str());
-    else {
-      std::string helpText = cmd.CmdExec()->Help( line );
-      Msg("%s\n", helpText.c_str());
-    }
+    else
+      cmd.CmdExec()->Help( line );
   }
 }
 
