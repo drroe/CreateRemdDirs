@@ -21,6 +21,7 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
   if (args.GetKeyInteger(tgtProjectIdx, "project", -1)) return ERR;
   if (args.GetKeyInteger(tgtSystemIdx, "system", -1)) return ERR;
   if (args.HasKey("all")) tgtSystemIdx = -2;
+  if (tgtProjectIdx != -1) tgtSystemIdx = -2;
 
   if (tgtProjectIdx > -1 && tgtProjectIdx >= manager.Projects().size()) {
     ErrorMsg("Project index %i is out of range.\n", tgtProjectIdx);
