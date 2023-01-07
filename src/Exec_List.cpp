@@ -19,9 +19,9 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
   int tgtSystemIdx = -1;
 
   if (args.GetKeyInteger(tgtProjectIdx, "project", -1)) return ERR;
-  if (args.GetKeyInteger(tgtSystemIdx, "system", -1)) return ERR;
+  if (tgtProjectIdx != -1) tgtSystemIdx = -3;
+  if (args.GetKeyInteger(tgtSystemIdx, "system", tgtSystemIdx)) return ERR;
   if (args.HasKey("all")) tgtSystemIdx = -2;
-  if (tgtProjectIdx != -1) tgtSystemIdx = -2;
 
   if (tgtProjectIdx > -1 && tgtProjectIdx >= manager.Projects().size()) {
     ErrorMsg("Project index %i is out of range.\n", tgtProjectIdx);
@@ -35,17 +35,21 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
   {
     if (tgtProjectIdx < 0 || tgtProjectIdx == pidx) {
       Msg("Project %i: %s\n", pidx, project->name());
-      int sidx = 0;
-      for (Project::SystemArray::const_iterator system = project->Systems().begin();
-                                                system != project->Systems().end();
-                                              ++system, ++sidx)
-      {
-        if (tgtSystemIdx == -2 || tgtSystemIdx == sidx) {
-          Msg("  %i: ", sidx);
-          system->PrintInfo();
-          for (System::RunArray::const_iterator run = system->Runs().begin();
-                                                run != system->Runs().end(); ++run)
-            (*run)->RunInfo();
+      if (tgtSystemIdx != -1) {
+        int sidx = 0;
+        for (Project::SystemArray::const_iterator system = project->Systems().begin();
+                                                  system != project->Systems().end();
+                                                ++system, ++sidx)
+        {
+          if (tgtSystemIdx < 0 || tgtSystemIdx == sidx) {
+            Msg("  %i: ", sidx);
+            system->PrintInfo();
+            if (tgtSystemIdx == -2 || tgtSystemIdx == sidx) {
+              for (System::RunArray::const_iterator run = system->Runs().begin();
+                                                    run != system->Runs().end(); ++run)
+                (*run)->RunInfo();
+            }
+          }
         }
       }
     }
