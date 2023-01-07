@@ -25,7 +25,22 @@ int Manager::InitManager(std::string const& CurrentDir, std::string const& input
   while (ncols > -1) {
     if (ncols > 0) {
       if (input.Token(0)[0] != '#') {
-        if ( input.Token(0) == "system" ) {
+        if ( input.Token(0) == "project" ) {
+          // Expect project <name>
+          if (ncols < 2) {
+            std::string errline;
+            for (int col = 1; col < ncols; col++)
+              errline.append(" "+input.Token(col));
+            ErrorMsg("Not enough columns for 'project': %s\n", errline.c_str());
+            return 1;
+          }
+          // All columns beyond 0 are project name
+          std::string description = input.Token(1);
+          for (int col = 2; col < ncols; col++)
+            description.append(" " + input.Token(col));
+          Msg("Project: %s\n", description.c_str());
+          projects_.push_back( Project(description) );
+        } if ( input.Token(0) == "system" ) {
           // Expect system <system dir>, <description>
           if (ncols < 3) {
             std::string errline;
