@@ -1,0 +1,25 @@
+SOURCES= \
+CheckRuns.cpp \
+Cmd.cpp \
+CmdList.cpp \
+Cols.cpp \
+Commands.cpp \
+Exec_List.cpp \
+Exec_Quit.cpp \
+FileRoutines.cpp \
+FindDepend.cpp \
+Groups.cpp \
+main.cpp \
+Manager.cpp \
+MdinFile.cpp \
+Messages.cpp \
+NC.cpp \
+RemdDirs.cpp \
+ReplicaDimension.cpp \
+Run.cpp \
+Run_SingleMD.cpp \
+Simulation.cpp \
+StringRoutines.cpp \
+Submit.cpp \
+System.cpp \
+TextFile.cpp
