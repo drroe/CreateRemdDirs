@@ -164,6 +164,13 @@ int main(int argc, char** argv) {
   std::string TopDir = GetWorkingDir();
   if (TopDir.empty()) return 1;
 
+  // Start Manager mode. FIXME
+  Msg("Entering manager mode.\n");
+  Commands::InitCommands();
+  Manager manager;
+  if (manager.InitManager( TopDir, systems_file )) return 1;
+  return Commands::Prompt(manager);
+
   // If start_run and stop_run are both -1, see if systems.opts exists
   // for Manager mode.
   if (start_run == -1 && stop_run == -1) {

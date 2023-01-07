@@ -59,7 +59,7 @@ int System::FindRuns() {
   ChangeDir( topDir_ );
   ChangeDir( dirname_ );
   StrArray runDirs = ExpandToFilenames("run.*");
-  if (runDirs.empty()) return 1;
+  //if (runDirs.empty()) return 1;
 
   Msg("Run directories:\n");
   for (StrArray::const_iterator it = runDirs.begin(); it != runDirs.end(); ++it)
