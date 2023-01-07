@@ -14,10 +14,9 @@ class Exec {
 
     /// Execute command
     virtual RetType Execute(Manager&, Cols&) const = 0;
-    /// \return help for command
-    virtual std::string Help() const = 0;
-
+    /// Print help for command
+    virtual void Help() const = 0;
     /// Print help for command - takes arguments
-    virtual std::string Help(Cols&) const { return Help(); }
+    virtual void Help(Cols&) const { return Help(); }
 };
 #endif

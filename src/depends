@@ -1,22 +1,24 @@
-main.o : main.cpp CheckRuns.h Commands.h Exec.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h RemdDirs.h StringRoutines.h Submit.h System.h TextFile.h
-Exec_List.o : Exec_List.cpp Cols.h Exec.h Exec_List.h FileRoutines.h Manager.h Messages.h Project.h Run.h System.h
-FileRoutines.o : FileRoutines.cpp FileRoutines.h Messages.h
-Messages.o : Messages.cpp Messages.h
-RemdDirs.o : RemdDirs.cpp FileRoutines.h Groups.h MdinFile.h Messages.h RemdDirs.h ReplicaDimension.h StringRoutines.h TextFile.h
-TextFile.o : TextFile.cpp Messages.h TextFile.h
-ReplicaDimension.o : ReplicaDimension.cpp FileRoutines.h Messages.h ReplicaDimension.h StringRoutines.h TextFile.h
-Groups.o : Groups.cpp Groups.h Messages.h TextFile.h
-StringRoutines.o : StringRoutines.cpp Messages.h StringRoutines.h
 CheckRuns.o : CheckRuns.cpp CheckRuns.h FileRoutines.h Messages.h NC.h Run.h TextFile.h
-Submit.o : Submit.cpp FileRoutines.h Messages.h StringRoutines.h Submit.h TextFile.h
-MdinFile.o : MdinFile.cpp Cols.h MdinFile.h Messages.h StringRoutines.h TextFile.h
-Manager.o : Manager.cpp Manager.h Messages.h Project.h System.h TextFile.h
-System.o : System.cpp FileRoutines.h Messages.h Run.h Run_SingleMD.h Simulation.h System.h
-Run.o : Run.cpp FileRoutines.h Run.h
-Run_SingleMD.o : Run_SingleMD.cpp FileRoutines.h Messages.h Run.h Run_SingleMD.h Simulation.h
-NC.o : NC.cpp Messages.h NC.h
-Simulation.o : Simulation.cpp Messages.h NC.h Simulation.h TextFile.h
-Cols.o : Cols.cpp Cols.h Messages.h StringRoutines.h
-Commands.o : Commands.cpp Cmd.h CmdList.h Cols.h Commands.h Exec.h Exec_List.h Exec_Quit.h Manager.h Messages.h Project.h System.h
 Cmd.o : Cmd.cpp Cmd.h Exec.h
 CmdList.o : CmdList.cpp Cmd.h CmdList.h
+Cols.o : Cols.cpp Cols.h Messages.h StringRoutines.h
+Commands.o : Commands.cpp Cmd.h CmdList.h Cols.h Commands.h Exec.h Exec_List.h Exec_Quit.h Manager.h Messages.h Project.h System.h
+Exec_List.o : Exec_List.cpp Cols.h Exec.h Exec_List.h FileRoutines.h Manager.h Messages.h Project.h Run.h System.h
+Exec_Quit.o : Exec_Quit.cpp Exec.h Exec_Quit.h Messages.h
+FileRoutines.o : FileRoutines.cpp FileRoutines.h Messages.h
+FindDepend.o : FindDepend.cpp
+Groups.o : Groups.cpp Groups.h Messages.h TextFile.h
+main.o : main.cpp CheckRuns.h Commands.h Exec.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h RemdDirs.h StringRoutines.h Submit.h System.h TextFile.h
+Manager.o : Manager.cpp Manager.h Messages.h Project.h System.h TextFile.h
+MdinFile.o : MdinFile.cpp Cols.h MdinFile.h Messages.h StringRoutines.h TextFile.h
+Messages.o : Messages.cpp Messages.h
+NC.o : NC.cpp Messages.h NC.h
+RemdDirs.o : RemdDirs.cpp FileRoutines.h Groups.h MdinFile.h Messages.h RemdDirs.h ReplicaDimension.h StringRoutines.h TextFile.h
+ReplicaDimension.o : ReplicaDimension.cpp FileRoutines.h Messages.h ReplicaDimension.h StringRoutines.h TextFile.h
+Run.o : Run.cpp FileRoutines.h Run.h
+Run_SingleMD.o : Run_SingleMD.cpp FileRoutines.h Messages.h Run.h Run_SingleMD.h Simulation.h
+Simulation.o : Simulation.cpp Messages.h NC.h Simulation.h TextFile.h
+StringRoutines.o : StringRoutines.cpp Messages.h StringRoutines.h
+Submit.o : Submit.cpp FileRoutines.h Messages.h StringRoutines.h Submit.h TextFile.h
+System.o : System.cpp FileRoutines.h Messages.h Run.h Run_SingleMD.h Simulation.h System.h
+TextFile.o : TextFile.cpp Messages.h TextFile.h

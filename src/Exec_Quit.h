@@ -4,7 +4,7 @@
 class Exec_Quit : public Exec {
   public:
     Exec_Quit() {}
-    std::string Help() const { return "Exits the program."; }
+    void Help() const;
     RetType Execute(Manager&, Cols&) const { return QUIT; }
 };
 #endif
