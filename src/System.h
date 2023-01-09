@@ -2,6 +2,7 @@
 #define INC_SYSTEM_H
 #include <string>
 #include <vector>
+#include "Creator.h"
 class Run;
 /// Hold information on runs for a system
 class System {
@@ -33,5 +34,7 @@ class System {
     std::string topDir_;      ///< Top level directory
     std::string dirname_;     ///< Directory containing runs for the system
     std::string description_; ///< Description of the system
+    std::string createOptsFilename_; ///< File name for creator options
+    Creator creator_; ///< For creating runs
 };
 #endif

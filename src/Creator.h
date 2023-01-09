@@ -11,7 +11,7 @@ class Creator {
     ~Creator();
 
     static void OptHelp();
-    int ReadOptions(std::string const&,int);
+    int ReadOptions(std::string const&);
     int Setup(std::string const&, bool);
     void Info() const;
     int CreateRuns(std::string const&, FileRoutines::StrArray const&, int, bool);

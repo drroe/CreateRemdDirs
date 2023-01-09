@@ -70,7 +70,7 @@ Msg("\n  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--
 }
 
 // Creator::ReadOptions()
-int Creator::ReadOptions(std::string const& input_file, int start) {
+int Creator::ReadOptions(std::string const& input_file) {
   // Read options from input file
   if (CheckExists("Input file", input_file)) return 1;
   std::string fname = tildeExpansion( input_file );
@@ -85,9 +85,9 @@ int Creator::ReadOptions(std::string const& input_file, int start) {
       if (debug_ > 0)
         Msg("    Option: %s  Variable: %s\n", OPT.c_str(), VAR.c_str());
       if      (OPT == "CRD_FILE") {
-        if (start != 0)
-          Msg("Warning: CRD_FILE only used if start run is 0. Skipping.\n");
-        else
+        //if (start != 0) // FIXME implement this as a warning somewhere else
+        //  Msg("Warning: CRD_FILE only used if start run is 0. Skipping.\n");
+        //else
           crd_dir_ = VAR;
       }
       else if (OPT == "DIMENSION")

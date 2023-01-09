@@ -4,6 +4,7 @@ Cmd.cpp \
 CmdList.cpp \
 Cols.cpp \
 Commands.cpp \
+Creator.cpp \
 Exec_List.cpp \
 Exec_Quit.cpp \
 FileRoutines.cpp \

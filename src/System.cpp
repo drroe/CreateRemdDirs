@@ -8,7 +8,7 @@
 using namespace Messages;
 
 /** CONSTRUCTOR */
-System::System() {}
+System::System() : createOptsFilename_("remd.opts") {}
 
 /** Clear all runs. */
 void System::clearRuns() {
@@ -25,14 +25,16 @@ System::~System() {
 System::System(std::string const& top, std::string const& dirname, std::string const& description) :
   topDir_(top),
   dirname_(dirname),
-  description_(description)
+  description_(description),
+  createOptsFilename_("remd.opts")
 {}
 
 /** COPY CONSTRUCTOR */
 System::System(System const& rhs) :
   topDir_(rhs.topDir_),
   dirname_(rhs.dirname_),
-  description_(rhs.description_)
+  description_(rhs.description_),
+  createOptsFilename_(rhs.createOptsFilename_)
 {
   Runs_.reserve( rhs.Runs_.size() );
   for (std::vector<Run*>::const_iterator it = rhs.Runs_.begin(); it != rhs.Runs_.end(); ++it)
@@ -45,6 +47,7 @@ System& System::operator=(System const& rhs) {
   topDir_ = rhs.topDir_;
   dirname_ = rhs.dirname_;
   description_ = rhs.description_;
+  createOptsFilename_ = rhs.createOptsFilename_;
   clearRuns();
   Runs_.reserve( rhs.Runs_.size() );
   for (std::vector<Run*>::const_iterator it = rhs.Runs_.begin(); it != rhs.Runs_.end(); ++it)
@@ -58,6 +61,17 @@ int System::FindRuns() {
   using namespace FileRoutines;
   ChangeDir( topDir_ );
   ChangeDir( dirname_ );
+
+  // See if creation options exist
+  if (fileExists( createOptsFilename_ )) {
+    if (creator_.ReadOptions( createOptsFilename_ )) {
+      ErrorMsg("Reading creation options file name '%s' failed.\n", createOptsFilename_.c_str());
+      return 1;
+    }
+    creator_.Info();
+  }
+
+  // Search for runs
   StrArray runDirs = ExpandToFilenames("run.*");
   //if (runDirs.empty()) return 1;
 
