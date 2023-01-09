@@ -10,6 +10,7 @@ FileRoutines.cpp \
 Groups.cpp \
 main.cpp \
 Manager.cpp \
+MdOptions.cpp \
 MdinFile.cpp \
 Messages.cpp \
 NC.cpp \

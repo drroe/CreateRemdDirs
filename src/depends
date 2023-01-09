@@ -9,6 +9,7 @@ FileRoutines.o : FileRoutines.cpp FileRoutines.h Messages.h
 Groups.o : Groups.cpp Groups.h Messages.h TextFile.h
 main.o : main.cpp CheckRuns.h Commands.h Exec.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h RemdDirs.h StringRoutines.h Submit.h System.h TextFile.h
 Manager.o : Manager.cpp Manager.h Messages.h Project.h System.h TextFile.h
+MdOptions.o : MdOptions.cpp MdOptions.h Option.h
 MdinFile.o : MdinFile.cpp Cols.h MdinFile.h Messages.h StringRoutines.h TextFile.h
 Messages.o : Messages.cpp Messages.h
 NC.o : NC.cpp Messages.h NC.h
