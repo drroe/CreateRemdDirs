@@ -3,6 +3,7 @@
 template <class T> class Option {
   public:
     Option(T const& defaultVal) : val_(defaultVal), defaultVal_(defaultVal), isSet_(false) {}
+    Option() : val_(T()), defaultVal_(T()), isSet_(false) {}
     T const& Val() const { return val_; }
     bool IsSet() const { return isSet_; }
     void SetVal(T const& v) { val_ = v; isSet_ = true; }
