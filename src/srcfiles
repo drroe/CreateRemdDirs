@@ -5,6 +5,7 @@ CmdList.cpp \
 Cols.cpp \
 Commands.cpp \
 Creator.cpp \
+Exec_Create.cpp \
 Exec_Debug.cpp \
 Exec_List.cpp \
 Exec_Quit.cpp \

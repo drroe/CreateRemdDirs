@@ -13,6 +13,8 @@ class Manager {
     int InitManager(std::string const&, std::string const&);
 
     ProjectArray const& Projects() const { return projects_; }
+    /// \return true if no projects
+    bool NoProjects() const { return projects_.empty(); }
     /// \return Top directory name
     const char* topDirName() const { return topDir_.c_str(); }
     /// \return Global debug level

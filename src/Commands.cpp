@@ -13,6 +13,7 @@
 #include "Exec_Quit.h"
 #include "Exec_List.h"
 #include "Exec_Debug.h"
+#include "Exec_Create.h"
 
 using namespace Messages;
 
@@ -100,6 +101,7 @@ void Commands::InitCommands() {
   AddCmd(new Exec_Quit(), 1, "quit");
   AddCmd(new Exec_List(), 1, "list");
   AddCmd(new Exec_Debug(), 1, "debug");
+  AddCmd( new Exec_Create(), 1, "create");
   // Add null ptr to indicate end of command key addresses for readline 
   names_.push_back( 0 );
 }

@@ -22,6 +22,11 @@ class System {
     /// Find runs in dirname_
     int FindRuns();
 
+    /// Set up run creator
+    int SetupRunCreator(std::string const& c, bool m) { return creator_.Setup(c, m); }
+    /// Print run creator info
+    void RunCreatorInfo() const { creator_.Info(); }
+
     /// Print system info
     void PrintInfo() const;
     /// \return Run Array
@@ -35,6 +40,6 @@ class System {
     std::string dirname_;     ///< Directory containing runs for the system
     std::string description_; ///< Description of the system
     std::string createOptsFilename_; ///< File name for creator options
-    Creator creator_; ///< For creating runs
+    Creator creator_;                ///< For creating runs
 };
 #endif
