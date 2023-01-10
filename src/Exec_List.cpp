@@ -60,6 +60,7 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
                                                 system != project->Systems().end();
                                               ++system, ++sidx)
       {
+        //Msg("DEBUG: sidx=%i activeSystemIdx= %i\n", sidx, project->ActiveSystemIdx());
         if (tgtSystemIdx == SHOW_ALL || tgtSystemIdx == sidx) {
           if (project->ActiveSystemIdx() == sidx)
             Msg("  %i: (*)", sidx);

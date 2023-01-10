@@ -7,10 +7,10 @@
 class Project {
   public:
     typedef std::vector<System> SystemArray;
-    /// Default project
+    /// CONSTRUCTOR - Default project
     Project() : pname_("Default"), activeSystemIdx_(0) {}
-    /// Project with name
-    Project(std::string const& n) : pname_(n) {}
+    /// CONSTRUCTOR - Project with name
+    Project(std::string const& n) : pname_(n), activeSystemIdx_(0) {}
     /// \return Systems
     SystemArray const& Systems() const { return systems_; }
     /// Add system to project
