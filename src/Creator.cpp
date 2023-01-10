@@ -1,3 +1,4 @@
+#include <cstdlib> // atof, atoi
 #include "Creator.h"
 #include "Messages.h"
 #include "TextFile.h"
