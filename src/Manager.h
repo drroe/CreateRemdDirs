@@ -15,6 +15,11 @@ class Manager {
     ProjectArray const& Projects() const { return projects_; }
     /// \return Top directory name
     const char* topDirName() const { return topDir_.c_str(); }
+    /// \return Global debug level
+    int Debug() const { return debug_; }
+
+    /// Set global debug level
+    void SetDebug(int d) { debug_ = d; }
   private:
     enum RetType { OK = 0, ERR, QUIT };
     /// Process command
@@ -22,5 +27,6 @@ class Manager {
 
     ProjectArray projects_; ///< Hold all Projects from the systems file
     std::string topDir_;    ///< The current (top) working directory
+    int debug_;             ///< Global debug level
 };
 #endif

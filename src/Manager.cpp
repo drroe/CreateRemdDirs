@@ -5,7 +5,9 @@
 using namespace Messages;
 
 /** CONSTRUCTOR */
-Manager::Manager() {}
+Manager::Manager() :
+  debug_(0)
+{}
 
 /** Initialize with input file. */
 int Manager::InitManager(std::string const& CurrentDir, std::string const& inputFileName) {

@@ -2,8 +2,9 @@ CheckRuns.o : CheckRuns.cpp CheckRuns.h FileRoutines.h Messages.h NC.h Run.h Tex
 Cmd.o : Cmd.cpp Cmd.h Exec.h
 CmdList.o : CmdList.cpp Cmd.h CmdList.h
 Cols.o : Cols.cpp Cols.h Messages.h StringRoutines.h
-Commands.o : Commands.cpp Cmd.h CmdList.h Cols.h Commands.h Creator.h Exec.h Exec_List.h Exec_Quit.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h System.h TextFile.h
+Commands.o : Commands.cpp Cmd.h CmdList.h Cols.h Commands.h Creator.h Exec.h Exec_Debug.h Exec_List.h Exec_Quit.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h System.h TextFile.h
 Creator.o : Creator.cpp Creator.h FileRoutines.h Groups.h MdinFile.h Messages.h ReplicaDimension.h StringRoutines.h TextFile.h
+Exec_Debug.o : Exec_Debug.cpp Cols.h Creator.h Exec.h Exec_Debug.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h StringRoutines.h System.h TextFile.h
 Exec_List.o : Exec_List.cpp Cols.h Creator.h Exec.h Exec_List.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h Run.h System.h TextFile.h
 Exec_Quit.o : Exec_Quit.cpp Exec.h Exec_Quit.h Messages.h
 FileRoutines.o : FileRoutines.cpp FileRoutines.h Messages.h
