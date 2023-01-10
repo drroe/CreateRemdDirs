@@ -171,3 +171,13 @@ std::string FileRoutines::UserName() {
   if (ptr == 0) return std::string();
   return std::string(ptr);
 }
+
+/** \return portion of file name after final '.' */
+std::string FileRoutines::Extension(std::string const& fname) {
+  // Get the filename extension
+  size_t found = fname.find_last_of(".");
+  if (found == std::string::npos) {
+    return std::string("");
+  }
+  return fname.substr(found);
+}

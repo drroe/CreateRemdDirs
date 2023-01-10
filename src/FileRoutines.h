@@ -27,5 +27,7 @@ int ChangeDir(std::string const&);
 int ChangePermissions(std::string const&);
 /// \return The current user name
 std::string UserName();
+/// \return portion of file name after final '.'
+std::string Extension(std::string const&);
 }
 #endif
