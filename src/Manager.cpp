@@ -6,7 +6,8 @@ using namespace Messages;
 
 /** CONSTRUCTOR */
 Manager::Manager() :
-  debug_(0)
+  debug_(0),
+  activeProjectIdx_(0)
 {}
 
 /** Initialize with input file. */

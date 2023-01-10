@@ -364,6 +364,8 @@ void Creator::Info() const {
       Msg("  REF              : %s\n", ref_file_.c_str());
     if (!ref_dir_.empty())
       Msg("  REF              : %s\n", ref_dir_.c_str());
+    if (!top_file_.empty())
+      Msg("  TOP              : %s\n", top_file_.c_str());
   } else { // Some type of replica run
     Msg("  NUMEXCHG=%i\n", numexchg_);
     Msg("  CRD_DIR          : %s\n", crd_dir_.c_str());

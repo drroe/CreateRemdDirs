@@ -51,14 +51,20 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
                                            ++project, ++pidx)
   {
     if (tgtProjectIdx == SHOW_ALL || tgtProjectIdx == pidx) {
-      Msg("Project %i: %s\n", pidx, project->name());
+      if (manager.ActiveProjectIdx() == pidx)
+        Msg("Project %i: (*)%s\n", pidx, project->name());
+      else
+        Msg("Project %i: %s\n", pidx, project->name());
       int sidx = 0;
       for (Project::SystemArray::const_iterator system = project->Systems().begin();
                                                 system != project->Systems().end();
                                               ++system, ++sidx)
       {
         if (tgtSystemIdx == SHOW_ALL || tgtSystemIdx == sidx) {
-          Msg("  %i: ", sidx);
+          if (project->ActiveSystemIdx() == sidx)
+            Msg("  %i: (*)", sidx);
+          else
+            Msg("  %i: ", sidx);
           system->PrintInfo();
           int ridx = 0;
           for (System::RunArray::const_iterator run = system->Runs().begin();

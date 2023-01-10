@@ -8,7 +8,7 @@ class Project {
   public:
     typedef std::vector<System> SystemArray;
     /// Default project
-    Project() : pname_("Default") {}
+    Project() : pname_("Default"), activeSystemIdx_(0) {}
     /// Project with name
     Project(std::string const& n) : pname_(n) {}
     /// \return Systems
@@ -19,8 +19,11 @@ class Project {
     System& LastSystem() { return systems_.back(); }
     /// \return project name
     const char* name() const { return pname_.c_str(); }
+    /// \return index of active system
+    int ActiveSystemIdx() const { return activeSystemIdx_; }
   private:
     SystemArray systems_; ///< Hold all systems pertaining to this Project
     std::string pname_;   ///< Project name
+    int activeSystemIdx_; ///< The index of the active system in Systems array
 };
 #endif

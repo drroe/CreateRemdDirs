@@ -17,6 +17,8 @@ class Manager {
     const char* topDirName() const { return topDir_.c_str(); }
     /// \return Global debug level
     int Debug() const { return debug_; }
+    /// \return index of the active project
+    int ActiveProjectIdx() const { return activeProjectIdx_; }
 
     /// Set global debug level
     void SetDebug(int d) { debug_ = d; }
@@ -28,5 +30,6 @@ class Manager {
     ProjectArray projects_; ///< Hold all Projects from the systems file
     std::string topDir_;    ///< The current (top) working directory
     int debug_;             ///< Global debug level
+    int activeProjectIdx_;  ///< The index of the active project in Project array
 };
 #endif
