@@ -13,6 +13,8 @@ class Manager {
     int InitManager(std::string const&, std::string const&);
 
     ProjectArray const& Projects() const { return projects_; }
+    /// \return Top directory name
+    const char* topDirName() const { return topDir_.c_str(); }
   private:
     enum RetType { OK = 0, ERR, QUIT };
     /// Process command

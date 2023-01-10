@@ -15,44 +15,63 @@ void Exec_List::Help() const {
 
 /** List all systems. */
 Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
-  int tgtProjectIdx = -1;
-  int tgtSystemIdx = -1;
+  static const int SHOW_ALL = -1;
+  static const int HIDE_ALL = -2;
+  int tgtProjectIdx = SHOW_ALL;
+  int tgtSystemIdx = HIDE_ALL;
+  int tgtRunIdx = HIDE_ALL;
 
   if (args.GetKeyInteger(tgtProjectIdx, "project", -1)) return ERR;
-  if (tgtProjectIdx != -1) tgtSystemIdx = -3;
+  // If a specific project was chosen, list all systems by default.
+  if (tgtProjectIdx > -1)
+    tgtSystemIdx = SHOW_ALL;
   if (args.GetKeyInteger(tgtSystemIdx, "system", tgtSystemIdx)) return ERR;
-  if (args.HasKey("all")) tgtSystemIdx = -2;
+  // If a specific project was chosen, list all runs by default.
+  if (tgtSystemIdx > -1)
+    tgtRunIdx = SHOW_ALL;
+  // 'all' overrides everything else that is not already set to a specific index
+  if (args.HasKey("all")) {
+    if (tgtProjectIdx < 0)
+      tgtProjectIdx = SHOW_ALL;
+    if (tgtSystemIdx < 0)
+      tgtSystemIdx = SHOW_ALL;
+    if (tgtRunIdx < 0)
+      tgtRunIdx = SHOW_ALL;
+  }
 
-  if (tgtProjectIdx > -1 && tgtProjectIdx >= manager.Projects().size()) {
+  Msg("Manager top directory: %s\n", manager.topDirName());
+
+  if (tgtProjectIdx > -1 && (unsigned int)tgtProjectIdx >= manager.Projects().size()) {
     ErrorMsg("Project index %i is out of range.\n", tgtProjectIdx);
     return ERR;
   }
-
   int pidx = 0;
   for (Manager::ProjectArray::const_iterator project = manager.Projects().begin();
                                              project != manager.Projects().end();
                                            ++project, ++pidx)
   {
-    if (tgtProjectIdx < 0 || tgtProjectIdx == pidx) {
+    if (tgtProjectIdx == SHOW_ALL || tgtProjectIdx == pidx) {
       Msg("Project %i: %s\n", pidx, project->name());
-      if (tgtSystemIdx != -1) {
-        int sidx = 0;
-        for (Project::SystemArray::const_iterator system = project->Systems().begin();
-                                                  system != project->Systems().end();
-                                                ++system, ++sidx)
-        {
-          if (tgtSystemIdx < 0 || tgtSystemIdx == sidx) {
-            Msg("  %i: ", sidx);
-            system->PrintInfo();
-            if (tgtSystemIdx == -2 || tgtSystemIdx == sidx) {
-              for (System::RunArray::const_iterator run = system->Runs().begin();
-                                                    run != system->Runs().end(); ++run)
-                (*run)->RunInfo();
+      int sidx = 0;
+      for (Project::SystemArray::const_iterator system = project->Systems().begin();
+                                                system != project->Systems().end();
+                                              ++system, ++sidx)
+      {
+        if (tgtSystemIdx == SHOW_ALL || tgtSystemIdx == sidx) {
+          Msg("  %i: ", sidx);
+          system->PrintInfo();
+          int ridx = 0;
+          for (System::RunArray::const_iterator run = system->Runs().begin();
+                                                run != system->Runs().end();
+                                              ++run, ++ridx)
+          {
+            if (tgtRunIdx == SHOW_ALL || tgtRunIdx == ridx) {
+              (*run)->RunInfo();
             }
           }
-        }
+        } // END loop over systems
       }
     }
-  }
+  }  // END loop over projects
   return OK;
 }
