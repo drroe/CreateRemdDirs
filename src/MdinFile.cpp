@@ -21,7 +21,7 @@ MdinFile::StatType MdinFile::TokenizeLine(TokenArray& Tokens, std::string const&
   // Loop over tokens
   for (Cols::const_iterator col = cols.begin(); col != cols.end(); ++col)
   {
-      //Msg("DEBUG: elt='%s'\n", elt.c_str());
+      //Msg("DEBUG: elt='%s'\n", col->c_str());
       if (!col->empty()) {
         if ((*col)[0] == '&') {
           // Namelist beginning or end
@@ -32,6 +32,10 @@ MdinFile::StatType MdinFile::TokenizeLine(TokenArray& Tokens, std::string const&
             namelist.assign(*col);
             return NEW_NAMELIST;
           }
+        } else if (*col == "/") {
+          // Namelist end
+          namelist.clear();
+          return NAMELIST_END;
         } else {
           size_t found = col->find_first_of("=");
           if (found == std::string::npos) {
