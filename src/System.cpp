@@ -106,4 +106,6 @@ int System::FindRuns() {
 /** Print system information. */
 void System::PrintInfo() const {
   Msg("%s : %s (%zu runs)\n", dirname_.c_str(), description_.c_str(), Runs_.size());
+  // DEBUG
+  Msg("\tTop dir: %s\n", topDir_.c_str());
 }
