@@ -26,11 +26,19 @@ class System {
     int SetupRunCreator(std::string const& c, bool m) { return creator_.Setup(c, m); }
     /// Print run creator info
     void RunCreatorInfo() const { creator_.Info(); }
+    /// Create runs
+    int CreateRuns(std::string const& d, FileRoutines::StrArray const& r, int s, bool o) {
+      return creator_.CreateRuns(d, r, s, o);
+    }
 
     /// Print system info
     void PrintInfo() const;
     /// \return Run Array
     RunArray const& Runs() const { return Runs_; }
+    /// Change to system directory
+    int ChangeToSystemDir() const;
+    /// \return System dir name
+    std::string const& SystemDirName() const { return dirname_; }
   private:
     /// Clear all runs
     void clearRuns();

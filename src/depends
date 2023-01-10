@@ -4,7 +4,7 @@ CmdList.o : CmdList.cpp Cmd.h CmdList.h
 Cols.o : Cols.cpp Cols.h Messages.h StringRoutines.h
 Commands.o : Commands.cpp Cmd.h CmdList.h Cols.h Commands.h Creator.h Exec.h Exec_Create.h Exec_Debug.h Exec_List.h Exec_Quit.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h System.h TextFile.h
 Creator.o : Creator.cpp Creator.h FileRoutines.h Groups.h MdinFile.h Messages.h ReplicaDimension.h StringRoutines.h TextFile.h
-Exec_Create.o : Exec_Create.cpp Cols.h Creator.h Exec.h Exec_Create.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h System.h TextFile.h
+Exec_Create.o : Exec_Create.cpp Cols.h Creator.h Exec.h Exec_Create.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h StringRoutines.h System.h TextFile.h
 Exec_Debug.o : Exec_Debug.cpp Cols.h Creator.h Exec.h Exec_Debug.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h StringRoutines.h System.h TextFile.h
 Exec_List.o : Exec_List.cpp Cols.h Creator.h Exec.h Exec_List.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h Run.h System.h TextFile.h
 Exec_Quit.o : Exec_Quit.cpp Exec.h Exec_Quit.h Messages.h
@@ -18,7 +18,7 @@ Messages.o : Messages.cpp Messages.h
 NC.o : NC.cpp Messages.h NC.h
 RemdDirs.o : RemdDirs.cpp FileRoutines.h Groups.h MdinFile.h Messages.h RemdDirs.h ReplicaDimension.h StringRoutines.h TextFile.h
 ReplicaDimension.o : ReplicaDimension.cpp FileRoutines.h Messages.h ReplicaDimension.h StringRoutines.h TextFile.h
-Run.o : Run.cpp FileRoutines.h Run.h
+Run.o : Run.cpp FileRoutines.h Messages.h Run.h StringRoutines.h
 Run_SingleMD.o : Run_SingleMD.cpp FileRoutines.h Messages.h Run.h Run_SingleMD.h Simulation.h
 Simulation.o : Simulation.cpp Messages.h NC.h Simulation.h TextFile.h
 StringRoutines.o : StringRoutines.cpp Messages.h StringRoutines.h

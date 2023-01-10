@@ -96,8 +96,7 @@ int System::FindRuns() {
       Runs_.push_back( run );
     }
     // Change directory back
-    ChangeDir( topDir_ );
-    ChangeDir( dirname_ );
+    if (ChangeToSystemDir()) return 1;
   }
 
   return 0;
@@ -108,4 +107,12 @@ void System::PrintInfo() const {
   Msg("%s : %s (%zu runs)\n", dirname_.c_str(), description_.c_str(), Runs_.size());
   // DEBUG
   Msg("\tTop dir: %s\n", topDir_.c_str());
+}
+
+/** Change to system directory. */
+int System::ChangeToSystemDir() const {
+  using namespace FileRoutines;
+  if (ChangeDir( topDir_ )) return 1;
+  if (ChangeDir( dirname_ )) return 1;
+  return 0;
 }
