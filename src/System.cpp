@@ -138,7 +138,7 @@ void System::SetDebug(int debugIn) {
 void System::PrintInfo() const {
   Msg("%s : %s (%zu runs)\n", dirname_.c_str(), description_.c_str(), Runs_.size());
   // DEBUG
-  Msg("\tTop dir: %s\n", topDir_.c_str());
+  //Msg("DEBUG\tTop dir: %s\n", topDir_.c_str());
 }
 
 /** Change to system directory. */

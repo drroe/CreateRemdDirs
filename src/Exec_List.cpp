@@ -25,6 +25,8 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
   // If a specific project was chosen, list all systems by default.
   if (tgtProjectIdx > -1)
     tgtSystemIdx = SHOW_ALL;
+  else if (manager.Projects().size() == 1)
+    tgtSystemIdx = SHOW_ALL;
   if (args.GetKeyInteger(tgtSystemIdx, "system", tgtSystemIdx)) return ERR;
   // If a specific project was chosen, list all runs by default.
   if (tgtSystemIdx > -1)
@@ -52,9 +54,9 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
   {
     if (tgtProjectIdx == SHOW_ALL || tgtProjectIdx == pidx) {
       if (manager.ActiveProjectIdx() == pidx)
-        Msg("Project %i: (*)%s\n", pidx, project->name());
+        Msg("Project *%i: %s\n", pidx, project->name());
       else
-        Msg("Project %i: %s\n", pidx, project->name());
+        Msg("Project  %i: %s\n", pidx, project->name());
       int sidx = 0;
       for (Project::SystemArray::const_iterator system = project->Systems().begin();
                                                 system != project->Systems().end();
@@ -63,9 +65,9 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
         //Msg("DEBUG: sidx=%i activeSystemIdx= %i\n", sidx, project->ActiveSystemIdx());
         if (tgtSystemIdx == SHOW_ALL || tgtSystemIdx == sidx) {
           if (project->ActiveSystemIdx() == sidx)
-            Msg("  %i: (*)", sidx);
+            Msg("  *%i: ", sidx);
           else
-            Msg("  %i: ", sidx);
+            Msg("   %i: ", sidx);
           system->PrintInfo();
           int ridx = 0;
           for (System::RunArray::const_iterator run = system->Runs().begin();
