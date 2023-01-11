@@ -150,6 +150,7 @@ int FileRoutines::ChangeDir(std::string const& dname) {
     ErrorMsg("Cannot change dir; dir name is empty.\n");
     return 1;
   }
+  //Msg("DEBUG: Changing to dir '%s'\n", dname.c_str());
   if (chdir( dname.c_str() ) != 0) {
     ErrorMsg("Changing to dir '%s': %s\n", dname.c_str(), strerror( errno ));
     return 1;

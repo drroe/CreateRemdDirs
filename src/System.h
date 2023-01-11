@@ -30,9 +30,7 @@ class System {
     /// Print run creator info
     void RunCreatorInfo() const { creator_.Info(); }
     /// Create runs
-    int CreateRuns(std::string const& d, FileRoutines::StrArray const& r, int s, bool o) {
-      return creator_.CreateRuns(d, r, s, o);
-    }
+    int CreateRunDirectories(int, int, bool);
 
     /// Print system info
     void PrintInfo() const;
@@ -41,10 +39,13 @@ class System {
     /// Change to system directory
     int ChangeToSystemDir() const;
     /// \return System dir name
-    std::string const& SystemDirName() const { return dirname_; }
+    //std::string const& SystemDirName() const { return dirname_; }
   private:
+    typedef std::vector<std::string> Sarray;
     /// Clear all runs
     void clearRuns();
+    /// Create run directory names from start to stop with current digit width
+    Sarray createRunDirNames(int, int) const;
 
     RunArray Runs_;           ///< Array of runs for the system
     std::string topDir_;      ///< Top level directory
@@ -52,6 +53,8 @@ class System {
     std::string description_; ///< Description of the system
     std::string createOptsFilename_; ///< File name for creator options
     std::string submitOptsFilename_; ///< File name for submitter options
+    std::string runDirPrefix_;       ///< Run directory prefix
+    int runDirExtWidth_;             ///< Width of run directory numerical suffix
     Creator creator_;                ///< For creating runs
     Submitter submitter_;            ///< For submitting runs
 };

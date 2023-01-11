@@ -2,6 +2,7 @@
 #include "FileRoutines.h"
 #include "Messages.h"
 #include "Run.h"
+#include "StringRoutines.h"
 // ----- Run types -----
 #include "Run_SingleMD.h"
 
@@ -10,19 +11,10 @@ using namespace Messages;
 /** CONSTRUCTOR */
 System::System() :
   createOptsFilename_("remd.opts"),
-  submitOptsFilename_("qsub.opts")
+  submitOptsFilename_("qsub.opts"),
+  runDirPrefix_("run"),
+  runDirExtWidth_(3)
 {}
-
-/** Clear all runs. */
-void System::clearRuns() {
-  for (std::vector<Run*>::iterator it = Runs_.begin(); it != Runs_.end(); ++it)
-    delete *it;
-}
-
-/** DESTRUCTOR */
-System::~System() {
-  clearRuns();
-}
 
 /** CONSTRUCTOR - toplevel dir, dirname, description */
 System::System(std::string const& top, std::string const& dirname, std::string const& description) :
@@ -30,7 +22,9 @@ System::System(std::string const& top, std::string const& dirname, std::string c
   dirname_(dirname),
   description_(description),
   createOptsFilename_("remd.opts"),
-  submitOptsFilename_("qsub.opts")
+  submitOptsFilename_("qsub.opts"),
+  runDirPrefix_("run"),
+  runDirExtWidth_(3)
 {}
 
 /** COPY CONSTRUCTOR */
@@ -39,7 +33,9 @@ System::System(System const& rhs) :
   dirname_(rhs.dirname_),
   description_(rhs.description_),
   createOptsFilename_(rhs.createOptsFilename_),
-  submitOptsFilename_(rhs.submitOptsFilename_)
+  submitOptsFilename_(rhs.submitOptsFilename_),
+  runDirPrefix_(rhs.runDirPrefix_),
+  runDirExtWidth_(rhs.runDirExtWidth_)
 {
   Runs_.reserve( rhs.Runs_.size() );
   for (std::vector<Run*>::const_iterator it = rhs.Runs_.begin(); it != rhs.Runs_.end(); ++it)
@@ -54,6 +50,8 @@ System& System::operator=(System const& rhs) {
   description_ = rhs.description_;
   createOptsFilename_ = rhs.createOptsFilename_;
   submitOptsFilename_ = rhs.submitOptsFilename_;
+  runDirPrefix_ = rhs.runDirPrefix_;
+  runDirExtWidth_ = rhs.runDirExtWidth_;
   clearRuns();
   Runs_.reserve( rhs.Runs_.size() );
   for (std::vector<Run*>::const_iterator it = rhs.Runs_.begin(); it != rhs.Runs_.end(); ++it)
@@ -61,6 +59,18 @@ System& System::operator=(System const& rhs) {
 
   return *this;
 }
+
+/** Clear all runs. */
+void System::clearRuns() {
+  for (std::vector<Run*>::iterator it = Runs_.begin(); it != Runs_.end(); ++it)
+    delete *it;
+}
+
+/** DESTRUCTOR */
+System::~System() {
+  clearRuns();
+}
+
 
 /** Search for run directories in dirname_ */
 int System::FindRuns() {
@@ -89,7 +99,7 @@ int System::FindRuns() {
   }
 
   // Search for runs
-  StrArray runDirs = ExpandToFilenames("run.*");
+  StrArray runDirs = ExpandToFilenames(runDirPrefix_ + ".*");
   //if (runDirs.empty()) return 1;
 
   Msg("Run directories:\n");
@@ -136,5 +146,35 @@ int System::ChangeToSystemDir() const {
   using namespace FileRoutines;
   if (ChangeDir( topDir_ )) return 1;
   if (ChangeDir( dirname_ )) return 1;
+  return 0;
+}
+
+/** \return array of run directory names from start to stop with current digit width */
+System::Sarray System::createRunDirNames(int start_run, int stop_run) const {
+  int runWidth = std::max( StringRoutines::DigitWidth(stop_run), runDirExtWidth_ );
+  Sarray RunDirs;
+  for (int run = start_run; run <= stop_run; ++run)
+    RunDirs.push_back( runDirPrefix_ + "." + StringRoutines::integerToString(run, runWidth) );
+  return RunDirs;
+}
+
+/** Create run directories in system directory. */
+int System::CreateRunDirectories(int start_run, int nruns, bool overwrite) {
+  if (nruns < 1) {
+    ErrorMsg("Less than 1 run for CreateRunDirectories()\n");
+    return 1;
+  }
+  // Change to the top directory only; creator_.CreateRuns will change to system dir
+  if (FileRoutines::ChangeDir( topDir_ )) return 1;
+  if (Runs_.empty()) {
+    // No existing runs.
+    int stop_run = start_run + nruns - 1;
+    Sarray RunDirs = createRunDirNames(start_run, stop_run);
+    Msg("Creating %i runs from %i to %i\n", stop_run - start_run + 1, start_run, stop_run);
+    if (creator_.CreateRuns(dirname_, RunDirs, start_run, overwrite))
+      return 1;
+  } else {
+    Msg("NOT YET SET UP FOR HAVING EXISTING RUNS.\n");
+  }
   return 0;
 }
