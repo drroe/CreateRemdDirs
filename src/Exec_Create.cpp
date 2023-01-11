@@ -26,7 +26,7 @@ Exec::RetType Exec_Create::Execute(Manager& manager, Cols& args) const {
   if (args.GetKeyInteger(stop_run, "end", -1)) return ERR;
   std::string crd_dir = args.GetKey("crd");
   bool needsMdin = true; // TODO needed as an option?
-  bool overwrite = false;
+  bool overwrite = args.HasKey("overwrite");
 
   // Setup run
   if (activeSystem.SetupRunCreator( crd_dir, needsMdin )) {
