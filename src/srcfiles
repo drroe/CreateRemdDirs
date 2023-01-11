@@ -24,6 +24,7 @@ RepIndexArray.cpp \
 ReplicaDimension.cpp \
 Run.cpp \
 Run_MultiMD.cpp \
+Run_REMD.cpp \
 Run_SingleMD.cpp \
 Simulation.cpp \
 StringRoutines.cpp \
