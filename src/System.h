@@ -25,12 +25,8 @@ class System {
     /// Set debug level
     void SetDebug(int);
 
-    /// Set up run creator
-    int SetupRunCreator(std::string const& c, bool m) { return creator_.Setup(c, m); }
-    /// Print run creator info
-    void RunCreatorInfo() const { creator_.Info(); }
     /// Create runs
-    int CreateRunDirectories(int, int, bool);
+    int CreateRunDirectories(std::string const&, int, int, bool);
 
     /// Print system info
     void PrintInfo() const;

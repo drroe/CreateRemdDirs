@@ -159,11 +159,20 @@ System::Sarray System::createRunDirNames(int start_run, int stop_run) const {
 }
 
 /** Create run directories in system directory. */
-int System::CreateRunDirectories(int start_run, int nruns, bool overwrite) {
+int System::CreateRunDirectories(std::string const& crd_dir,
+                                 int start_run, int nruns, bool overwrite)
+{
   if (nruns < 1) {
     ErrorMsg("Less than 1 run for CreateRunDirectories()\n");
     return 1;
   }
+  // Setup run dir creator
+  bool needsMdin = true; // TODO needed as an option?
+  if (creator_.Setup( crd_dir, needsMdin )) {
+    ErrorMsg("Run creator setup failed.\n");
+    return 1;
+  }
+  creator_.Info();
   // Change to the top directory only; creator_.CreateRuns will change to system dir
   if (Runs_.empty()) {
     // No existing runs.
