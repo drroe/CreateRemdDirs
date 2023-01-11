@@ -56,7 +56,9 @@ Exec::RetType Exec_Create::Execute(Manager& manager, Cols& args) const {
     return ERR;
   }
 
-  activeSystem.ChangeToSystemDir();
+  //activeSystem.ChangeToSystemDir();
+  // Change to top dir
+  if (ChangeDir( manager.TopDirName() )) return ERR;
   if (activeSystem.Runs().empty()) {
     // No existing runs.
     StrArray RunDirs = createRunDirs(start_run, stop_run, 3);
