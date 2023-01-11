@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "Creator.h"
+#include "Submitter.h"
 class Run;
 /// Hold information on runs for a system
 class System {
@@ -50,6 +51,8 @@ class System {
     std::string dirname_;     ///< Directory containing runs for the system
     std::string description_; ///< Description of the system
     std::string createOptsFilename_; ///< File name for creator options
+    std::string submitOptsFilename_; ///< File name for submitter options
     Creator creator_;                ///< For creating runs
+    Submitter submitter_;            ///< For submitting runs
 };
 #endif

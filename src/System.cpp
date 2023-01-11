@@ -8,7 +8,10 @@
 using namespace Messages;
 
 /** CONSTRUCTOR */
-System::System() : createOptsFilename_("remd.opts") {}
+System::System() :
+  createOptsFilename_("remd.opts"),
+  submitOptsFilename_("qsub.opts")
+{}
 
 /** Clear all runs. */
 void System::clearRuns() {
@@ -26,7 +29,8 @@ System::System(std::string const& top, std::string const& dirname, std::string c
   topDir_(top),
   dirname_(dirname),
   description_(description),
-  createOptsFilename_("remd.opts")
+  createOptsFilename_("remd.opts"),
+  submitOptsFilename_("qsub.opts")
 {}
 
 /** COPY CONSTRUCTOR */
@@ -34,7 +38,8 @@ System::System(System const& rhs) :
   topDir_(rhs.topDir_),
   dirname_(rhs.dirname_),
   description_(rhs.description_),
-  createOptsFilename_(rhs.createOptsFilename_)
+  createOptsFilename_(rhs.createOptsFilename_),
+  submitOptsFilename_(rhs.submitOptsFilename_)
 {
   Runs_.reserve( rhs.Runs_.size() );
   for (std::vector<Run*>::const_iterator it = rhs.Runs_.begin(); it != rhs.Runs_.end(); ++it)
@@ -48,6 +53,7 @@ System& System::operator=(System const& rhs) {
   dirname_ = rhs.dirname_;
   description_ = rhs.description_;
   createOptsFilename_ = rhs.createOptsFilename_;
+  submitOptsFilename_ = rhs.submitOptsFilename_;
   clearRuns();
   Runs_.reserve( rhs.Runs_.size() );
   for (std::vector<Run*>::const_iterator it = rhs.Runs_.begin(); it != rhs.Runs_.end(); ++it)
@@ -69,6 +75,17 @@ int System::FindRuns() {
       return 1;
     }
     creator_.Info();
+  }
+  // See if submission options exist
+  if (fileExists( submitOptsFilename_ )) {
+    if (submitter_.ReadOptions( submitOptsFilename_ )) {
+      ErrorMsg("Reading submission options file name '%s' failed.\n", submitOptsFilename_.c_str());
+      return 1;
+    }
+    if (submitter_.CheckOptions()) {
+      ErrorMsg("Checking submission options failed.\n");
+      return 1;
+    }
   }
 
   // Search for runs

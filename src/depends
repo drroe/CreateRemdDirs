@@ -2,16 +2,16 @@ CheckRuns.o : CheckRuns.cpp CheckRuns.h FileRoutines.h Messages.h NC.h Run.h Tex
 Cmd.o : Cmd.cpp Cmd.h Exec.h
 CmdList.o : CmdList.cpp Cmd.h CmdList.h
 Cols.o : Cols.cpp Cols.h Messages.h StringRoutines.h
-Commands.o : Commands.cpp Cmd.h CmdList.h Cols.h Commands.h Creator.h Exec.h Exec_Create.h Exec_Debug.h Exec_List.h Exec_Quit.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h System.h TextFile.h
+Commands.o : Commands.cpp Cmd.h CmdList.h Cols.h Commands.h Creator.h Exec.h Exec_Create.h Exec_Debug.h Exec_List.h Exec_Quit.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h Submitter.h System.h TextFile.h
 Creator.o : Creator.cpp Creator.h FileRoutines.h Groups.h MdinFile.h Messages.h ReplicaDimension.h StringRoutines.h TextFile.h
-Exec_Create.o : Exec_Create.cpp Cols.h Creator.h Exec.h Exec_Create.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h StringRoutines.h System.h TextFile.h
-Exec_Debug.o : Exec_Debug.cpp Cols.h Creator.h Exec.h Exec_Debug.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h StringRoutines.h System.h TextFile.h
-Exec_List.o : Exec_List.cpp Cols.h Creator.h Exec.h Exec_List.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h Run.h System.h TextFile.h
+Exec_Create.o : Exec_Create.cpp Cols.h Creator.h Exec.h Exec_Create.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h StringRoutines.h Submitter.h System.h TextFile.h
+Exec_Debug.o : Exec_Debug.cpp Cols.h Creator.h Exec.h Exec_Debug.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h StringRoutines.h Submitter.h System.h TextFile.h
+Exec_List.o : Exec_List.cpp Cols.h Creator.h Exec.h Exec_List.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h Run.h Submitter.h System.h TextFile.h
 Exec_Quit.o : Exec_Quit.cpp Exec.h Exec_Quit.h Messages.h
 FileRoutines.o : FileRoutines.cpp FileRoutines.h Messages.h
 Groups.o : Groups.cpp Groups.h Messages.h TextFile.h
-main.o : main.cpp CheckRuns.h Commands.h Creator.h Exec.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h RemdDirs.h StringRoutines.h Submit.h System.h TextFile.h
-Manager.o : Manager.cpp Creator.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h System.h TextFile.h
+main.o : main.cpp CheckRuns.h Commands.h Creator.h Exec.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h RemdDirs.h StringRoutines.h Submit.h Submitter.h System.h TextFile.h
+Manager.o : Manager.cpp Creator.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h Submitter.h System.h TextFile.h
 MdOptions.o : MdOptions.cpp MdOptions.h Option.h
 MdinFile.o : MdinFile.cpp Cols.h MdinFile.h Messages.h StringRoutines.h TextFile.h
 Messages.o : Messages.cpp Messages.h
@@ -25,5 +25,5 @@ Simulation.o : Simulation.cpp Messages.h NC.h Simulation.h TextFile.h
 StringRoutines.o : StringRoutines.cpp Messages.h StringRoutines.h
 Submit.o : Submit.cpp FileRoutines.h Messages.h StringRoutines.h Submit.h TextFile.h
 Submitter.o : Submitter.cpp FileRoutines.h Messages.h QueueOpts.h StringRoutines.h Submitter.h TextFile.h
-System.o : System.cpp Creator.h FileRoutines.h Groups.h MdinFile.h Messages.h Run.h Run_SingleMD.h Simulation.h System.h TextFile.h
+System.o : System.cpp Creator.h FileRoutines.h Groups.h MdinFile.h Messages.h Run.h Run_SingleMD.h Simulation.h Submitter.h System.h TextFile.h
 TextFile.o : TextFile.cpp Messages.h TextFile.h
