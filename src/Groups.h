@@ -2,7 +2,7 @@
 #define INC_GROUPS_H
 #include <vector>
 #include <map>
-#include "TextFile.h"
+class TextFile;
 /// Class for setting up MREMD groups.
 class Groups {
   public:

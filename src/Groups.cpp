@@ -1,5 +1,6 @@
 #include "Groups.h"
 #include "Messages.h"
+#include "TextFile.h"
 
 using namespace Messages;
 
