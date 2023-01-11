@@ -161,7 +161,7 @@ Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startR
                runType_ == MREMD)
     {
       // REMD run
-      ErrorMsg("REMD not handled yet in InputCoordsNames()\n"); // FIXME
+      crd_files = inputCrds_multiple_md( specified_crd_, crd_dir_ );
       return Sarray();
     } else {
       ErrorMsg("Unhandled run type in InputCoordsNames()\n");
@@ -189,7 +189,8 @@ Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startR
                runType_ == MREMD)
     {
       // REMD run
-      ErrorMsg("REMD not handled yet in InputCoordsNames()\n"); // FIXME
+      std::string prev_dir = "../run." + integerToString(runNum-1, 3); // FIXME run and width should be vars
+      crd_files = inputCrds_multiple_md( specified, prev_dir );
       return Sarray();
     } else {
       ErrorMsg("Unhandled run type in InputCoordsNames()\n");

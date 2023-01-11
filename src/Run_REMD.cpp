@@ -1,6 +1,7 @@
 #include "Run_REMD.h"
 #include "Messages.h"
 #include "FileRoutines.h"
+#include "Creator.h"
 
 using namespace Messages;
 
@@ -41,16 +42,25 @@ const
   // Create and change to run directory.
   if (Mkdir(run_dir)) return 1;
   if (ChangeDir(run_dir)) return 1;
+  // Get Coords
+  Creator::Sarray crd_files = creator.InputCoordsNames(run_dir, start_run, run_num);
+  if (crd_files.empty()) {
+    ErrorMsg("Could not get COORDS for REMD.\n");
+    return 1;
+  }
+/*
   // Ensure that coords directory exists.
   if (crdDirSpecified_ && !fileExists(crd_dir_)) {
     ErrorMsg("Coords directory '%s' not found. Must specify absolute path"
              " or path relative to '%s'\n", crd_dir_.c_str(), run_dir.c_str());
     return 1;
-  }
+  }*/
   // If constant pH, ensure CPIN file exists
-  if (ph_dim_ != -1 && !fileExists(cpin_file_)) {
+  if (creator.TypeOfRun() == Creator::PHREMD &&
+      !fileExists(creator.CPIN_Name()))
+  {
     ErrorMsg("CPIN file '%s' not found. Must specify absolute path"
-             " or path relative to '%s'\n", cpin_file_.c_str(), run_dir.c_str());
+             " or path relative to '%s'\n", creator.CPIN_Name().c_str(), run_dir.c_str());
     return 1;
   }
   // Calculate ps per exchange

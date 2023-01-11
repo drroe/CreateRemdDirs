@@ -5,9 +5,10 @@
 class ReplicaDimension;
 /// Class responsible for creating run input and script
 class Creator {
+  public:
     /// Specific type of run the Creator will make (set in Setup)
     enum RUNTYPE { MD=0, TREMD, HREMD, PHREMD, MREMD };
-  public:
+
     Creator();
     ~Creator();
 
@@ -19,7 +20,10 @@ class Creator {
     //int Setup(std::string const&, bool);
     /// \return True if the Creator is set up to make regular MD runs
     bool IsSetupForMD() const { return (runType_ == MD); }
+    /// Print info to stdout
     void Info() const;
+    /// \return Run type that this has been set for
+    RUNTYPE TypeOfRun() const { return runType_; }
     //int CreateRuns(std::string const&, FileRoutines::StrArray const&, int, bool);
     //int CreateAnalyzeArchive(std::string const&, FileRoutines::StrArray const&, int, int, bool, bool, bool, bool);
     /// Set debug level
@@ -49,6 +53,8 @@ class Creator {
     Sarray RefCoordsNames(std::string const&) const;
     /// \return Group file name
     std::string const& GroupfileName() const { return groupfileName_; }
+    /// \return CPIN file name
+    std::string const& CPIN_Name() const { return cpin_file_; }
   private:
 
     static const std::string groupfileName_;
