@@ -269,6 +269,14 @@ int Creator::Setup(std::string const& crdDirIn, bool needsMdin) {
     Msg("  No dimensions defined: assuming MD run.\n");
     runType_ = MD;
     runDescription_.assign("MD");
+    if (temp0_ < 0.0) {
+      ErrorMsg("TEMPERATURE not specified.\n");
+      return 1;
+    }
+    if (top_file_.empty()) {
+      ErrorMsg("TOPOLOGY not specified.\n");
+      return 1;
+    }
   } else {
     if (Dims_.size() == 1) {
       if (Dims_[0]->Type() == ReplicaDimension::TEMP ||
@@ -393,7 +401,7 @@ int Creator::CreateRuns(std::string const& TopDir, StrArray const& RunDirs,
     // Determine run directory name, see if it is being overwritten.
     Msg("  RUNDIR: %s\n", runDir->c_str());
     if (fileExists(*runDir) && !overwrite) {
-      ErrorMsg("Directory '%s' exists and '-O' not specified.\n", runDir->c_str());
+      ErrorMsg("Directory '%s' exists and 'overwrite' not specified.\n", runDir->c_str());
       return 1;
     }
     // Create run input
