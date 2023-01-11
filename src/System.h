@@ -21,6 +21,8 @@ class System {
 
     /// Find runs in dirname_
     int FindRuns();
+    /// Set debug level
+    void SetDebug(int);
 
     /// Set up run creator
     int SetupRunCreator(std::string const& c, bool m) { return creator_.Setup(c, m); }

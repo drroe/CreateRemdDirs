@@ -102,6 +102,11 @@ int System::FindRuns() {
   return 0;
 }
 
+/** Set debug level */
+void System::SetDebug(int debugIn) {
+  creator_.SetDebug( debugIn );
+}
+
 /** Print system information. */
 void System::PrintInfo() const {
   Msg("%s : %s (%zu runs)\n", dirname_.c_str(), description_.c_str(), Runs_.size());
