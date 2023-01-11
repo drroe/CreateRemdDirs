@@ -165,13 +165,12 @@ int System::CreateRunDirectories(int start_run, int nruns, bool overwrite) {
     return 1;
   }
   // Change to the top directory only; creator_.CreateRuns will change to system dir
-  if (FileRoutines::ChangeDir( topDir_ )) return 1;
   if (Runs_.empty()) {
     // No existing runs.
     int stop_run = start_run + nruns - 1;
     Sarray RunDirs = createRunDirNames(start_run, stop_run);
     Msg("Creating %i runs from %i to %i\n", stop_run - start_run + 1, start_run, stop_run);
-    if (creator_.CreateRuns(dirname_, RunDirs, start_run, overwrite))
+    if (creator_.CreateRuns(topDir_ + "/" + dirname_, RunDirs, start_run, overwrite))
       return 1;
   } else {
     Msg("NOT YET SET UP FOR HAVING EXISTING RUNS.\n");
