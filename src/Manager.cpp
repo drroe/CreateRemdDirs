@@ -92,8 +92,5 @@ int Manager::SetActiveProjectSystem(int tgtProjectIdx, int tgtSystemIdx) {
   }
   activeProject.SetActiveSystem( tgtSystemIdx );
 
-  Msg("Project %i system %i is active.\n", tgtProjectIdx, tgtSystemIdx);
-  System const& activeSystem = ActiveProjectSystem();
-  activeSystem.PrintInfo();
   return 0;
 }

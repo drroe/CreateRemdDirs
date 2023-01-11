@@ -14,6 +14,7 @@
 #include "Exec_List.h"
 #include "Exec_Debug.h"
 #include "Exec_Create.h"
+#include "Exec_Active.h"
 
 using namespace Messages;
 
@@ -102,6 +103,7 @@ void Commands::InitCommands() {
   AddCmd(new Exec_List(), 1, "list");
   AddCmd(new Exec_Debug(), 1, "debug");
   AddCmd( new Exec_Create(), 1, "create");
+  AddCmd( new Exec_Active(), 1, "active");
   // Add null ptr to indicate end of command key addresses for readline 
   names_.push_back( 0 );
 }
