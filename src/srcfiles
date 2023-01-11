@@ -17,6 +17,7 @@ MdOptions.cpp \
 MdinFile.cpp \
 Messages.cpp \
 NC.cpp \
+QueueOpts.cpp \
 RemdDirs.cpp \
 ReplicaDimension.cpp \
 Run.cpp \
@@ -24,5 +25,6 @@ Run_SingleMD.cpp \
 Simulation.cpp \
 StringRoutines.cpp \
 Submit.cpp \
+Submitter.cpp \
 System.cpp \
 TextFile.cpp
