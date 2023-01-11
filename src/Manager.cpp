@@ -71,3 +71,29 @@ int Manager::InitManager(std::string const& CurrentDir, std::string const& input
 
   return 0;
 }
+
+/** Set active project and system. */
+int Manager::SetActiveProjectSystem(int tgtProjectIdx, int tgtSystemIdx) {
+  if (tgtProjectIdx < 0 || tgtSystemIdx < 0) {
+    ErrorMsg("Must specify valid active project and system indices.\n");
+    return 1;
+  }
+
+  if ((unsigned int)tgtProjectIdx >= projects_.size()) {
+    ErrorMsg("Project index %i is out of range.\n", tgtProjectIdx);
+    return 1;
+  }
+  activeProjectIdx_ = tgtProjectIdx;
+  Project& activeProject = ActiveProject();
+
+  if ((unsigned int)tgtSystemIdx >= activeProject.Systems().size()) {
+    ErrorMsg("System index %i is out of range.\n", tgtSystemIdx);
+    return 1;
+  }
+  activeProject.SetActiveSystem( tgtSystemIdx );
+
+  Msg("Project %i system %i is active.\n", tgtProjectIdx, tgtSystemIdx);
+  System const& activeSystem = ActiveProjectSystem();
+  activeSystem.PrintInfo();
+  return 0;
+}

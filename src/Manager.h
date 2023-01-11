@@ -30,8 +30,8 @@ class Manager {
 
     /// Set global debug level
     void SetDebug(int d) { debug_ = d; }
-    /// Set active project index
-    void SetActiveProject(int idx) { activeProjectIdx_ = idx; }
+    /// Set active project and system indices
+    int SetActiveProjectSystem(int, int);
   private:
     enum RetType { OK = 0, ERR, QUIT };
     /// Process command
