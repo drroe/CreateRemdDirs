@@ -1,9 +1,11 @@
+#include <algorithm> //std::max
 #include <cstdlib> // atof, atoi
 #include "Creator.h"
 #include "Messages.h"
 #include "TextFile.h"
 #include "StringRoutines.h"
 #include "ReplicaDimension.h"
+#include "FileRoutines.h" // CheckExists, fileExists
 
 using namespace Messages;
 using namespace StringRoutines;
@@ -23,10 +25,12 @@ Creator::Creator() :
   debug_(0),
   n_md_runs_(0),
   umbrella_(0),
+  fileExtWidth_(3),
   override_irest_(false),
   override_ntx_(false),
   uselog_(true),
-  crdDirSpecified_(false)
+  crdDirSpecified_(false),
+  crd_ext_("rst7") //FIXME this is Amber-specific
 {}
 
 // DESTRUCTOR
@@ -35,10 +39,169 @@ Creator::~Creator() {
     if (*dim != 0) delete *dim;
 }
 
-/** \return First topology file from the top_dim_ dimension. */
-std::string const& Creator::Topology() const {
+/** \return First topology file name from the top_dim_ dimension (REMD) or MD topology file. */
+std::string const& Creator::TopologyName() const {
   if (top_dim_ == -1) return top_file_;
     return Dims_[top_dim_]->TopName( 0 );
+}
+
+/** \return File numerical prefix/extension.
+  * Determines a numerical prefix/extension based on max number of expected
+  * files and the current default width.
+  */
+std::string Creator::NumericalExt(int num, int max) const {
+  int width = std::max(DigitWidth(max), fileExtWidth_);
+  return integerToString(num, width);
+}
+
+/** \return Array of input coords for multiple MD. */
+Creator::Sarray Creator::inputCrds_multiple_md(std::string const& specified,
+                                               std::string const& def)
+const
+{
+  Sarray crd_files;
+  std::string crdDirName;
+  if (!specified.empty())
+    crdDirName = specified;
+  else
+    crdDirName = def;
+  if (crdDirName.empty()) {
+    ErrorMsg("No coordinates directory specified for MD groups.\n");
+    return Sarray();
+  }
+  for (int grp=1; grp <= n_md_runs_; grp++)
+    crd_files.push_back(tildeExpansion(crdDirName + "/" +
+                                       NumericalExt(grp, n_md_runs_) + "." + crd_ext_));
+  return crd_files;
+}
+
+/** \return Array containing single input coords for MD run. */
+Creator::Sarray Creator::inputCrds_single_md(std::string const& specified,
+                                             std::string const& def)
+const
+{
+  std::string crdName;
+  if (!specified.empty())
+    crdName = specified;
+  else
+    crdName = def;
+  if (crdName.empty()) {
+    ErrorMsg("No coordinates file specified for single MD.\n");
+    return Sarray();
+  }
+  return Sarray(1, tildeExpansion(crdName) );
+}
+
+/** \return Array of reference coordinates names.
+  */
+Creator::Sarray Creator::RefCoordsNames(std::string const& run_dir)
+const
+{
+  Sarray crd_files;
+  if (runType_ == MD) {
+    // MD run
+    if (n_md_runs_ > 1) {
+      // Multi MD
+      if (!ref_file_.empty()) {
+        // Single reference for all groups
+        for (int grp = 1; grp <= n_md_runs_; grp++)
+          crd_files.push_back( ref_file_ );
+      } else if (!ref_dir_.empty()) {
+        // Dir containing files XXX.<ext>
+        crd_files = inputCrds_multiple_md(std::string(""), ref_dir_);
+      }
+    } else {
+      // Single MD
+      if (!ref_file_.empty())
+        crd_files.push_back( ref_file_ );
+      else if (!ref_dir_.empty())
+        Msg("Warning: Not using ref dir '%s' for single MD run.\n", ref_dir_.c_str());
+    }
+  } else {
+    ErrorMsg("RefCoordsNames not set up for REMD yet.\n");
+  }
+  // Ensure ref files exist
+  for (Sarray::const_iterator it = crd_files.begin(); it != crd_files.end(); ++it) {
+    if (!fileExists( *it )) {
+      ErrorMsg("Reference coords file '%s' not found. Must specify absolute path"
+               " or path relative to '%s'\n", it->c_str(), run_dir.c_str());
+      return Sarray();
+    }
+  }
+
+  return crd_files;
+}
+
+/** \return Array of input coordinates names.
+  * Based on the run type and run number, set up an array containing
+  * input coordinates file name(s).
+  */
+Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startRunNum, int runNum) const {
+  Sarray crd_files;
+  if (runNum == 0) {
+    // Very first run. Use specified_crd_ if set; otherwise use crd_dir_.
+    if (runType_ == MD) {
+      // MD run
+      if (n_md_runs_ > 1) {
+        // Multiple input coords, one for each MD group. Expect files named
+        // <DIR>/XXX.<ext>
+        crd_files = inputCrds_multiple_md( specified_crd_, crd_dir_ );
+      } else {
+        // Single input coords for MD.
+        crd_files = inputCrds_single_md( specified_crd_, crd_dir_);
+      }
+    } else if (runType_ == TREMD ||
+               runType_ == HREMD ||
+               runType_ == PHREMD ||
+               runType_ == MREMD)
+    {
+      // REMD run
+      ErrorMsg("REMD not handled yet in InputCoordsNames()\n"); // FIXME
+      return Sarray();
+    } else {
+      ErrorMsg("Unhandled run type in InputCoordsNames()\n");
+      return Sarray();
+    }
+  } else {
+    // Starting after run 0. If this is the first run in the series and
+    // specified_crd_ is set, use that; otherwise set up to use
+    // coordinates from previous runs.
+    std::string specified;
+    if (startRunNum == runNum)
+      specified = specified_crd_;
+    if (runType_ == MD) {
+      // MD run
+      if (n_md_runs_ > 1) {
+        std::string prev_dir = "../run." + integerToString(runNum-1, 3); // FIXME run and width should be vars
+        crd_files = inputCrds_multiple_md( specified, prev_dir );
+      } else {
+        std::string prev_name = "../run." + integerToString(runNum-1, 3) + "/mdrst.rst7"; // FIXME run and width should be vars, mdrst.rst7 is Amber-specific
+        crd_files = inputCrds_single_md( specified, prev_name );
+      }
+    } else if (runType_ == TREMD ||
+               runType_ == HREMD ||
+               runType_ == PHREMD ||
+               runType_ == MREMD)
+    {
+      // REMD run
+      ErrorMsg("REMD not handled yet in InputCoordsNames()\n"); // FIXME
+      return Sarray();
+    } else {
+      ErrorMsg("Unhandled run type in InputCoordsNames()\n");
+      return Sarray();
+    }
+  }
+  // Ensure that files exist for the first run
+  if (startRunNum == runNum) {
+    for (Sarray::const_iterator it = crd_files.begin(); it != crd_files.end(); ++it) {
+      if (!fileExists( *it )) {
+        ErrorMsg("Coords file '%s' not found. Must specify absolute path"
+                 " or path relative to '%s'\n", it->c_str(), run_dir.c_str());
+        return Sarray();
+      }
+    }
+  }
+  return crd_files;
 }
 
 void Creator::OptHelp() {
@@ -386,6 +549,7 @@ void Creator::Info() const {
 }
 
 // Creator::CreateRuns()
+/*
 int Creator::CreateRuns(std::string const& TopDir, StrArray const& RunDirs,
                          int start, bool overwrite)
 {
@@ -414,8 +578,10 @@ int Creator::CreateRuns(std::string const& TopDir, StrArray const& RunDirs,
   }
   return 0;
 }
+*/
 
 // Creator::CreateAnalyzeArchive()
+/*
 int Creator::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& RunDirs,
                                    int start, int stop, bool overwrite, bool check,
                                    bool analyzeEnabled, bool archiveEnabled)
@@ -510,7 +676,7 @@ int Creator::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Run
     }
     std::string ARDIR="Archive." + integerToString(start) + "." +
                                    integerToString(stop);
-    if ( fileExists(ARDIR) ) {
+    if ( ileExists(ARDIR) ) {
       if (!overwrite) {
         ErrorMsg("Directory '%s' exists and '-O' not specified.\n", ARDIR.c_str());
         return 1;
@@ -622,7 +788,7 @@ int Creator::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& Run
 
   return 0;
 }
-
+*/
 // =============================================================================
 int Creator::WriteRunMD(std::string const& cmd_opts) const {
   TextFile RunMD;
@@ -639,6 +805,7 @@ int Creator::WriteRunMD(std::string const& cmd_opts) const {
 const std::string Creator::groupfileName_( "groupfile" ); // TODO make these options
 const std::string Creator::remddimName_("remd.dim");
 
+// TODO deprecate
 std::string Creator::RefFileName(std::string const& EXT) const {
   std::string repRef;
   if (!ref_file_.empty())
@@ -950,106 +1117,4 @@ int Creator::MakeMdinForMD(std::string const& fname, int run_num,
 }
 
 // Creator::CreateMD()
-int Creator::CreateMD(int start_run, int run_num, std::string const& run_dir) {
-  // Create and change to run directory.
-  if (Mkdir(run_dir)) return 1;
-  if (ChangeDir(run_dir)) return 1;
-  // Do some set up for groupfile runs.
-  int width = 3;
-  std::vector<std::string> crd_files;
-  if (n_md_runs_ > 1) {
-    Msg("Number of MD runs: %i\n", n_md_runs_);
-    // Figure out max width of md filename extension
-    width = std::max(DigitWidth( n_md_runs_ ), 3);
-    for (int grp=1; grp <= n_md_runs_; grp++)
-      crd_files.push_back(crd_dir_ + "/" + integerToString(grp, width) + ".rst7");
-  }
-  // Ensure that coords file exists for first run.
-  if (run_num == start_run) {
-    if (n_md_runs_ < 2) {
-      // If not specified, try to find a previous run
-      if (crd_dir_.empty())
-        crd_dir_ = "../run." + integerToString(run_num-1, 3) + "/mdrst.rst7";
-      if (!fileExists(crd_dir_)) {
-        ErrorMsg("Coords file '%s' not found. Must specify absolute path"
-                 " or path relative to '%s'\n", crd_dir_.c_str(), run_dir.c_str());
-        return 1;
-      }
-    } else {
-      for (std::vector<std::string>::const_iterator file = crd_files.begin();
-                                                    file != crd_files.end(); ++file)
-        if (!fileExists(*file)) {
-          ErrorMsg("Coords file '%s' not found. Must specify absolute path"
-                 " or path relative to '%s'\n", file->c_str(), run_dir.c_str());
-          return 1;
-        }
-    }
-  }
-  // Ensure topology exists.
-  if (!fileExists( top_file_ )) {
-    ErrorMsg("Topology '%s' not found. Must specify absolute path"
-             " or path relative to '%s'\n", top_file_.c_str(), run_dir.c_str());
-    return 1;
-  }
-  // Set up run command 
-  std::string cmd_opts;
-  if (n_md_runs_ < 2) {
-    cmd_opts.assign("-i md.in -p " + top_file_ + " -c " + crd_dir_ + 
-                    " -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info");
-    std::string mdRef;
-    if (!ref_file_.empty() || !ref_dir_.empty()) {
-      if (!ref_file_.empty())
-        mdRef = ref_file_;
-      else if (!ref_dir_.empty())
-        mdRef = ref_dir_;
-      if (!ref_file_.empty() && !ref_dir_.empty())
-        Msg("Warning: Both reference dir and prefix defined. Using '%s'\n", mdRef.c_str());
-      if (!fileExists( mdRef )) {
-        ErrorMsg("Reference file '%s' not found. Must specify absolute path"
-                 " or path relative to '%s'\n", mdRef.c_str(), run_dir.c_str());
-        return 1;
-      }
-      cmd_opts.append(" -ref " + tildeExpansion(mdRef));
-    }
-  } else {
-    TextFile GROUP;
-    if (GROUP.OpenWrite(groupfileName_)) return 1;
-    for (int grp = 1; grp <= n_md_runs_; grp++) {
-      std::string EXT = "." + integerToString(grp, width);
-      std::string mdin_name("md.in");
-      if (umbrella_ > 0) {
-        // Create input for umbrella runs
-        mdin_name.append(EXT);
-        if (MakeMdinForMD(mdin_name, run_num, EXT, run_dir)) return 1;
-      }
-      GROUP.Printf("-i %s -p %s -c %s -x md.nc%s -r %0*i.rst7 -o md.out%s -inf md.info%s",
-                   mdin_name.c_str(), top_file_.c_str(), crd_files[grp-1].c_str(), EXT.c_str(),
-                   width, grp, EXT.c_str(), EXT.c_str());
-      std::string repRef = RefFileName(integerToString(grp, width));
-      if (!repRef.empty()) {
-        if (!fileExists( repRef )) {
-          ErrorMsg("Reference file '%s' not found. Must specify absolute path"
-                   " or path relative to '%s'\n", repRef.c_str(), run_dir.c_str());
-          return 1;
-        }
-        repRef = tildeExpansion(repRef);
-        GROUP.Printf(" -ref %s", repRef.c_str());
-      }
-      GROUP.Printf("\n");
-    } 
-    GROUP.Close();
-    cmd_opts.assign("-ng " + integerToString(n_md_runs_) + " -groupfile " + groupfileName_);
-  }
-  WriteRunMD( cmd_opts );
-  // Info for this run.
-  if (debug_ >= 0) // 1 
-      Msg("\tMD: top=%s  temp0=%f\n", top_file_.c_str(), temp0_);
-  // Create input for non-umbrella runs.
-  if (umbrella_ == 0) {
-    if (MakeMdinForMD("md.in", run_num, "",run_dir)) return 1;
-  }
-  // Input coordinates for next run will be restarts of this
-  crd_dir_ = "../" + run_dir + "/";
-  if (n_md_runs_ < 2) crd_dir_.append("mdrst.rst7");
-  return 0;
-}
+

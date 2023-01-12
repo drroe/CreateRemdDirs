@@ -162,6 +162,7 @@ System::Sarray System::createRunDirNames(int start_run, int stop_run) const {
 int System::CreateRunDirectories(std::string const& crd_dir,
                                  int start_run, int nruns, bool overwrite)
 {
+  using namespace FileRoutines;
   if (nruns < 1) {
     ErrorMsg("Less than 1 run for CreateRunDirectories()\n");
     return 1;
@@ -179,8 +180,34 @@ int System::CreateRunDirectories(std::string const& crd_dir,
     int stop_run = start_run + nruns - 1;
     Sarray RunDirs = createRunDirNames(start_run, stop_run);
     Msg("Creating %i runs from %i to %i\n", stop_run - start_run + 1, start_run, stop_run);
-    if (creator_.CreateRuns(topDir_ + "/" + dirname_, RunDirs, start_run, overwrite))
-      return 1;
+    int runNum = start_run;
+    for (Sarray::const_iterator runDir = RunDirs.begin();
+                                runDir != RunDirs.end(); ++runDir, ++runNum)
+    {
+      // Allocate run
+      Run* thisRun = 0;
+      if (creator_.IsSetupForMD())
+        thisRun = Run_SingleMD::Alloc();
+      if (thisRun == 0) {
+        ErrorMsg("No allocator yet in CreateRunDirectories.\n");
+        return 1;
+      }
+      if (ChangeToSystemDir()) return 1;
+
+      Msg("  RUNDIR: %s\n", runDir->c_str());
+      if (fileExists(*runDir) && !overwrite) {
+        ErrorMsg("Directory '%s' exists and 'overwrite' not specified.\n", runDir->c_str());
+        return 1;
+      }
+
+      if (thisRun->CreateRunDir(creator_, start_run, runNum, *runDir)) {
+        ErrorMsg("Creating run '%s' failed.\n", runDir->c_str());
+        return 1;
+      }
+    }
+
+    //if (creator_.CreateRuns(topDir_ + "/" + dirname_, RunDirs, start_run, overwrite))
+    //  return 1;
   } else {
     Msg("NOT YET SET UP FOR HAVING EXISTING RUNS.\n");
   }

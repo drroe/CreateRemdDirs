@@ -8,7 +8,6 @@ class Run_SingleMD : public Run {
     Run_SingleMD();
 
     static Run* Alloc() { return (Run*)new Run_SingleMD(); }
-    //Run* Copy() const;
     /// COPY CONSTRUCTOR
     Run_SingleMD(Run_SingleMD const& rhs) : Run(rhs), sim_(rhs.sim_) {}
     /// ASSIGNMENT
@@ -20,8 +19,10 @@ class Run_SingleMD : public Run {
     }
     /// \return Copy of this run
     Run* Copy() const { return (Run*)new Run_SingleMD( *this ); }
-
+    /// Print run info to stdout
     void RunInfo() const;
+    /// Create run directory
+    int CreateRunDir(Creator const&, int, int, std::string const&) const;
   private:
     int InternalSetup(FileRoutines::StrArray const&);
 
