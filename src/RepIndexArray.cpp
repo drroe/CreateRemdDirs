@@ -23,3 +23,10 @@ std::string RepIndexArray::IndicesStr(unsigned int offset) const {
     out.append(" " + StringRoutines::integerToString( *count + offset ));
   return out;
 }
+
+/** \return true if all indices are zero */
+bool RepIndexArray::IsZero() const {
+  for (Iarray::const_iterator count = indices_.begin(); count != indices_.end(); ++count)
+    if (*count > 0) return false;
+  return true;
+}

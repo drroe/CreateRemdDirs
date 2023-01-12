@@ -23,6 +23,8 @@ class RepIndexArray {
     const_iterator end() const { return indices_.end(); }*/
     /// \return indices as a string, incremented by offset
     std::string IndicesStr(unsigned int) const;
+    /// \return True if all indices are zero
+    bool IsZero() const;
   private:
     Iarray indices_;
 };
