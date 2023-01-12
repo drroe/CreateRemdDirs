@@ -22,6 +22,7 @@ QueueOpts.cpp \
 RemdDirs.cpp \
 ReplicaDimension.cpp \
 Run.cpp \
+Run_MultiMD.cpp \
 Run_SingleMD.cpp \
 Simulation.cpp \
 StringRoutines.cpp \

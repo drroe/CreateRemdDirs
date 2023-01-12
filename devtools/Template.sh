@@ -109,7 +109,7 @@ EOF
 using namespace Messages;
 
 /** CONSTRUCTOR */
-$CLASS::$CLASS() {}
+$CLASS::$CLASS() : Run(TYPE) {}
 
 /** COPY CONSTRUCTOR */
 $CLASS::$CLASS($CLASS const& rhs) : Run(rhs) {

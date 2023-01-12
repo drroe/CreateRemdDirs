@@ -5,6 +5,7 @@
 #include "StringRoutines.h"
 // ----- Run types -----
 #include "Run_SingleMD.h"
+#include "Run_MultiMD.h"
 
 using namespace Messages;
 
@@ -186,8 +187,12 @@ int System::CreateRunDirectories(std::string const& crd_dir,
     {
       // Allocate run
       Run* thisRun = 0;
-      if (creator_.IsSetupForMD())
-        thisRun = Run_SingleMD::Alloc();
+      if (creator_.IsSetupForMD()) {
+        if (creator_.N_MD_Runs() > 1)
+          thisRun = Run_MultiMD::Alloc();
+        else
+          thisRun = Run_SingleMD::Alloc();
+      }
       if (thisRun == 0) {
         ErrorMsg("No allocator yet in CreateRunDirectories.\n");
         return 1;
