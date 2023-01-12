@@ -64,7 +64,7 @@ class Creator {
     int LoadDimension(std::string const&);
     std::string RefFileName(std::string const&) const; // TODO deprecate
     void WriteNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
-    int CreateRemd(int, int, std::string const&);
+    //int CreateRemd(int, int, std::string const&);
     //int CreateMD(int, int, std::string const&);
     // File and MDIN variables
     std::string top_file_;
