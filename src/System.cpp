@@ -207,56 +207,50 @@ int System::CreateRunDirectories(std::string const& crd_dir,
   int runWidth = std::max( StringRoutines::DigitWidth(stop_run), runDirExtWidth_ );
   Msg("Creating %i runs from %i to %i\n", stop_run - start_run + 1, start_run, stop_run);
 
-    for (int runNum = start_run; runNum <= stop_run; ++runNum)
-//    for (Sarray::const_iterator runDir = RunDirs.begin();
-//                                runDir != RunDirs.end(); ++runDir, ++runNum)
-    {
-      // See if this run already exists
-      int existingRunIdx = -1;
-      for (unsigned int ridx = 0; ridx < Runs_.size(); ridx++) {
-        if ( Runs_[ridx]->RunIndex() == runNum) {
-          Msg(" Run %i exists.\n", runNum);
-          existingRunIdx = (int)ridx;
-          break;
-        }
+  for (int runNum = start_run; runNum <= stop_run; ++runNum)
+  {
+    // See if this run already exists
+    int existingRunIdx = -1;
+    for (unsigned int ridx = 0; ridx < Runs_.size(); ridx++) {
+      if ( Runs_[ridx]->RunIndex() == runNum) {
+        Msg(" Run %i exists.\n", runNum);
+        existingRunIdx = (int)ridx;
+        break;
       }
-      if (existingRunIdx > -1) {
-        if (overwrite)
-          Msg("Will overwrite run.\n");
-        else {
-          Runs_[existingRunIdx]->RunInfo();
-          continue;
-        }
-      }
-      // Allocate run
-      std::string runDir( runDirPrefix_ + "." + StringRoutines::integerToString(runNum, runWidth) );
-      Run* thisRun = allocateFromCreator( runDir );
-      if (thisRun == 0) {
-        ErrorMsg("No allocator yet in CreateRunDirectories.\n");
-        return 1;
-      }
-      if (ChangeToSystemDir()) return 1;
-
-      Msg("  RUNDIR: %s\n", runDir.c_str());
-      if (fileExists(runDir) && !overwrite) {
-        ErrorMsg("Directory '%s' exists and 'overwrite' not specified.\n", runDir.c_str());
-        return 1;
-      }
-
-      if (thisRun->CreateRunDir(creator_, lowest_run_idx, runNum, runDir)) {
-        ErrorMsg("Creating run '%s' failed.\n", runDir.c_str());
-        return 1;
-      }
-      if (existingRunIdx > -1) {
-        delete Runs_[existingRunIdx];
-        Runs_[existingRunIdx] = thisRun;
-      } else
-        Runs_.push_back( thisRun );
     }
-    //if (creator_.CreateRuns(topDir_ + "/" + dirname_, RunDirs, start_run, overwrite))
-    //  return 1;
-//  } else {
-//    Msg("NOT YET SET UP FOR HAVING EXISTING RUNS.\n");
-//  }
+    if (existingRunIdx > -1) {
+      if (overwrite)
+        Msg("Will overwrite run.\n");
+      else {
+        Runs_[existingRunIdx]->RunInfo();
+        continue;
+      }
+    }
+    // Allocate run
+    std::string runDir( runDirPrefix_ + "." + StringRoutines::integerToString(runNum, runWidth) );
+    Run* thisRun = allocateFromCreator( runDir );
+    if (thisRun == 0) {
+      ErrorMsg("No allocator yet in CreateRunDirectories.\n");
+      return 1;
+    }
+    if (ChangeToSystemDir()) return 1;
+
+    Msg("  RUNDIR: %s\n", runDir.c_str());
+    if (fileExists(runDir) && !overwrite) {
+      ErrorMsg("Directory '%s' exists and 'overwrite' not specified.\n", runDir.c_str());
+      return 1;
+    }
+
+    if (thisRun->CreateRunDir(creator_, lowest_run_idx, runNum, runDir)) {
+      ErrorMsg("Creating run '%s' failed.\n", runDir.c_str());
+      return 1;
+    }
+    if (existingRunIdx > -1) {
+      delete Runs_[existingRunIdx];
+      Runs_[existingRunIdx] = thisRun;
+    } else
+      Runs_.push_back( thisRun );
+  }
+ 
   return 0;
 }
