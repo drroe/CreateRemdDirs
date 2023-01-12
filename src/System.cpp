@@ -174,7 +174,7 @@ int System::CreateRunDirectories(std::string const& crd_dir,
     return 1;
   }
   creator_.Info();
-  // Change to the top directory only; creator_.CreateRuns will change to system dir
+  // Loop over desired run numbers 
   if (Runs_.empty()) {
     // No existing runs.
     int stop_run = start_run + nruns - 1;
