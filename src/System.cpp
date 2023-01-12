@@ -175,15 +175,6 @@ int System::ChangeToSystemDir() const {
   return 0;
 }
 
-/** \return array of run directory names from start to stop with current digit width */
-/*System::Sarray System::createRunDirNames(int start_run, int stop_run) const {
-  int runWidth = std::max( StringRoutines::DigitWidth(stop_run), runDirExtWidth_ );
-  Sarray RunDirs;
-  for (int run = start_run; run <= stop_run; ++run)
-    RunDirs.push_back( runDirPrefix_ + "." + StringRoutines::integerToString(run, runWidth) );
-  return RunDirs;
-}*/
-
 /** Create run directories in system directory. */
 int System::CreateRunDirectories(std::string const& crd_dir,
                                  int start_run, int nruns, bool overwrite)
@@ -196,19 +187,20 @@ int System::CreateRunDirectories(std::string const& crd_dir,
   // Set alternate coords if needed.
   if (!crd_dir.empty())
     creator_.SetSpecifiedCoords( crd_dir );
-  //if (creator_.Setup( crd_dir, needsMdin )) {
-  //  ErrorMsg("Run creator setup failed.\n");
-  //  return 1;
- // }
   creator_.Info();
+  // If any runs exist, determine the lowest index
+  int lowest_run_idx;
+  if (Runs_.empty())
+    lowest_run_idx = start_run;
+  else {
+    lowest_run_idx = Runs_.front()->RunIndex();
+    Msg("Lowest existing run index is %i\n", lowest_run_idx);
+  }
   // Loop over desired run numbers 
-//  if (Runs_.empty()) {
-//    // No existing runs.
-    int stop_run = start_run + nruns - 1;
-    int runWidth = std::max( StringRoutines::DigitWidth(stop_run), runDirExtWidth_ );
-//    Sarray RunDirs = createRunDirNames(start_run, stop_run);
-    Msg("Creating %i runs from %i to %i\n", stop_run - start_run + 1, start_run, stop_run);
-    //int runNum = start_run;
+  int stop_run = start_run + nruns - 1;
+  int runWidth = std::max( StringRoutines::DigitWidth(stop_run), runDirExtWidth_ );
+  Msg("Creating %i runs from %i to %i\n", stop_run - start_run + 1, start_run, stop_run);
+
     for (int runNum = start_run; runNum <= stop_run; ++runNum)
 //    for (Sarray::const_iterator runDir = RunDirs.begin();
 //                                runDir != RunDirs.end(); ++runDir, ++runNum)
@@ -224,7 +216,7 @@ int System::CreateRunDirectories(std::string const& crd_dir,
       }
       if (existingRun != 0) {
         existingRun->RunInfo();
-        continue;
+        continue; // TODO if overwrite is set allow existing run to be replaced
       }
       // Allocate run
       std::string runDir( runDirPrefix_ + "." + StringRoutines::integerToString(runNum, runWidth) );
@@ -241,7 +233,7 @@ int System::CreateRunDirectories(std::string const& crd_dir,
         return 1;
       }
 
-      if (thisRun->CreateRunDir(creator_, start_run, runNum, runDir)) {
+      if (thisRun->CreateRunDir(creator_, lowest_run_idx, runNum, runDir)) {
         ErrorMsg("Creating run '%s' failed.\n", runDir.c_str());
         return 1;
       }
