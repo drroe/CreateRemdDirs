@@ -48,37 +48,6 @@ const
     ErrorMsg("Could not get input coords for MD.\n");
     return 1;
   }
-/*  // Do some set up for groupfile runs.
-  int width = 3;
-  std::vector<std::string> crd_files;
-  if (creator.N_MD_Runs() > 1) {
-    Msg("Number of MD runs: %i\n", creator.N_MD_Runs());
-    // Figure out max width of md filename extension
-    width = std::max(DigitWidth( creator.N_MD_Runs() ), 3);
-    for (int grp=1; grp <= creator.N_MD_Runs(); grp++)
-      crd_files.push_back(crd_dir_ + "/" + integerToString(grp, width) + ".rst7");
-  }
-  // Ensure that coords file exists for first run.
-  if (run_num == start_run) {
-    if (creator.N_MD_Runs() < 2) {
-      // If not specified, try to find a previous run
-      if (crd_dir_.empty())
-        crd_dir_ = "../run." + integerToString(run_num-1, 3) + "/mdrst.rst7";
-      if (!fileExists(crd_dir_)) {
-        ErrorMsg("Coords file '%s' not found. Must specify absolute path"
-                 " or path relative to '%s'\n", crd_dir_.c_str(), run_dir.c_str());
-        return 1;
-      }
-    } else {
-      for (std::vector<std::string>::const_iterator file = crd_files.begin();
-                                                    file != crd_files.end(); ++file)
-        if (!fileExists(*file)) {
-          ErrorMsg("Coords file '%s' not found. Must specify absolute path"
-                 " or path relative to '%s'\n", file->c_str(), run_dir.c_str());
-          return 1;
-        }
-    }
-  }*/
   // Ensure topology exists.
   if (!fileExists( creator.TopologyName() )) {
     ErrorMsg("Topology '%s' not found. Must specify absolute path"

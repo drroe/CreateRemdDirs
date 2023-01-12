@@ -116,6 +116,9 @@ int System::FindRuns() {
     Run* run = 0;
     switch (runType) {
       case Run::SINGLE_MD : run = Run_SingleMD::Alloc(); break;
+      case Run::MULTI_MD  : run = Run_MultiMD::Alloc(); break;
+      case Run::REMD      :
+      case Run::UNKNOWN   : break;
     }
     if (run == 0) {
       Msg("Warning: Run allocation failed.\n");
