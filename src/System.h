@@ -41,9 +41,9 @@ class System {
     /// Clear all runs
     void clearRuns();
     /// Allocate Run from creator_
-    Run* allocateFromCreator() const;
+    Run* allocateFromCreator(std::string const&) const;
     /// Create run directory names from start to stop with current digit width
-    Sarray createRunDirNames(int, int) const;
+    //Sarray createRunDirNames(int, int) const;
 
     RunArray Runs_;           ///< Array of runs for the system
     std::string topDir_;      ///< Top level directory
