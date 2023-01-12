@@ -72,6 +72,17 @@ System::~System() {
   clearRuns();
 }
 
+/** Allocate Run based on creator_. */
+Run* System::allocateFromCreator() const {
+  Run* thisRun = 0;
+  if (creator_.IsSetupForMD()) {
+    if (creator_.N_MD_Runs() > 1)
+      thisRun = Run_MultiMD::Alloc();
+    else
+      thisRun = Run_SingleMD::Alloc();
+  }
+  return thisRun;
+}
 
 /** Search for run directories in dirname_ */
 int System::FindRuns() {
@@ -120,12 +131,22 @@ int System::FindRuns() {
       case Run::REMD      :
       case Run::UNKNOWN   : break;
     }
+    int setupErr = 0;
     if (run == 0) {
-      Msg("Warning: Run allocation failed.\n");
+      Msg("Warning: Run detection failed. Allocating based on '%s'\n", createOptsFilename_.c_str());
+      run = allocateFromCreator();
+      if (run != 0)
+        setupErr = run->SetupRun( *it );
     } else {
-      run->SetupRun( *it, output_files );
-      Runs_.push_back( run );
+      setupErr = run->SetupRun( *it, output_files );
     }
+    if (run == 0)
+      Msg("Warning: Run allocation failed.\n");
+    else if (setupErr != 0) {
+      ErrorMsg("Run Setup failed.\n");
+      return 1;
+    } else
+      Runs_.push_back( run );
     // Change directory back
     if (ChangeToSystemDir()) return 1;
   }
@@ -171,12 +192,13 @@ int System::CreateRunDirectories(std::string const& crd_dir,
     ErrorMsg("Less than 1 run for CreateRunDirectories()\n");
     return 1;
   }
-  // Setup run dir creator
-  bool needsMdin = true; // TODO needed as an option?
-  if (creator_.Setup( crd_dir, needsMdin )) {
-    ErrorMsg("Run creator setup failed.\n");
-    return 1;
-  }
+  // Set alternate coords if needed.
+  if (!crd_dir.empty())
+    creator_.SetSpecifiedCoords( crd_dir );
+  //if (creator_.Setup( crd_dir, needsMdin )) {
+  //  ErrorMsg("Run creator setup failed.\n");
+  //  return 1;
+ // }
   creator_.Info();
   // Loop over desired run numbers 
   if (Runs_.empty()) {
@@ -189,13 +211,7 @@ int System::CreateRunDirectories(std::string const& crd_dir,
                                 runDir != RunDirs.end(); ++runDir, ++runNum)
     {
       // Allocate run
-      Run* thisRun = 0;
-      if (creator_.IsSetupForMD()) {
-        if (creator_.N_MD_Runs() > 1)
-          thisRun = Run_MultiMD::Alloc();
-        else
-          thisRun = Run_SingleMD::Alloc();
-      }
+      Run* thisRun = allocateFromCreator();
       if (thisRun == 0) {
         ErrorMsg("No allocator yet in CreateRunDirectories.\n");
         return 1;

@@ -14,15 +14,18 @@ class Creator {
     typedef std::vector<std::string> Sarray;
 
     static void OptHelp();
+    /// Read creation options from a file
     int ReadOptions(std::string const&);
-    int Setup(std::string const&, bool);
+    //int Setup(std::string const&, bool);
     /// \return True if the Creator is set up to make regular MD runs
     bool IsSetupForMD() const { return (runType_ == MD); }
     void Info() const;
     //int CreateRuns(std::string const&, FileRoutines::StrArray const&, int, bool);
     //int CreateAnalyzeArchive(std::string const&, FileRoutines::StrArray const&, int, int, bool, bool, bool, bool);
-
+    /// Set debug level
     void SetDebug(int d) { debug_ = d; }
+    /// Set alternate coordinates location
+    void SetSpecifiedCoords(std::string const& c) { specified_crd_ = c; }
 
     /// \return Numerical prefix/extension based on number and expected max
     std::string NumericalExt(int, int) const;
@@ -55,6 +58,8 @@ class Creator {
     Sarray inputCrds_multiple_md(std::string const&, std::string const&) const;
     /// \return Array containing single input coords for MD run.
     Sarray inputCrds_single_md(std::string const&, std::string const&) const;
+    /// Perform internal setup, called by ReadOptions
+    int setupCreator();
 
     int LoadDimension(std::string const&);
     std::string RefFileName(std::string const&) const; // TODO deprecate
@@ -87,7 +92,7 @@ class Creator {
     bool override_irest_;         ///< If true do not set irest, use from MDIN
     bool override_ntx_;           ///< If true do not set ntx, use from MDIN
     bool uselog_;                 ///< If true use -l in groupfile
-    bool crdDirSpecified_;        ///< If true, restart coords dir specified on command line.
+    bool crdDirSpecified_;        ///< If true, restart coords dir specified on command line. TODO deprecate
     RUNTYPE runType_;             ///< Type of run from options file.
     std::string runDescription_;  ///< Run description
     std::string additionalInput_; ///< Hold any additional MDIN input.

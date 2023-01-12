@@ -3,6 +3,8 @@
 #include "FileRoutines.h"
 #include "Messages.h" // DEBUG
 
+using namespace FileRoutines;
+
 /** \return Description of given type. */
 const char* Run::typeStr(Type t) {
   const char* ptr = 0;
@@ -42,9 +44,16 @@ Run::Type Run::DetectType(FileRoutines::StrArray& output_files) {
   */
 int Run::SetupRun(std::string const& runDir, FileRoutines::StrArray const& output_files) {
   using namespace StringRoutines;
-  using namespace FileRoutines;
   Messages::Msg("DEBUG: dir '%s' ext '%s'\n", runDir.c_str(), Extension(runDir).c_str());
   rundir_ = runDir;
   setupDir_ = FileRoutines::GetWorkingDir();
   return InternalSetup( output_files );
+}
+
+/** Set up run just using the directory. */
+int Run::SetupRun(std::string const& runDir) {
+  Messages::Msg("DEBUG: dir '%s' ext '%s'\n", runDir.c_str(), Extension(runDir).c_str());
+  rundir_ = runDir;
+  setupDir_ = FileRoutines::GetWorkingDir();
+  return 0;
 }

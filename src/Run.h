@@ -43,6 +43,8 @@ class Run {
     static Type DetectType(FileRoutines::StrArray&);
     /// Set up run based on given output file array
     int SetupRun(std::string const&, FileRoutines::StrArray const&);
+    /// Set up run just using run dir name (run not yet complete)
+    int SetupRun(std::string const&);
   protected:
     /// Every run type needs an internal setup from given output file array
     virtual int InternalSetup(FileRoutines::StrArray const&) = 0;

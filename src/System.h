@@ -40,6 +40,8 @@ class System {
     typedef std::vector<std::string> Sarray;
     /// Clear all runs
     void clearRuns();
+    /// Allocate Run from creator_
+    Run* allocateFromCreator() const;
     /// Create run directory names from start to stop with current digit width
     Sarray createRunDirNames(int, int) const;
 
