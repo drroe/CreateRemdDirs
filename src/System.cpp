@@ -204,8 +204,8 @@ int System::CreateRunDirectories(std::string const& crd_dir,
         ErrorMsg("Creating run '%s' failed.\n", runDir->c_str());
         return 1;
       }
+      Runs_.push_back( thisRun );
     }
-
     //if (creator_.CreateRuns(topDir_ + "/" + dirname_, RunDirs, start_run, overwrite))
     //  return 1;
   } else {
