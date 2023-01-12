@@ -4,7 +4,7 @@
 
 Help() {
   echo "Usage: $0 <name> [<type>]"
-  echo "  <type>: Exec"
+  echo "  <type>: Exec Run"
 }
 
 NAME=$1
@@ -20,7 +20,7 @@ if [ -z "$TYPE" ] ; then
   Help
   exit 1 
 fi
-if [ "$TYPE" != 'Exec' ] ; then
+if [ "$TYPE" != 'Exec' -a "$TYPE" != 'Run' ] ; then
   echo "Type $TYPE not recognized."
   Help
   exit 1
@@ -76,6 +76,72 @@ void $CLASS::Help() const {
 /** <Command description goes here.> */
 Exec::RetType $CLASS::Execute(Manager& manager, Cols& args) const {
   return OK;
+}
+EOF
+elif [ "$TYPE" = 'Run' ] ; then
+  cat >> $H_FILE <<EOF
+  public:
+    /// CONSTRUCTOR
+    $CLASS();
+
+    static Run* Alloc() { return (Run*)new $CLASS(); }
+    /// COPY CONSTRUCTOR
+    $CLASS($CLASS const&);
+    /// ASSIGNMENT
+    $CLASS& operator=($CLASS const&);
+
+    /// \\return Copy of this run
+    Run*  Copy() const { return (Run*)new $CLASS( *this ); }
+    /// Print run info to stdout
+    void RunInfo() const;
+    /// Create run directory
+    int CreateRunDir(Creator const&, int, int, std::string const&) const;
+  private:
+    int InternalSetup(FileRoutines::StrArray const&);
+
+};
+#endif
+EOF
+  cat > $C_FILE <<EOF
+#include "$H_FILE"
+#include "Messages.h"
+
+using namespace Messages;
+
+/** CONSTRUCTOR */
+$CLASS::$CLASS() {}
+
+/** COPY CONSTRUCTOR */
+$CLASS::$CLASS($CLASS const& rhs) : Run(rhs) {
+
+}
+
+/** ASSIGNMENT */
+$CLASS& $CLASS::operator=($CLASS const& rhs) {
+  if (&rhs == this) return *this;
+  Run::operator=(rhs);
+
+  return *this;
+}
+
+/** <Internal setup description> */
+int $CLASS::InternalSetup(FileRoutines::StrArray const& output_files)
+{
+
+  return 1;
+}
+
+/** Print info for run. */
+void $CLASS::RunInfo() const {
+
+}
+
+/** Create run directory. */
+int $CLASS::CreateRunDir(Creator const& creator, int start_run, int run_num, std::string const& run_dir)
+const
+{
+
+  return 1;
 }
 EOF
 fi
