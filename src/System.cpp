@@ -206,17 +206,21 @@ int System::CreateRunDirectories(std::string const& crd_dir,
 //                                runDir != RunDirs.end(); ++runDir, ++runNum)
     {
       // See if this run already exists
-      Run const* existingRun = 0;
-      for (RunArray::const_iterator it = Runs_.begin(); it != Runs_.end(); ++it) {
-        if ((*it)->RunIndex() == runNum) {
+      int existingRunIdx = -1;
+      for (unsigned int ridx = 0; ridx < Runs_.size(); ridx++) {
+        if ( Runs_[ridx]->RunIndex() == runNum) {
           Msg(" Run %i exists.\n", runNum);
-          existingRun = *it;
+          existingRunIdx = (int)ridx;
           break;
         }
       }
-      if (existingRun != 0) {
-        existingRun->RunInfo();
-        continue; // TODO if overwrite is set allow existing run to be replaced
+      if (existingRunIdx > -1) {
+        if (overwrite)
+          Msg("Will overwrite run.\n");
+        else {
+          Runs_[existingRunIdx]->RunInfo();
+          continue;
+        }
       }
       // Allocate run
       std::string runDir( runDirPrefix_ + "." + StringRoutines::integerToString(runNum, runWidth) );
@@ -237,7 +241,11 @@ int System::CreateRunDirectories(std::string const& crd_dir,
         ErrorMsg("Creating run '%s' failed.\n", runDir.c_str());
         return 1;
       }
-      Runs_.push_back( thisRun );
+      if (existingRunIdx > -1) {
+        delete Runs_[existingRunIdx];
+        Runs_[existingRunIdx] = thisRun;
+      } else
+        Runs_.push_back( thisRun );
     }
     //if (creator_.CreateRuns(topDir_ + "/" + dirname_, RunDirs, start_run, overwrite))
     //  return 1;
