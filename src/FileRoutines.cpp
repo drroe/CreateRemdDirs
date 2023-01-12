@@ -177,8 +177,8 @@ std::string FileRoutines::UserName() {
 std::string FileRoutines::Extension(std::string const& fname) {
   // Get the filename extension
   size_t found = fname.find_last_of(".");
-  if (found == std::string::npos) {
+  if (found == std::string::npos || found+1 == fname.size()) {
     return std::string("");
   }
-  return fname.substr(found);
+  return fname.substr(found+1);
 }
