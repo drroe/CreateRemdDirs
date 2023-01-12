@@ -202,7 +202,7 @@ Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startR
                runType_ == MREMD)
     {
       // REMD run
-      std::string prev_dir = "../run." + integerToString(runNum-1, 3); // FIXME run and width should be vars
+      std::string prev_dir = "../run." + integerToString(runNum-1, 3) + "/RST"; // FIXME run and width should be vars
       crd_files = inputCrds_multiple_md( specified, prev_dir );
       return Sarray();
     } else {
@@ -870,37 +870,70 @@ const
   * \param EXT Extension for restraint/dumpave files when umbrella sampling.
   */
 int Creator::MakeMdinForMD(std::string const& fname, int run_num, 
-                            std::string const& EXT, std::string const& run_dir) const
+                           std::string const& EXT, std::string const& run_dir,
+                           RepIndexArray const& Indices, unsigned int rep)
+const
 {
   // Create input
   double total_time = dt_ * (double)nstlim_;
+  // Calculate ps per exchange
+  double ps_per_exchg = dt_ * (double)nstlim_;
+  // Get temperature for this MDIN
+  double currentTemp0 = Temperature( Indices );
+
   int irest = 1;
   int ntx = 5;
   if (!override_irest_) {
     if (run_num == 0) {
-      Msg("    Run 0: irest=0, ntx=1\n");
+      if (Indices.IsZero())
+        Msg("    Run 0: irest=0, ntx=1\n");
       irest = 0;
       ntx = 1;
     }
   } else
     Msg("    Using irest/ntx from MDIN.\n");
+  //if (debug_ > 1)
+    Msg("\t\tMDIN: %s\n", fname.c_str()); // DEBUG
+
   TextFile MDIN;
   if (MDIN.OpenWrite(fname)) return 1;
-  MDIN.Printf("%s %g ps\n"
-              " &cntrl\n"
-              "    imin = 0, nstlim = %i, dt = %f,\n",
-              runDescription_.c_str(), total_time, nstlim_, dt_);
+  if (runType_ == MD) {
+    // MD header
+    MDIN.Printf("%s %g ps\n"
+                " &cntrl\n"
+                "    imin = 0, nstlim = %i, dt = %f,\n",
+                runDescription_.c_str(), total_time, nstlim_, dt_);
+  } else {
+    // REMD header
+    MDIN.Printf("%s", runDescription_.c_str());
+    // Write indices to mdin for MREMD
+    if (Dims_.size() > 1) {
+      MDIN.Printf(" { %s }", Indices.IndicesStr(1).c_str());
+    }
+    // for Top %u at %g K 
+    MDIN.Printf(" (rep %u), %g ps/exchg\n"
+                " &cntrl\n"
+                "    imin = 0, nstlim = %i, dt = %f,\n",
+                rep+1, ps_per_exchg, nstlim_, dt_);
+  }
+
   if (!override_irest_)
     MDIN.Printf("    irest = %i, ntx = %i, ig = %i,\n",
                 irest, ntx, ig_);
   else
     MDIN.Printf("    ig = %i,\n", ig_);
+  if (numexchg_ > -1)
+    MDIN.Printf("    numexchg = %i,\n", numexchg_);
+  if (ph_dim_ != -1)
+      MDIN.Printf("    solvph = %f,\n", Dims_[ph_dim_]->SolvPH( Indices[ph_dim_] ));
   MDIN.Printf("    temp0 = %f, tempi = %f,\n%s",
-              temp0_, temp0_, additionalInput_.c_str());
+              currentTemp0, currentTemp0, additionalInput_.c_str());
   if (!rst_file_.empty()) {
     MDIN.Printf("    nmropt=1,\n");
     Msg("    Using NMR restraints.\n");
   }
+  for (unsigned int id = 0; id != Dims_.size(); id++)
+      Dims_[id]->WriteMdin(Indices[id], MDIN);
   MDIN.Printf(" &end\n");
   // Add any additional namelists
   for (MdinFile::const_iterator nl = mdinFile_.nl_begin(); nl != mdinFile_.nl_end(); ++nl)

@@ -40,7 +40,7 @@ class Creator {
     DimArray const& Dims() const { return Dims_; }
 
     /// Create MDIN file for MD
-    int MakeMdinForMD(std::string const&, int, std::string const&, std::string const&) const;
+    int MakeMdinForMD(std::string const&, int, std::string const&, std::string const&, RepIndexArray const&, unsigned int) const;
     /// Create Run script for MD
     int WriteRunMD(std::string const&) const;
 
