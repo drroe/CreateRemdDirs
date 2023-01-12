@@ -59,6 +59,7 @@ Creator::Sarray Creator::inputCrds_multiple_md(std::string const& specified,
                                                std::string const& def)
 const
 {
+  Msg("DEBUG: inputCrds_multiple_md spec='%s'  def='%s'\n", specified.c_str(), def.c_str());
   Sarray crd_files;
   std::string crdDirName;
   if (!specified.empty())
@@ -70,8 +71,10 @@ const
     return Sarray();
   }
   for (int grp=1; grp <= n_md_runs_; grp++)
-    crd_files.push_back(tildeExpansion(crdDirName + "/" +
-                                       NumericalExt(grp, n_md_runs_) + "." + crd_ext_));
+    crd_files.push_back(crdDirName + "/" + NumericalExt(grp, n_md_runs_) + "." + crd_ext_);
+    //crd_files.push_back(tildeExpansion(crdDirName + "/" +
+    //                                   NumericalExt(grp, n_md_runs_) + "." + crd_ext_));
+
   return crd_files;
 }
 
@@ -80,6 +83,7 @@ Creator::Sarray Creator::inputCrds_single_md(std::string const& specified,
                                              std::string const& def)
 const
 {
+  Msg("DEBUG: inputCrds_single_md spec='%s'  def='%s'\n", specified.c_str(), def.c_str());
   std::string crdName;
   if (!specified.empty())
     crdName = specified;
@@ -89,7 +93,8 @@ const
     ErrorMsg("No coordinates file specified for single MD.\n");
     return Sarray();
   }
-  return Sarray(1, tildeExpansion(crdName) );
+  return Sarray(1, crdName );
+  //return Sarray(1, tildeExpansion(crdName) );
 }
 
 /** \return Array of reference coordinates names.
