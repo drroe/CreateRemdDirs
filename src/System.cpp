@@ -240,7 +240,7 @@ int System::CreateRunDirectories(std::string const& crd_dir,
       ErrorMsg("Directory '%s' exists and 'overwrite' not specified.\n", runDir.c_str());
       return 1;
     }
-
+    // TODO - pass in name of previous directory
     if (thisRun->CreateRunDir(creator_, lowest_run_idx, runNum, runDir)) {
       ErrorMsg("Creating run '%s' failed.\n", runDir.c_str());
       return 1;
