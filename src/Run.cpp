@@ -4,6 +4,7 @@
 #include "Messages.h" // DEBUG
 
 using namespace FileRoutines;
+using namespace StringRoutines;
 
 /** \return Description of given type. */
 const char* Run::typeStr(Type t) {
@@ -43,9 +44,9 @@ Run::Type Run::DetectType(FileRoutines::StrArray& output_files) {
   * be called inside the run directory.
   */
 int Run::SetupRun(std::string const& runDir, FileRoutines::StrArray const& output_files) {
-  using namespace StringRoutines;
   Messages::Msg("DEBUG: dir '%s' ext '%s'\n", runDir.c_str(), Extension(runDir).c_str());
   rundir_ = runDir;
+  idx_ = convertToInteger( Extension(runDir) );
   setupDir_ = FileRoutines::GetWorkingDir();
   return InternalSetup( output_files );
 }
@@ -54,6 +55,7 @@ int Run::SetupRun(std::string const& runDir, FileRoutines::StrArray const& outpu
 int Run::SetupRun(std::string const& runDir) {
   Messages::Msg("DEBUG: dir '%s' ext '%s'\n", runDir.c_str(), Extension(runDir).c_str());
   rundir_ = runDir;
+  idx_ = convertToInteger( Extension(runDir) );
   setupDir_ = FileRoutines::GetWorkingDir();
   return 0;
 }

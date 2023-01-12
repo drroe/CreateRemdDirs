@@ -65,9 +65,9 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
         //Msg("DEBUG: sidx=%i activeSystemIdx= %i\n", sidx, project->ActiveSystemIdx());
         if (tgtSystemIdx == SHOW_ALL || tgtSystemIdx == sidx) {
           if (project->ActiveSystemIdx() == sidx)
-            Msg("  *%i: ", sidx);
+            Msg("  System *%i: ", sidx);
           else
-            Msg("   %i: ", sidx);
+            Msg("  System  %i: ", sidx);
           system->PrintInfo();
           int ridx = 0;
           for (System::RunArray::const_iterator run = system->Runs().begin();
@@ -75,6 +75,7 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
                                               ++run, ++ridx)
           {
             if (tgtRunIdx == SHOW_ALL || tgtRunIdx == ridx) {
+              Msg("    %i: ", (*run)->RunIndex());
               (*run)->RunInfo();
             }
           }
