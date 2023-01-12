@@ -23,7 +23,7 @@ RepIndexArray.o : RepIndexArray.cpp RepIndexArray.h ReplicaDimension.h StringRou
 ReplicaDimension.o : ReplicaDimension.cpp FileRoutines.h Messages.h ReplicaDimension.h StringRoutines.h TextFile.h
 Run.o : Run.cpp FileRoutines.h Messages.h Run.h StringRoutines.h
 Run_MultiMD.o : Run_MultiMD.cpp Creator.h FileRoutines.h MdinFile.h Messages.h Run.h Run_MultiMD.h StringRoutines.h
-Run_REMD.o : Run_REMD.cpp Creator.h FileRoutines.h Groups.h MdinFile.h Messages.h RepIndexArray.h Run.h Run_REMD.h
+Run_REMD.o : Run_REMD.cpp Creator.h FileRoutines.h Groups.h MdinFile.h Messages.h RepIndexArray.h ReplicaDimension.h Run.h Run_REMD.h TextFile.h
 Run_SingleMD.o : Run_SingleMD.cpp Creator.h FileRoutines.h MdinFile.h Messages.h Run.h Run_SingleMD.h Simulation.h TextFile.h
 Simulation.o : Simulation.cpp Messages.h NC.h Simulation.h TextFile.h
 StringRoutines.o : StringRoutines.cpp Messages.h StringRoutines.h

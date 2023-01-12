@@ -39,8 +39,10 @@ class Creator {
     /// \return Replica dimension array
     DimArray const& Dims() const { return Dims_; }
 
-    /// Create MDIN file for MD
+    /// Create MDIN file for REMD
     int MakeMdinForMD(std::string const&, int, std::string const&, std::string const&, RepIndexArray const&, unsigned int) const;
+    /// Create MDIN file for MD
+    int MakeMdinForMD(std::string const&, int, std::string const&, std::string const&) const;
     /// Create Run script for MD
     int WriteRunMD(std::string const&) const;
 
@@ -51,6 +53,8 @@ class Creator {
     int UmbrellaWriteFreq() const { return umbrella_; }
     /// \retrurn Total number of replicas
     unsigned int TotalReplicas() const { return totalReplicas_; }
+    /// \return True if command line needs -log FIXME too Amber-specific
+    bool UseLog() const { return uselog_; }
     // ----- File names --------------------------
     /// \return Name of first topology file from the top_dim_ dimension or MD top file.
     std::string const& TopologyName() const;
@@ -66,6 +70,8 @@ class Creator {
     std::string const& GroupfileName() const { return groupfileName_; }
     /// \return CPIN file name
     std::string const& CPIN_Name() const { return cpin_file_; }
+    /// \return REMD dimension name file
+    std::string const& RemdDimName() const { return remddimName_; }
   private:
 
     static const std::string groupfileName_;

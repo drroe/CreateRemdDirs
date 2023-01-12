@@ -31,7 +31,7 @@ class Run {
     /// \return Copy of run
     virtual Run* Copy() const = 0;
     /// Create run directory
-    virtual int CreateRunDir(Creator const&, int, int, std::string const&) const = 0;
+    virtual int CreateRunDir(Creator const&, int, int, std::string const&, std::string const&) const = 0;
     // -------------------------------------------
     /// \return Description of given type
     static const char* typeStr(Type);

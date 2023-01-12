@@ -3,6 +3,7 @@
 #include "FileRoutines.h"
 #include "Creator.h"
 #include "StringRoutines.h"
+#include "TextFile.h"
 
 using namespace Messages;
 
@@ -35,7 +36,7 @@ void Run_MultiMD::RunInfo() const {
 }
 
 /** Create run directory. */
-int Run_MultiMD::CreateRunDir(Creator const& creator, int start_run, int run_num, std::string const& run_dir)
+int Run_MultiMD::CreateRunDir(Creator const& creator, int start_run, int run_num, std::string const& run_dir, std::string const& prevDir)
 const
 {
   using namespace FileRoutines;

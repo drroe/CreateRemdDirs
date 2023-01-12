@@ -35,7 +35,7 @@ void Run_SingleMD::RunInfo() const {
 
 /** Create run directory. */
 int Run_SingleMD::CreateRunDir(Creator const& creator,
-                               int start_run, int run_num, std::string const& run_dir)
+                               int start_run, int run_num, std::string const& run_dir, std::string const& prevDir)
 const
 {
   using namespace FileRoutines;

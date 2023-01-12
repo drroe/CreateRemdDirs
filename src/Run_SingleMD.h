@@ -22,7 +22,7 @@ class Run_SingleMD : public Run {
     /// Print run info to stdout
     void RunInfo() const;
     /// Create run directory
-    int CreateRunDir(Creator const&, int, int, std::string const&) const;
+    int CreateRunDir(Creator const&, int, int, std::string const&, std::string const&) const;
   private:
     int InternalSetup(FileRoutines::StrArray const&);
 

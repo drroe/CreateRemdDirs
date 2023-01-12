@@ -960,5 +960,14 @@ const
   return 0;
 }
 
-// Creator::CreateMD()
-
+/** Create input file for MD.
+  * \param fname Name of MDIN file.
+  * \param run_num Run number, for setting irest/ntx.
+  * \param EXT Extension for restraint/dumpave files when umbrella sampling.
+  */
+int Creator::MakeMdinForMD(std::string const& fname, int run_num, 
+                           std::string const& EXT, std::string const& run_dir)
+const
+{
+  return MakeMdinForMD(fname, run_num, EXT, run_dir, RepIndexArray(0), 0);
+}
