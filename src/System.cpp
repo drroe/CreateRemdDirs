@@ -127,6 +127,11 @@ int System::FindRuns() {
   {
     ChangeDir( *it );
     Msg("\t%s\n", it->c_str());
+    // Check if directory is empty.
+    FileRoutines::StrArray all_files = FileRoutines::ExpandToFilenames("*", false);
+    if (all_files.empty())
+      Msg("Warning: Run directory '%s' is empty.\n", it->c_str());
+    // Search for existing output files.
     StrArray output_files;
     Run::Type runType = Run::DetectType(output_files);
     Msg("\tType: %s\n", Run::typeStr(runType));
@@ -142,7 +147,8 @@ int System::FindRuns() {
     if (run == 0) {
       Msg("Warning: Run detection failed. Allocating based on '%s'\n", createOptsFilename_.c_str());
       run = allocateFromCreator( *it );
-    } 
+    } else
+      run->SetupRun( *it, output_files );
     if (run == 0) {
       ErrorMsg("Run allocation failed.\n");
       return 1;
