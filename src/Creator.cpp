@@ -80,7 +80,7 @@ const
   else
     crdDirName = def;
   if (crdDirName.empty()) {
-    ErrorMsg("No coordinates directory specified for MD groups.\n");
+    ErrorMsg("No coordinates directory specified.\n");
     return Sarray();
   }
   for (int grp=1; grp <= n_md_runs_; grp++)
@@ -103,7 +103,7 @@ const
   else
     crdName = def;
   if (crdName.empty()) {
-    ErrorMsg("No coordinates file specified for single MD.\n");
+    ErrorMsg("No coordinates file specified.\n");
     return Sarray();
   }
   return Sarray(1, crdName );

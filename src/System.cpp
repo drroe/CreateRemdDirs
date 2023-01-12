@@ -6,6 +6,7 @@
 // ----- Run types -----
 #include "Run_SingleMD.h"
 #include "Run_MultiMD.h"
+#include "Run_REMD.h"
 
 using namespace Messages;
 
@@ -80,7 +81,8 @@ Run* System::allocateFromCreator(std::string const& runDir) const {
       thisRun = Run_MultiMD::Alloc();
     else
       thisRun = Run_SingleMD::Alloc();
-  }
+  } else
+    thisRun = Run_REMD::Alloc();
   if (thisRun != 0) {
     if (thisRun->SetupRun( runDir )) {
       ErrorMsg("Could not set up run '%s' from run directory.\n", runDir.c_str());
@@ -141,7 +143,7 @@ int System::FindRuns() {
     switch (runType) {
       case Run::SINGLE_MD : run = Run_SingleMD::Alloc(); break;
       case Run::MULTI_MD  : run = Run_MultiMD::Alloc(); break;
-      case Run::REMD      :
+      case Run::REMD      : run = Run_REMD::Alloc(); break;
       case Run::UNKNOWN   : break;
     }
     if (run == 0) {

@@ -22,12 +22,12 @@ RemdDirs.o : RemdDirs.cpp FileRoutines.h Groups.h MdinFile.h Messages.h RemdDirs
 RepIndexArray.o : RepIndexArray.cpp RepIndexArray.h ReplicaDimension.h StringRoutines.h TextFile.h
 ReplicaDimension.o : ReplicaDimension.cpp FileRoutines.h Messages.h ReplicaDimension.h StringRoutines.h TextFile.h
 Run.o : Run.cpp FileRoutines.h Messages.h Run.h StringRoutines.h
-Run_MultiMD.o : Run_MultiMD.cpp Creator.h FileRoutines.h MdinFile.h Messages.h Run.h Run_MultiMD.h StringRoutines.h
-Run_REMD.o : Run_REMD.cpp Creator.h FileRoutines.h Groups.h MdinFile.h Messages.h RepIndexArray.h ReplicaDimension.h Run.h Run_REMD.h TextFile.h
+Run_MultiMD.o : Run_MultiMD.cpp Creator.h FileRoutines.h MdinFile.h Messages.h Run.h Run_MultiMD.h StringRoutines.h TextFile.h
+Run_REMD.o : Run_REMD.cpp Creator.h FileRoutines.h Groups.h MdinFile.h Messages.h RepIndexArray.h ReplicaDimension.h Run.h Run_REMD.h StringRoutines.h TextFile.h
 Run_SingleMD.o : Run_SingleMD.cpp Creator.h FileRoutines.h MdinFile.h Messages.h Run.h Run_SingleMD.h Simulation.h TextFile.h
 Simulation.o : Simulation.cpp Messages.h NC.h Simulation.h TextFile.h
 StringRoutines.o : StringRoutines.cpp Messages.h StringRoutines.h
 Submit.o : Submit.cpp FileRoutines.h Messages.h StringRoutines.h Submit.h TextFile.h
 Submitter.o : Submitter.cpp FileRoutines.h Messages.h QueueOpts.h StringRoutines.h Submitter.h TextFile.h
-System.o : System.cpp Creator.h FileRoutines.h MdinFile.h Messages.h Run.h Run_MultiMD.h Run_SingleMD.h Simulation.h StringRoutines.h Submitter.h System.h
+System.o : System.cpp Creator.h FileRoutines.h MdinFile.h Messages.h Run.h Run_MultiMD.h Run_REMD.h Run_SingleMD.h Simulation.h StringRoutines.h Submitter.h System.h
 TextFile.o : TextFile.cpp Messages.h TextFile.h
