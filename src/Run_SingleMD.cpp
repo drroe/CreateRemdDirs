@@ -1,7 +1,6 @@
 #include "Run_SingleMD.h"
 #include "Messages.h"
 #include "FileRoutines.h"
-#include "StringRoutines.h"
 #include "TextFile.h"
 #include "Creator.h"
 
@@ -40,7 +39,6 @@ int Run_SingleMD::CreateRunDir(Creator const& creator,
 const
 {
   using namespace FileRoutines;
-  using namespace StringRoutines;
   // Create and change to run directory.
   if (Mkdir(run_dir)) return 1;
   if (ChangeDir(run_dir)) return 1;
@@ -89,10 +87,10 @@ const
   }
   // Get reference coords if any
   Creator::Sarray ref_files = creator.RefCoordsNames( run_dir );
+
   // Set up run command 
   std::string cmd_opts;
-  if (creator.N_MD_Runs() < 2) {
-    cmd_opts.assign("-i md.in -p " + creator.TopologyName() + " -c " + crd_files.front() + 
+  cmd_opts.assign("-i md.in -p " + creator.TopologyName() + " -c " + crd_files.front() + 
                     " -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info");
 /*    std::string mdRef;
     if (!ref_file_.empty() || !ref_dir_.empty()) {
@@ -109,37 +107,9 @@ const
       }
       cmd_opts.append(" -ref " + tildeExpansion(mdRef));
     }*/
-    if (!ref_files.empty())
-      cmd_opts.append(" -ref " + ref_files.front());
-  } else {
-    TextFile GROUP;
-    if (GROUP.OpenWrite(creator.GroupfileName())) return 1;
-    for (int grp = 1; grp <= creator.N_MD_Runs(); grp++) {
-      std::string EXT = creator.NumericalExt(grp, creator.N_MD_Runs());//integerToString(grp, width);
-      std::string mdin_name("md.in");
-      if (creator.UmbrellaWriteFreq() > 0) {
-        // Create input for umbrella runs
-        mdin_name.append("." + EXT);
-        if (creator.MakeMdinForMD(mdin_name, run_num, "." + EXT, run_dir)) return 1;
-      }
-      GROUP.Printf("-i %s -p %s -c %s -x md.nc.%s -r %s.rst7 -o md.out.%s -inf md.info.%s",
-                   mdin_name.c_str(), creator.TopologyName().c_str(), crd_files[grp-1].c_str(),
-                   EXT.c_str(), EXT.c_str(), EXT.c_str(), EXT.c_str());
-      std::string const& repRef = ref_files[grp-1];//RefFileName(integerToString(grp, width));
-      if (!repRef.empty()) {
-        /*if (!fileExists( repRef )) {
-          ErrorMsg("Reference file '%s' not found. Must specify absolute path"
-                   " or path relative to '%s'\n", repRef.c_str(), run_dir.c_str());
-          return 1;
-        }
-        repRef = tildeExpansion(repRef);*/
-        GROUP.Printf(" -ref %s", repRef.c_str());
-      }
-      GROUP.Printf("\n");
-    } 
-    GROUP.Close();
-    cmd_opts.assign("-ng " + integerToString(creator.N_MD_Runs()) + " -groupfile " + creator.GroupfileName());
-  }
+  if (!ref_files.empty())
+    cmd_opts.append(" -ref " + ref_files.front());
+
   creator.WriteRunMD( cmd_opts );
   // Info for this run.
   if (Debug() >= 0) // 1 
