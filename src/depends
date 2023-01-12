@@ -2,8 +2,9 @@ CheckRuns.o : CheckRuns.cpp CheckRuns.h FileRoutines.h Messages.h NC.h Run.h Tex
 Cmd.o : Cmd.cpp Cmd.h Exec.h
 CmdList.o : CmdList.cpp Cmd.h CmdList.h
 Cols.o : Cols.cpp Cols.h Messages.h StringRoutines.h
-Commands.o : Commands.cpp Cmd.h CmdList.h Cols.h Commands.h Creator.h Exec.h Exec_Create.h Exec_Debug.h Exec_List.h Exec_Quit.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h Submitter.h System.h TextFile.h
+Commands.o : Commands.cpp Cmd.h CmdList.h Cols.h Commands.h Creator.h Exec.h Exec_Active.h Exec_Create.h Exec_Debug.h Exec_List.h Exec_Quit.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h Submitter.h System.h TextFile.h
 Creator.o : Creator.cpp Creator.h FileRoutines.h Groups.h MdinFile.h Messages.h ReplicaDimension.h StringRoutines.h TextFile.h
+Exec_Active.o : Exec_Active.cpp Cols.h Creator.h Exec.h Exec_Active.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h Submitter.h System.h TextFile.h
 Exec_Create.o : Exec_Create.cpp Cols.h Creator.h Exec.h Exec_Create.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h Submitter.h System.h TextFile.h
 Exec_Debug.o : Exec_Debug.cpp Cols.h Creator.h Exec.h Exec_Debug.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h StringRoutines.h Submitter.h System.h TextFile.h
 Exec_List.o : Exec_List.cpp Cols.h Creator.h Exec.h Exec_List.h FileRoutines.h Groups.h Manager.h MdinFile.h Messages.h Project.h Run.h Submitter.h System.h TextFile.h

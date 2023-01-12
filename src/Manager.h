@@ -23,11 +23,15 @@ class Manager {
     int Debug() const { return debug_; }
     /// \return index of the active project
     int ActiveProjectIdx() const { return activeProjectIdx_; }
+    /// \return the active project
+    Project& ActiveProject() { return projects_[activeProjectIdx_]; }
     /// \return the active system of active project
     System& ActiveProjectSystem() { return projects_[activeProjectIdx_].ActiveSystem(); }
 
     /// Set global debug level
     void SetDebug(int d) { debug_ = d; }
+    /// Set active project and system indices
+    int SetActiveProjectSystem(int, int);
   private:
     enum RetType { OK = 0, ERR, QUIT };
     /// Process command
