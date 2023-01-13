@@ -885,7 +885,7 @@ const
   int ntx = 5;
   if (!override_irest_) {
     if (run_num == 0) {
-      if (Indices.IsZero())
+      if (rep == 0)
         Msg("    Run 0: irest=0, ntx=1\n");
       irest = 0;
       ntx = 1;
