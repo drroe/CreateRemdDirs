@@ -6,6 +6,7 @@
 #include "StringRoutines.h"
 #include "ReplicaDimension.h"
 #include "FileRoutines.h" // CheckExists, fileExists
+#include "RepIndexArray.h"
 
 using namespace Messages;
 using namespace StringRoutines;
@@ -42,7 +43,19 @@ Creator::~Creator() {
 /** \return First topology file name from the top_dim_ dimension (REMD) or MD topology file. */
 std::string const& Creator::TopologyName() const {
   if (top_dim_ == -1) return top_file_;
-    return Dims_[top_dim_]->TopName( 0 );
+  return Dims_[top_dim_]->TopName( 0 );
+}
+
+/** \return Topology at specified index in topology dimension, or MD topology file if no dim. */
+std::string const& Creator::TopologyName(RepIndexArray const& Indices) const {
+  if (top_dim_ == -1) return top_file_;
+  return Dims_[top_dim_]->TopName( Indices[top_dim_] );
+}
+
+/** \return Temperature at specified index in temperature dim, or MD temperature if no dim. */
+double Creator::Temperature(RepIndexArray const& Indices) const {
+  if (temp0_dim_ == -1) return temp0_;
+  return Dims_[temp0_dim_]->Temp0( Indices[temp0_dim_] );
 }
 
 /** \return File numerical prefix/extension.

@@ -1,8 +1,9 @@
 #ifndef INC_CREATOR_H
 #define INC_CREATOR_H
-#include "Groups.h"
 #include "MdinFile.h"
+class TextFile;
 class ReplicaDimension;
+class RepIndexArray;
 /// Class responsible for creating run input and script
 class Creator {
   public:
@@ -13,6 +14,7 @@ class Creator {
     ~Creator();
 
     typedef std::vector<std::string> Sarray;
+    typedef std::vector<ReplicaDimension*> DimArray;
 
     static void OptHelp();
     /// Read creation options from a file
@@ -34,6 +36,9 @@ class Creator {
     /// \return Numerical prefix/extension based on number and expected max
     std::string NumericalExt(int, int) const;
 
+    /// \return Replica dimension array
+    DimArray const& Dims() const { return Dims_; }
+
     /// Create MDIN file for MD
     int MakeMdinForMD(std::string const&, int, std::string const&, std::string const&) const;
     /// Create Run script for MD
@@ -44,9 +49,15 @@ class Creator {
     int N_MD_Runs() const { return n_md_runs_; }
     /// \return Umbrella write frequency; 0 means no umbrella
     int UmbrellaWriteFreq() const { return umbrella_; }
+    /// \retrurn Total number of replicas
+    unsigned int TotalReplicas() const { return totalReplicas_; }
     // ----- File names --------------------------
     /// \return Name of first topology file from the top_dim_ dimension or MD top file.
     std::string const& TopologyName() const;
+    /// \return Name of topology at specified index in top_dim_ dimension (or MD top file).
+    std::string const& TopologyName(RepIndexArray const&) const;
+    /// \return Temperature at specified index in temperature dim, or MD temperature if no dim.
+    double Temperature(RepIndexArray const&) const;
     /// \return Array of input coordinate files based on run number
     Sarray InputCoordsNames(std::string const&, int, int) const;
     /// \return Array of reference coordinate files
@@ -84,7 +95,6 @@ class Creator {
     double dt_;                   ///< Simulation time step.
     double temp0_;                ///< Simulation temperature.
 
-    typedef std::vector<ReplicaDimension*> DimArray;
     MdinFile mdinFile_;           ///< Used to parse input from Amber MDIN file
     DimArray Dims_;               ///< Hold any replica dimensions
     unsigned int totalReplicas_;  ///< Total # of replicas based on dimensions
@@ -108,6 +118,5 @@ class Creator {
     std::string cpin_file_;       ///< CPIN file for constant pH
     std::string ref_file_;        ///< Reference file (MD) or path prefix (REMD)
     std::string ref_dir_;         ///< Directory where reference coords are (like crd_dir_)
-    Groups groups_;               ///< For setting up MREMD groups.
 };
 #endif

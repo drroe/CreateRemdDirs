@@ -20,6 +20,7 @@ Messages.cpp \
 NC.cpp \
 QueueOpts.cpp \
 RemdDirs.cpp \
+RepIndexArray.cpp \
 ReplicaDimension.cpp \
 Run.cpp \
 Run_MultiMD.cpp \
