@@ -2,6 +2,7 @@
 #include "Messages.h"
 #include "FileRoutines.h"
 #include "Creator.h"
+#include "Groups.h"
 
 using namespace Messages;
 
@@ -38,7 +39,6 @@ int Run_REMD::CreateRunDir(Creator const& creator, int start_run, int run_num, s
 const
 {
   using namespace FileRoutines;
-  typedef std::vector<unsigned int> Iarray;
   // Create and change to run directory.
   if (Mkdir(run_dir)) return 1;
   if (ChangeDir(run_dir)) return 1;
@@ -66,37 +66,37 @@ const
   // Calculate ps per exchange
   double ps_per_exchg = dt_ * (double)nstlim_;
   // Do we need to setup groups for MREMD?
-  bool setupGroups = (groups_.Empty() && Dims_.size() > 1);
+  Groups groups_;
+  bool setupGroups = (groups_.Empty() && creator.Dims().size() > 1);
   if (setupGroups)
-    groups_.SetupGroups( Dims_.size() );
+    groups_.SetupGroups( creator.Dims().size() );
   // Create INPUT directory if not present.
   std::string input_dir("INPUT");
   if (Mkdir(input_dir)) return 1;
   // Open GROUPFILE
   TextFile GROUPFILE;
-  if (GROUPFILE.OpenWrite(groupfileName_)) return 1; 
-  // Figure out max width of replica extension
-  int width = std::max(DigitWidth( totalReplicas_ ), 3);
+  if (GROUPFILE.OpenWrite(creator.GroupfileName())) return 1; 
   // Hold current indices in each dimension.
-  Iarray Indices( Dims_.size(), 0 );
-  std::string currentTop = top_file_;
-  double currentTemp0 = temp0_;
-  for (unsigned int rep = 0; rep != totalReplicas_; rep++)
+  RepIndexArray Indices( creator.Dims().size() );
+  for (unsigned int rep = 0; rep != creator.TotalReplicas(); rep++)
   {
-    // Get topology/temperature for this replica if necessary.
-    if (top_dim_ != -1) currentTop = Dims_[top_dim_]->TopName( Indices[top_dim_]  );
-    if (temp0_dim_ != -1) currentTemp0 = Dims_[temp0_dim_]->Temp0( Indices[temp0_dim_] );
+    // Get replica extension
+    std::string EXT = creator.NumericalExt(rep, creator.TotalReplicas());
+    // Get topology for this replica
+    std::string currentTop = creator.TopologyName( Indices );
     // Ensure topology exists.
     if (!fileExists( currentTop )) {
       ErrorMsg("Topology '%s' not found. Must specify absolute path"
                " or path relative to '%s'\n", currentTop.c_str(), run_dir.c_str());
       return 1;
     }
+    // Get temperature for this replica
+    double currentTemp0 = creator.Temperature( Indices );
     // Info for this replica.
-    if (debug_ > 1) {
+    if (Debug() > 1) {
       Msg("\tReplica %u: top=%s  temp0=%f", rep+1, currentTop.c_str(), currentTemp0);
       Msg("  {");
-      for (Iarray::const_iterator count = Indices.begin(); count != Indices.end(); ++count)
+      for (Creator::Iarray::const_iterator count = Indices.begin(); count != Indices.end(); ++count)
         Msg(" %u", *count);
       Msg(" }\n");
     }
@@ -215,7 +215,7 @@ const
         Indices[id+1]++; // Increment next index.
       }
     }
-  }
+  } // END loop over all replicas
   GROUPFILE.Close();
   if (debug_ > 1 && !groups_.Empty())
     groups_.PrintGroups();
