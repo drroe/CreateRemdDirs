@@ -1,5 +1,6 @@
 #include "RepIndexArray.h"
 #include "ReplicaDimension.h"
+#include "StringRoutines.h"
 
 /** Increment the replica index array. */
 void RepIndexArray::Increment(std::vector<ReplicaDimension*> const& Dims) {
@@ -13,4 +14,12 @@ void RepIndexArray::Increment(std::vector<ReplicaDimension*> const& Dims) {
       indices_[id+1]++; // Increment next index.
     }
   }
+}
+
+/** \return indices as a string. */
+std::string RepIndexArray::IndicesStr(unsigned int offset) const {
+  std::string out;
+  for (Iarray::const_iterator count = indices_.begin(); count != indices_.end(); ++count)
+    out.append(" " + StringRoutines::integerToString( *count + offset ));
+  return out;
 }
