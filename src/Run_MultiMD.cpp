@@ -44,7 +44,7 @@ const
   if (Mkdir(run_dir)) return 1;
   if (ChangeDir(run_dir)) return 1;
   // Get input coordinates array
-  Creator::Sarray crd_files = creator.InputCoordsNames(run_dir, start_run, run_num);
+  Creator::Sarray crd_files = creator.InputCoordsNames(run_dir, start_run, run_num, prevDir);
   if (crd_files.empty()) {
     ErrorMsg("Could not get input coords for MD.\n");
     return 1;

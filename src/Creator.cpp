@@ -154,7 +154,7 @@ const
   * Based on the run type and run number, set up an array containing
   * input coordinates file name(s).
   */
-Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startRunNum, int runNum) const {
+Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startRunNum, int runNum, std::string const& prevDir) const {
   Sarray crd_files;
   if (runNum == 0) {
     // Very first run. Use specified_crd_ if set; otherwise use crd_dir_.
@@ -190,10 +190,9 @@ Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startR
     if (runType_ == MD) {
       // MD run
       if (n_md_runs_ > 1) {
-        std::string prev_dir = "../run." + integerToString(runNum-1, 3); // FIXME run and width should be vars
-        crd_files = inputCrds_multiple_md( specified, prev_dir );
+        crd_files = inputCrds_multiple_md( specified, prevDir );
       } else {
-        std::string prev_name = "../run." + integerToString(runNum-1, 3) + "/mdrst.rst7"; // FIXME run and width should be vars, mdrst.rst7 is Amber-specific
+        std::string prev_name = prevDir + "/mdrst.rst7";
         crd_files = inputCrds_single_md( specified, prev_name );
       }
     } else if (runType_ == TREMD ||
@@ -202,7 +201,7 @@ Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startR
                runType_ == MREMD)
     {
       // REMD run
-      std::string prev_dir = "../run." + integerToString(runNum-1, 3) + "/RST"; // FIXME run and width should be vars
+      std::string prev_dir = prevDir + "/RST";
       crd_files = inputCrds_multiple_md( specified, prev_dir );
       return Sarray();
     } else {
@@ -875,9 +874,6 @@ int Creator::MakeMdinForMD(std::string const& fname, int run_num,
 const
 {
   // Create input
-  double total_time = dt_ * (double)nstlim_;
-  // Calculate ps per exchange
-  double ps_per_exchg = dt_ * (double)nstlim_;
   // Get temperature for this MDIN
   double currentTemp0 = Temperature( Indices );
 
@@ -898,6 +894,7 @@ const
   TextFile MDIN;
   if (MDIN.OpenWrite(fname)) return 1;
   if (runType_ == MD) {
+    double total_time = dt_ * (double)nstlim_;
     // MD header
     MDIN.Printf("%s %g ps\n"
                 " &cntrl\n"
@@ -910,6 +907,7 @@ const
     if (Dims_.size() > 1) {
       MDIN.Printf(" { %s }", Indices.IndicesStr(1).c_str());
     }
+    double ps_per_exchg = dt_ * (double)nstlim_;
     // for Top %u at %g K 
     MDIN.Printf(" (rep %u), %g ps/exchg\n"
                 " &cntrl\n"

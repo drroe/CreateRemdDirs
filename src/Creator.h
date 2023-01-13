@@ -63,7 +63,7 @@ class Creator {
     /// \return Temperature at specified index in temperature dim, or MD temperature if no dim.
     double Temperature(RepIndexArray const&) const;
     /// \return Array of input coordinate files based on run number
-    Sarray InputCoordsNames(std::string const&, int, int) const;
+    Sarray InputCoordsNames(std::string const&, int, int, std::string const&) const;
     /// \return Array of reference coordinate files
     Sarray RefCoordsNames(std::string const&) const;
     /// \return Group file name
