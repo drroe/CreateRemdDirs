@@ -32,7 +32,7 @@ int Run_MultiMD::InternalSetup(FileRoutines::StrArray const& output_files)
 
 /** Print info for run. */
 void Run_MultiMD::RunInfo() const {
-
+  Msg("Multi MD info not yet implemented.\n"); // FIXME
 }
 
 /** Create run directory. */

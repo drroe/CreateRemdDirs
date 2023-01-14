@@ -35,7 +35,7 @@ int Run_REMD::InternalSetup(FileRoutines::StrArray const& output_files)
 
 /** Print info for run. */
 void Run_REMD::RunInfo() const {
-
+  Msg("REMD info not yet implemented.\n"); // FIXME
 }
 
 /** Create run directory. */
