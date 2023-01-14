@@ -37,7 +37,9 @@ System::System(System const& rhs) :
   createOptsFilename_(rhs.createOptsFilename_),
   submitOptsFilename_(rhs.submitOptsFilename_),
   runDirPrefix_(rhs.runDirPrefix_),
-  runDirExtWidth_(rhs.runDirExtWidth_)
+  runDirExtWidth_(rhs.runDirExtWidth_),
+  creator_(rhs.creator_),
+  submitter_(rhs.submitter_)
 {
   Runs_.reserve( rhs.Runs_.size() );
   for (std::vector<Run*>::const_iterator it = rhs.Runs_.begin(); it != rhs.Runs_.end(); ++it)
@@ -54,6 +56,8 @@ System& System::operator=(System const& rhs) {
   submitOptsFilename_ = rhs.submitOptsFilename_;
   runDirPrefix_ = rhs.runDirPrefix_;
   runDirExtWidth_ = rhs.runDirExtWidth_;
+  creator_ = rhs.creator_;
+  submitter_ = rhs.submitter_;
   clearRuns();
   Runs_.reserve( rhs.Runs_.size() );
   for (std::vector<Run*>::const_iterator it = rhs.Runs_.begin(); it != rhs.Runs_.end(); ++it)
