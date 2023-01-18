@@ -6,15 +6,15 @@ class MdOptions {
   public:
     MdOptions();
 
-    Option<int>&    Set_N_Steps()      return { nsteps_; }
-    Option<int>&    Set_RandomSeed()   return { random_seed_; }
-    Option<int>&    Set_N_Exchanges()  return { nexchanges_; }
-    Option<double>& Set_TimeStep()     return { timeStep_; }
-    Option<double>& Set_Temperature0() return { temp0_; }
+    Option<int>&    Set_N_Steps()      { return nsteps_; }
+    Option<int>&    Set_RandomSeed()   { return random_seed_; }
+    Option<int>&    Set_N_Exchanges()  { return nexchanges_; }
+    Option<double>& Set_TimeStep()     { return timeStep_; }
+    Option<double>& Set_Temperature0() { return temp0_; }
 
     Option<int>    const& N_Steps()      const { return nsteps_; }
     Option<int>    const& RandomSeed()   const { return random_seed_; }
-    Option<int>    const& N_Exchanges()  const { return nexchages_; }
+    Option<int>    const& N_Exchanges()  const { return nexchanges_; }
     Option<double> const& TimeStep()     const { return timeStep_; }
     Option<double> const& Temperature0() const { return temp0_; }
   private:
