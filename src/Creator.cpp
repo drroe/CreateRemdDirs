@@ -14,11 +14,6 @@ using namespace FileRoutines;
 
 /** CONSTRUCTOR */
 Creator::Creator() :
-  nstlim_(-1),
-  ig_(-1),
-  numexchg_(-1),
-  dt_(-1.0),
-  temp0_(-1.0),
   totalReplicas_(0),
   top_dim_(-1),
   temp0_dim_(-1),
@@ -54,7 +49,7 @@ std::string const& Creator::TopologyName(RepIndexArray const& Indices) const {
 
 /** \return Temperature at specified index in temperature dim, or MD temperature if no dim. */
 double Creator::Temperature(RepIndexArray const& Indices) const {
-  if (temp0_dim_ == -1) return temp0_;
+  if (temp0_dim_ == -1) return mdopts_.Temperature0().Val();
   return Dims_[temp0_dim_]->Temp0( Indices[temp0_dim_] );
 }
 
@@ -280,7 +275,7 @@ int Creator::ReadOptions(std::string const& input_file) {
       else if (OPT == "MDRUNS")
         n_md_runs_ = atoi( VAR.c_str() );
       else if (OPT == "NSTLIM")
-        nstlim_ = atoi( VAR.c_str() );
+        mdopts_.Set_N_Steps().SetVal( atoi( VAR.c_str() ) );
       else if (OPT == "DT")
         dt_ = atof( VAR.c_str() );
       else if (OPT == "IG")

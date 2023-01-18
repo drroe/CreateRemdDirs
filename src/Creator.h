@@ -1,6 +1,7 @@
 #ifndef INC_CREATOR_H
 #define INC_CREATOR_H
 #include "MdinFile.h"
+#include "MdOptions.h"
 class TextFile;
 class ReplicaDimension;
 class RepIndexArray;
@@ -95,11 +96,7 @@ class Creator {
     std::string fullarchive_;
     std::string mdin_file_;
     std::string rst_file_;
-    int nstlim_;                  ///< Simulation number of steps/steps per exchange.
-    int ig_;                      ///< Simulation random seed.
-    int numexchg_;                ///< Simulation number of exchanges.
-    double dt_;                   ///< Simulation time step.
-    double temp0_;                ///< Simulation temperature.
+    MdOptions mdopts_;            ///< Hold MD options
 
     MdinFile mdinFile_;           ///< Used to parse input from Amber MDIN file
     DimArray Dims_;               ///< Hold any replica dimensions
