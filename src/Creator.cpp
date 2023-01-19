@@ -277,7 +277,7 @@ int Creator::ReadOptions(std::string const& input_file) {
       else if (OPT == "NSTLIM")
         mdopts_.Set_N_Steps().SetVal( atoi( VAR.c_str() ) );
       else if (OPT == "DT")
-        dt_ = atof( VAR.c_str() );
+        mdopts_.Set_TimeStep().SetVal( atof( VAR.c_str() ) );
       else if (OPT == "IG")
         ig_ = atoi( VAR.c_str() );
       else if (OPT == "NUMEXCHG")
