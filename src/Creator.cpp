@@ -135,10 +135,9 @@ const
   //return Sarray(1, tildeExpansion(crdName) );
 }
 
-/** \return Array of reference coordinates names.
+/** \return Array of reference coordinates names. FIXME make a mode where reference can be previous restart
   */
-Creator::Sarray Creator::RefCoordsNames(std::string const& run_dir)
-const
+Creator::Sarray Creator::RefCoordsNames() const
 {
   Sarray crd_files;
   if (runType_ == MD) {
@@ -148,15 +147,15 @@ const
       if (!ref_file_.empty()) {
         // Single reference for all groups
         for (int grp = 1; grp <= n_md_runs_; grp++)
-          crd_files.push_back( ref_file_ );
+          crd_files.push_back( add_path_prefix(ref_file_) );
       } else if (!ref_dir_.empty()) {
         // Dir containing files XXX.<ext>
-        crd_files = inputCrds_multiple_md(std::string(""), ref_dir_);
+        crd_files = inputCrds_multiple_md(std::string(""), add_path_prefix(ref_dir_));
       }
     } else {
       // Single MD
       if (!ref_file_.empty())
-        crd_files.push_back( ref_file_ );
+        crd_files.push_back( add_path_prefix(ref_file_) );
       else if (!ref_dir_.empty())
         Msg("Warning: Not using ref dir '%s' for single MD run.\n", ref_dir_.c_str());
     }
@@ -167,7 +166,7 @@ const
   for (Sarray::const_iterator it = crd_files.begin(); it != crd_files.end(); ++it) {
     if (!fileExists( *it )) {
       ErrorMsg("Reference coords file '%s' not found. Must specify absolute path"
-               " or path relative to '%s'\n", it->c_str(), run_dir.c_str());
+               " or path relative to system directory.\n", it->c_str());
       return Sarray();
     }
   }
@@ -179,8 +178,8 @@ const
   * Based on the run type and run number, set up an array containing
   * input coordinates file name(s).
   */
-Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startRunNum, int runNum, std::string const& prevDir) const {
-  Msg("DEBUG: InputCoordsNames: run_dir='%s' start=%i run=%i prev_dir='%s'\n", run_dir.c_str(), startRunNum, runNum, prevDir.c_str());
+Creator::Sarray Creator::InputCoordsNames(int startRunNum, int runNum, std::string const& prevDir) const {
+  Msg("DEBUG: InputCoordsNames: start=%i run=%i prev_dir='%s'\n", startRunNum, runNum, prevDir.c_str());
   Sarray crd_files;
   if (runNum == 0) {
     // Very first run. Use specified_crd_ if set; otherwise use crd_dir_.

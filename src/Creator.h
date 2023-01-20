@@ -63,10 +63,10 @@ class Creator {
     std::string TopologyName(RepIndexArray const&) const;
     /// \return Temperature at specified index in temperature dim, or MD temperature if no dim.
     double Temperature(RepIndexArray const&) const;
-    /// \return Array of input coordinate files based on run number
-    Sarray InputCoordsNames(std::string const&, int, int, std::string const&) const;
+    /// \return Array of input coordinate files given start run #, current run #, and prev. dir. name
+    Sarray InputCoordsNames(int, int, std::string const&) const;
     /// \return Array of reference coordinate files
-    Sarray RefCoordsNames(std::string const&) const;
+    Sarray RefCoordsNames() const;
     /// \return Group file name
     std::string const& GroupfileName() const { return groupfileName_; }
     /// \return CPIN file name
