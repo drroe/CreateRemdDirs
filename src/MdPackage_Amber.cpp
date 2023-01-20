@@ -15,7 +15,8 @@ MdPackage_Amber::MdPackage_Amber(MdPackage_Amber const& rhs) :
   MdPackage(rhs),
   additionalInput_(rhs.additionalInput_),
   override_ntx_(rhs.override_ntx_),
-  override_irest_(rhs.override_irest_)
+  override_irest_(rhs.override_irest_),
+  mdinFile_(rhs.mdinFile_)
 {}
 
 /** ASSIGMENT */
@@ -25,6 +26,7 @@ MdPackage_Amber& MdPackage_Amber::operator=(MdPackage_Amber const& rhs) {
   additionalInput_ = rhs.additionalInput_;
   override_ntx_ = rhs.override_ntx_;
   override_irest_ = rhs.override_irest_;
+  mdinFile_ = rhs.mdinFile_;
 
   return *this;
 }
