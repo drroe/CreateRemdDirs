@@ -1,6 +1,5 @@
 #include "MdPackage_Amber.h"
 #include "FileRoutines.h"
-#include "MdinFile.h"
 #include "Messages.h"
 
 using namespace Messages;
@@ -37,24 +36,23 @@ int MdPackage_Amber::ReadInputOptions(std::string const& fname) {
   if (CheckExists("Amber MDIN file", fname)) return 1;
   std::string mdin_fileName = tildeExpansion(fname);
 
-  MdinFile mdinFile;
   override_irest_ = false;
   override_ntx_ = false;
   additionalInput_.clear();
-  if (mdinFile.ParseFile( mdin_fileName )) return 1;
-  if (Debug() > 0) mdinFile.PrintNamelists();
-  std::string valname = mdinFile.GetNamelistVar("&cntrl", "irest");
+  if (mdinFile_.ParseFile( mdin_fileName )) return 1;
+  if (Debug() > 0) mdinFile_.PrintNamelists();
+  std::string valname = mdinFile_.GetNamelistVar("&cntrl", "irest");
   if (!valname.empty()) {
     Msg("Warning: Using 'irest = %s' in '%s'\n", valname.c_str(), mdin_fileName.c_str());
     override_irest_ = true;
   }
-  valname = mdinFile.GetNamelistVar("&cntrl", "ntx");
+  valname = mdinFile_.GetNamelistVar("&cntrl", "ntx");
   if (!valname.empty()) {
     Msg("Warning: Using 'ntx = %s' in '%s'\n", valname.c_str(), mdin_fileName.c_str());
     override_ntx_ = true;
   }
   // Add any &cntrl variables to additionalInput_
-  for (MdinFile::const_iterator nl = mdinFile.nl_begin(); nl != mdinFile.nl_end(); ++nl)
+  for (MdinFile::const_iterator nl = mdinFile_.nl_begin(); nl != mdinFile_.nl_end(); ++nl)
   {
     if (nl->first == "&cntrl") {
       unsigned int col = 0;
