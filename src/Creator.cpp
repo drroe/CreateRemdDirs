@@ -180,6 +180,7 @@ const
   * input coordinates file name(s).
   */
 Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startRunNum, int runNum, std::string const& prevDir) const {
+  Msg("DEBUG: InputCoordsNames: run_dir='%s' start=%i run=%i prev_dir='%s'\n", run_dir.c_str(), startRunNum, runNum, prevDir.c_str());
   Sarray crd_files;
   if (runNum == 0) {
     // Very first run. Use specified_crd_ if set; otherwise use crd_dir_.
@@ -215,10 +216,10 @@ Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startR
     if (runType_ == MD) {
       // MD run
       if (n_md_runs_ > 1) {
-        crd_files = inputCrds_multiple_md( add_path_prefix(specified), prevDir );
+        crd_files = inputCrds_multiple_md( add_path_prefix(specified), add_path_prefix(prevDir) );
       } else {
         std::string prev_name = prevDir + "/mdrst.rst7";
-        crd_files = inputCrds_single_md( add_path_prefix(specified), prev_name );
+        crd_files = inputCrds_single_md( add_path_prefix(specified), add_path_prefix(prev_name) );
       }
     } else if (runType_ == TREMD ||
                runType_ == HREMD ||
@@ -227,7 +228,7 @@ Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startR
     {
       // REMD run
       std::string prev_dir = prevDir + "/RST";
-      crd_files = inputCrds_multiple_md( add_path_prefix(specified), prev_dir );
+      crd_files = inputCrds_multiple_md( add_path_prefix(specified), add_path_prefix(prev_dir) );
       return Sarray();
     } else {
       ErrorMsg("Unhandled run type in InputCoordsNames()\n");

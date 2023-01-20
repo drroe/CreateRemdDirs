@@ -39,6 +39,8 @@ class Run {
     int Debug() const { return debug_; }
     /// \return Run index
     int RunIndex() const { return idx_; }
+    /// \return run dir name
+    std::string const& RunDirName() const { return rundir_; }
 
     /// \return Detected run type base on output files in the run directory.
     static Type DetectType(FileRoutines::StrArray&);
@@ -54,8 +56,6 @@ class Run {
     virtual int InternalSetup(FileRoutines::StrArray const&) = 0;
     /// \return setup directory
     std::string const& SetupDirName() const { return setupDir_; }
-    /// \return run dir name
-    std::string const& RunDirName() const { return rundir_; }
   private:
     Type type_;
     std::string rundir_;   ///< Run directory. May be relative.

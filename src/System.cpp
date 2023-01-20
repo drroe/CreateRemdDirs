@@ -235,6 +235,7 @@ int System::CreateRunDirectories(std::string const& crd_dir,
         Msg("Will overwrite run.\n");
       else {
         Runs_[existingRunIdx]->RunInfo();
+        prevDir = Runs_[existingRunIdx]->RunDirName();
         continue;
       }
     }
