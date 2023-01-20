@@ -16,5 +16,8 @@ class MdPackage_Amber : public MdPackage {
     /// Read amber-specific input options from file
     int ReadInputOptions(std::string const&);
   private:
+    std::string additionalInput_; ///< Hold any additional MDIN input
+    bool override_irest_;         ///< If true do not set irest, use from MDIN
+    bool override_ntx_;           ///< If true do not set ntx, use from MDIN
 };
 #endif

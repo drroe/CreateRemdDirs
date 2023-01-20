@@ -15,6 +15,7 @@ Groups.cpp \
 main.cpp \
 Manager.cpp \
 MdOptions.cpp \
+MdPackage_Amber.cpp \
 MdinFile.cpp \
 Messages.cpp \
 NC.cpp \
