@@ -180,8 +180,8 @@ const
     MDIN.Printf("    ig = %i,\n", mdopts.RandomSeed().Val());
   if (mdopts.N_Exchanges().Val() > -1)
     MDIN.Printf("    numexchg = %i,\n", mdopts.N_Exchanges().Val());
-  if (ph_dim_ != -1)
-      MDIN.Printf("    solvph = %f,\n", Dims_[ph_dim_]->SolvPH( Indices[ph_dim_] ));
+  if (mdopts.pH().IsSet())
+    MDIN.Printf("    solvph = %f,\n", mdopts.pH().Val());
   MDIN.Printf("    temp0 = %f, tempi = %f,\n%s",
               currentTemp0, currentTemp0, additionalInput_.c_str());
   if (!rst_file_.empty()) {

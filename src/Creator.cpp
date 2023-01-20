@@ -604,6 +604,8 @@ void Creator::Info() const {
     // Regular MD
     Msg(  "  Number of steps     : %i\n", mdopts_.N_Steps().Val());
     Msg(  "  Temperature         : %g\n", mdopts_.Temperature0().Val());
+    if (mdopts_.pH().IsSet())
+      Msg("  pH                  : %g\n", mdopts_.pH().Val());
 
     Msg(  "  CRD                 : %s\n", crd_dir_.c_str());
     if (!ref_file_.empty())
@@ -616,8 +618,11 @@ void Creator::Info() const {
     // Some type of replica exchange run
     if (temp0_dim_ == -1)
       Msg("  Temperature         : %g\n", mdopts_.Temperature0().Val());
+    if (ph_dim_ == -1)
+      Msg("  pH                  : %g\n", mdopts_.pH().Val());
     Msg(  "  Number of exchanges : %i\n", mdopts_.N_Exchanges().Val());
     Msg(  "  Steps per exchange  : %i\n", mdopts_.N_Steps().Val());
+
     Msg(  "  CRD_DIR             : %s\n", crd_dir_.c_str());
     if (!ref_file_.empty())
       Msg("  REF_PREFIX          : %s\n", ref_file_.c_str());
@@ -908,6 +913,8 @@ const
   // Create input
   MdOptions currentMdOpts = mdopts_;
   currentMdOpts.Set_Temperature0().SetVal( Temperature( Indices ) );
+  if (ph_dim_ != -1)
+    currentMdOpts.Set_pH().SetVal( Dims_[ph_dim_]->SolvPH( Indices[ph_dim_] ));
   return mdInterface_.Package()->WriteMdInputFile(currentMdOpts, fname, run_num, EXT, Indices, rep);
 /*
   // Get temperature for this MDIN
