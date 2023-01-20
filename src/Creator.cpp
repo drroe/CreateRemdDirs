@@ -903,8 +903,10 @@ std::string Creator::RefFileName(std::string const& EXT) const {
 // =============================================================================
 /** Create input file for MD.
   * \param fname Name of MDIN file.
-  * \param run_num Run number, for setting irest/ntx.
-  * \param EXT Extension for restraint/dumpave files when umbrella sampling.
+  * \param run_num Run number.
+  * \param EXT Numerical extension (group #) corresponding to this MDIN when multiple MDINs needed.
+  * \param Indices Array of replica indices if REMD
+  * \param rep Overall replica index if REMD
   */
 int Creator::MakeMdinForMD(std::string const& fname, int run_num, 
                            std::string const& EXT, 
