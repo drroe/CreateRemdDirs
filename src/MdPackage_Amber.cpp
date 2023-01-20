@@ -126,7 +126,8 @@ const
 }
 
 /** Write amber MDIN file. */
-int MdPackage_Amber::WriteMdInputFile(MdOptions const& mdopts,
+int MdPackage_Amber::WriteMdInputFile(std::string const& runDescription,
+                                      MdOptions const& mdopts,
                                       std::string const& fname, int run_num, 
                                       std::string const& EXT, 
                                       RepIndexArray const& Indices, unsigned int rep)
@@ -158,10 +159,10 @@ const
     MDIN.Printf("%s %g ps\n"
                 " &cntrl\n"
                 "    imin = 0, nstlim = %i, dt = %f,\n",
-                runDescription_.c_str(), total_time, mdopts.N_Steps().Val(), mdopts.TimeStep().Val());
+                runDescription.c_str(), total_time, mdopts.N_Steps().Val(), mdopts.TimeStep().Val());
   } else {
     // REMD header
-    MDIN.Printf("%s", runDescription_.c_str());
+    MDIN.Printf("%s", runDescription.c_str());
     // Write indices to mdin for MREMD
     if (Dims_.size() > 1) {
       MDIN.Printf(" { %s }", Indices.IndicesStr(1).c_str());
@@ -184,7 +185,7 @@ const
     MDIN.Printf("    solvph = %f,\n", mdopts.pH().Val());
   MDIN.Printf("    temp0 = %f, tempi = %f,\n%s",
               currentTemp0, currentTemp0, additionalInput_.c_str());
-  if (!rst_file_.empty()) {
+  if (mdopts.RstFilename().IsSet()) {
     MDIN.Printf("    nmropt=1,\n");
     Msg("    Using NMR restraints.\n");
   }
@@ -196,19 +197,12 @@ const
     if (nl->first != "&cntrl")
       writeNamelist(MDIN, nl->first, nl->second);
 
-  if (!rst_file_.empty()) {
+  if (mdopts.RstFilename().IsSet()) {
     // Restraints
-    std::string rf_name = add_path_prefix(rst_file_ + EXT);
-    // Ensure restraint file exists if specified.
-    if (!fileExists( rf_name )) {
-      ErrorMsg("Restraint file '%s' not found. Must specify absolute path"
-               " or path relative to system dir.\n", rf_name.c_str());
-      return 1;
-    }
-    if (umbrella_ > 0)
-      MDIN.Printf("&wt\n   TYPE=\"DUMPFREQ\", istep1 = %i,\n&end\n", umbrella_);
-    MDIN.Printf("&wt\n   TYPE=\"END\",\n&end\nDISANG=%s\n", rf_name.c_str());
-    if (umbrella_ > 0) // TODO: customize dumpave name?
+    if (mdopts.RstWriteFreq().IsSet())
+      MDIN.Printf("&wt\n   TYPE=\"DUMPFREQ\", istep1 = %i,\n&end\n", mdopts.RstWriteFreq().Val());
+    MDIN.Printf("&wt\n   TYPE=\"END\",\n&end\nDISANG=%s\n", mdopts.RstFilename().Val().c_str());
+    if (mdopts.RstWriteFreq().IsSet() > 0) // TODO: customize dumpave name?
       MDIN.Printf("DUMPAVE=dumpave%s\n", EXT.c_str());
     MDIN.Printf("/\n");
   }

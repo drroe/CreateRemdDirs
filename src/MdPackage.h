@@ -23,7 +23,7 @@ class MdPackage {
     /// Read package-specific input options from a file
     virtual int ReadInputOptions(std::string const&) = 0;
     /// Write package-specific input file
-    virtual int WriteMdInputFile(MdOptions const&,std::string const&, int, std::string const&,
+    virtual int WriteMdInputFile(std::string const&, MdOptions const&,std::string const&, int, std::string const&,
                                  RepIndexArray const&, unsigned int) const = 0;
 
     void SetDebug(int d) { debug_ = d; }

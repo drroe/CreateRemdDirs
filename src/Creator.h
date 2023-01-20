@@ -52,7 +52,7 @@ class Creator {
     /// \return Number of MD runs to be performed in a single run directory.
     int N_MD_Runs() const { return n_md_runs_; }
     /// \return Umbrella write frequency; 0 means no umbrella
-    int UmbrellaWriteFreq() const { return umbrella_; }
+    //int UmbrellaWriteFreq() const { return umbrella_; }
     /// \retrurn Total number of replicas
     unsigned int TotalReplicas() const { return totalReplicas_; }
     /// \return True if command line needs -log FIXME too Amber-specific
@@ -95,7 +95,7 @@ class Creator {
     std::string trajoutargs_;
     std::string fullarchive_;
     //std::string mdin_file_;
-    std::string rst_file_;
+    //std::string rst_file_;
     MdOptions mdopts_;            ///< Hold MD options
 
     MdInterface mdInterface_;     ///< Use to interface with different MD packages
@@ -107,7 +107,7 @@ class Creator {
     int ph_dim_;                  ///< Set to index of ph dim or -1 = no ph
     int debug_;
     int n_md_runs_;               ///< Number of MD runs.
-    int umbrella_;                ///< When > 0 indicates umbrella sampling write frequency.
+    //int umbrella_;                ///< When > 0 indicates umbrella sampling write frequency.
     int fileExtWidth_;            ///< Filename extension width
     //bool override_irest_;         ///< If true do not set irest, use from MDIN
     //bool override_ntx_;           ///< If true do not set ntx, use from MDIN

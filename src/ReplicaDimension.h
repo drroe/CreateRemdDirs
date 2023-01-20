@@ -118,6 +118,11 @@ class AmdDihedralDim : public ReplicaDimension {
     int LoadDim(std::string const&);
     std::string Groupline(std::string const&) const;
     int WriteMdin(int, TextFile&) const;
+
+    /// \return Array of AMD alpha values
+    Darray const& Alpha() const { return d_alpha_; }
+    /// \return Array of AMD threshhold values
+    Darray const& Ethresh() const { return d_thresh_; }
   private:
     Darray d_alpha_; ///< List of amd dihedral alpha values
     Darray d_thresh_; ///< List of amd dihedral threshhold values

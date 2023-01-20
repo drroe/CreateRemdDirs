@@ -21,7 +21,7 @@ Creator::Creator() :
   ph_dim_(-1),
   debug_(0),
   n_md_runs_(0),
-  umbrella_(0),
+//  umbrella_(0),
   fileExtWidth_(3),
 //  override_irest_(false),
 //  override_ntx_(false),
@@ -315,7 +315,7 @@ int Creator::ReadOptions(std::string const& input_file) {
       else if (OPT == "NUMEXCHG")
         mdopts_.Set_N_Exchanges().SetVal( atoi( VAR.c_str() ) );
       else if (OPT == "UMBRELLA")
-        umbrella_ = atoi( VAR.c_str() );
+        mdopts_.Set_RstWriteFreq().SetVal( atoi( VAR.c_str() ) );
       else if (OPT == "TOPOLOGY")
       {
         top_file_ = VAR;
@@ -341,9 +341,8 @@ int Creator::ReadOptions(std::string const& input_file) {
       }
       else if (OPT == "RST_FILE")
       {
-        rst_file_ = VAR;
-        if (fileExists(rst_file_))
-          rst_file_ = tildeExpansion( rst_file_ );
+        if (fileExists( VAR ))
+          mdopts_.Set_RstFilename().SetVal( tildeExpansion( VAR ) );
       }
       else if (OPT == "CPIN_FILE")
       {
@@ -587,10 +586,10 @@ int Creator::setupCreator() {
     ErrorMsg("No MDIN_FILE specified and '--nomdin' not specified.\n");
     return 1;
   }*/
-  if (umbrella_ > 0 && n_md_runs_ < 2) {
+  /*if (umbrella_ > 0 && n_md_runs_ < 2) {
     ErrorMsg("If UMBRELLA is specified MDRUNS must be > 1.\n");
     return 1;
-  }
+  }*/
 
   return 0;
 }
@@ -598,36 +597,38 @@ int Creator::setupCreator() {
 // Creator::Info()
 void Creator::Info() const {
   //Msg(    "  MDIN_FILE           : %s\n", mdin_file_.c_str());
-  Msg(    "  Time step           : %g\n", mdopts_.TimeStep().Val());
-  Msg(    "  Random seed         : %i\n", mdopts_.RandomSeed().Val());
+  Msg(    "  Time step             : %g\n", mdopts_.TimeStep().Val());
+  Msg(    "  Random seed           : %i\n", mdopts_.RandomSeed().Val());
+  if (mdopts_.RstWriteFreq().IsSet())
+    Msg(  "  Restraint write freq. : %i\n", mdopts_.RstWriteFreq().Val());
   if (runType_ == MD) {
     // Regular MD
-    Msg(  "  Number of steps     : %i\n", mdopts_.N_Steps().Val());
-    Msg(  "  Temperature         : %g\n", mdopts_.Temperature0().Val());
+    Msg(  "  Number of steps       : %i\n", mdopts_.N_Steps().Val());
+    Msg(  "  Temperature           : %g\n", mdopts_.Temperature0().Val());
     if (mdopts_.pH().IsSet())
-      Msg("  pH                  : %g\n", mdopts_.pH().Val());
+      Msg("  pH                    : %g\n", mdopts_.pH().Val());
 
-    Msg(  "  CRD                 : %s\n", crd_dir_.c_str());
+    Msg(  "  CRD                   : %s\n", crd_dir_.c_str());
     if (!ref_file_.empty())
-      Msg("  REF                 : %s\n", ref_file_.c_str());
+      Msg("  REF                   : %s\n", ref_file_.c_str());
     if (!ref_dir_.empty())
-      Msg("  REF                 : %s\n", ref_dir_.c_str());
+      Msg("  REF                   : %s\n", ref_dir_.c_str());
     if (!top_file_.empty())
-      Msg("  TOP                 : %s\n", top_file_.c_str());
+      Msg("  TOP                   : %s\n", top_file_.c_str());
   } else {
     // Some type of replica exchange run
     if (temp0_dim_ == -1)
-      Msg("  Temperature         : %g\n", mdopts_.Temperature0().Val());
+      Msg("  Temperature           : %g\n", mdopts_.Temperature0().Val());
     if (ph_dim_ == -1)
-      Msg("  pH                  : %g\n", mdopts_.pH().Val());
-    Msg(  "  Number of exchanges : %i\n", mdopts_.N_Exchanges().Val());
-    Msg(  "  Steps per exchange  : %i\n", mdopts_.N_Steps().Val());
+      Msg("  pH                    : %g\n", mdopts_.pH().Val());
+    Msg(  "  Number of exchanges   : %i\n", mdopts_.N_Exchanges().Val());
+    Msg(  "  Steps per exchange    : %i\n", mdopts_.N_Steps().Val());
 
-    Msg(  "  CRD_DIR             : %s\n", crd_dir_.c_str());
+    Msg(  "  CRD_DIR               : %s\n", crd_dir_.c_str());
     if (!ref_file_.empty())
-      Msg("  REF_PREFIX          : %s\n", ref_file_.c_str());
+      Msg("  REF_PREFIX            : %s\n", ref_file_.c_str());
     else if (!ref_dir_.empty())
-      Msg("  REF_DIR             : %s\n", ref_dir_.c_str());
+      Msg("  REF_DIR               : %s\n", ref_dir_.c_str());
     Msg(  "  %u dimensions, %u total replicas.\n", Dims_.size(), totalReplicas_);
   }
 }
@@ -915,7 +916,28 @@ const
   currentMdOpts.Set_Temperature0().SetVal( Temperature( Indices ) );
   if (ph_dim_ != -1)
     currentMdOpts.Set_pH().SetVal( Dims_[ph_dim_]->SolvPH( Indices[ph_dim_] ));
-  return mdInterface_.Package()->WriteMdInputFile(currentMdOpts, fname, run_num, EXT, Indices, rep);
+  if (mdopts_.RstFilename().IsSet()) {
+    // Restraints
+    std::string rf_name = add_path_prefix(mdopts_.RstFilename().Val() + EXT);
+    // Ensure restraint file exists if specified.
+    if (!fileExists( rf_name )) {
+      ErrorMsg("Restraint file '%s' not found. Must specify absolute path"
+               " or path relative to system dir.\n", rf_name.c_str());
+      return 1;
+    }
+    currentMdOpts.Set_RstFilename().SetVal( rf_name );
+  }
+  // Dimension-specific options
+  for (unsigned int id = 0; id != Dims_.size(); id++) {
+    if (Dims_[id]->Type() == ReplicaDimension::AMD_DIHEDRAL) { // TODO check for multiple amd dims?
+      currentMdOpts.Set_AmdBoost().SetVal( MdOptions::AMD_TORSIONS );
+      AmdDihedralDim const& amd = static_cast<AmdDihedralDim const&>( *(Dims_[id]) );
+      currentMdOpts.Set_AmdEthresh().SetVal( amd.Ethresh()[ Indices[id] ] );
+      currentMdOpts.Set_AmdAlpha().SetVal( amd.Alpha()[ Indices[id] ] );
+    }
+  }
+
+  return mdInterface_.Package()->WriteMdInputFile(runDescription_, currentMdOpts, fname, run_num, EXT, Indices, rep);
 /*
   // Get temperature for this MDIN
   double currentTemp0 = Temperature( Indices );

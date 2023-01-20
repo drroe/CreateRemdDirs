@@ -6,12 +6,22 @@ class MdOptions {
   public:
     MdOptions();
 
+    typedef Option<std::string> Sopt;
+
+    /// AMD boost type
+    enum AmdBoostType { AMD_NONE = 0, AMD_PE, AMD_TORSIONS, AMD_PE_TORSIONS };
+
     Option<int>&    Set_N_Steps()      { return nsteps_; }
     Option<int>&    Set_RandomSeed()   { return random_seed_; }
     Option<int>&    Set_N_Exchanges()  { return nexchanges_; }
     Option<double>& Set_TimeStep()     { return timeStep_; }
     Option<double>& Set_Temperature0() { return temp0_; }
     Option<double>& Set_pH()           { return pH_; }
+    Sopt&           Set_RstFilename()  { return rst_file_; }
+    Option<int>&    Set_RstWriteFreq() { return rstWriteFreq_; }
+    Option<AmdBoostType>& Set_AmdBoost() { return amdBoost_; }
+    Option<double>& Set_AmdEthresh()     { return amdEthresh_; }
+    Option<double>& Set_AmdAlpha()       { return amdAlpha_; }
 
     Option<int>    const& N_Steps()      const { return nsteps_; }
     Option<int>    const& RandomSeed()   const { return random_seed_; }
@@ -19,12 +29,22 @@ class MdOptions {
     Option<double> const& TimeStep()     const { return timeStep_; }
     Option<double> const& Temperature0() const { return temp0_; }
     Option<double> const& pH()           const { return pH_; }
+    Sopt           const& RstFilename()  const { return rst_file_; }
+    Option<int>    const& RstWriteFreq() const { return rstWriteFreq_; }
+    Option<AmdBoostType> const& AmdBoost() const { return amdBoost_; }
+    Option<double> const& AmdEthresh()   const { return amdEthresh_; }
+    Option<double> const& AmdAlpha()     const { return amdAlpha_; }
   private:
-    Option<int> nsteps_;      ///< Number of simulation steps.
-    Option<int> random_seed_; ///< Simulation random number generator seed.
-    Option<int> nexchanges_;  ///< Number of exchange attempts.
-    Option<double> timeStep_; ///< Simulation time step.
-    Option<double> temp0_;    ///< Simulation bath temperature.
-    Option<double> pH_;       ///< Simulation pH.
+    Option<int> nsteps_;       ///< Number of simulation steps.
+    Option<int> random_seed_;  ///< Simulation random number generator seed.
+    Option<int> nexchanges_;   ///< Number of exchange attempts.
+    Option<double> timeStep_;  ///< Simulation time step.
+    Option<double> temp0_;     ///< Simulation bath temperature.
+    Option<double> pH_;        ///< Simulation pH.
+    Sopt rst_file_;            ///< File holding restraint definitions
+    Option<int> rstWriteFreq_; ///< Restraint value write frequency
+    Option<AmdBoostType> amdBoost_; ///< Accelerated MD boost type
+    Option<double> amdEthresh_; ///< Accelerated MD boost energy threshhold
+    Option<double> amdAlpha_;   ///< Accelerated MD boost alpha
 };
 #endif

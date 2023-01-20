@@ -18,7 +18,7 @@ class MdPackage_Amber : public MdPackage {
     /// Read amber-specific input options from file
     int ReadInputOptions(std::string const&);
     /// Write Amber MDIN file
-    int WriteMdInputFile(MdOptions const&, std::string const&, int, std::string const&,
+    int WriteMdInputFile(std::string const&, MdOptions const&, std::string const&, int, std::string const&,
                          RepIndexArray const&, unsigned int) const;
   private:
     /// Write given namelist to specified file
