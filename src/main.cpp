@@ -169,10 +169,13 @@ int main(int argc, char** argv) {
   Commands::InitCommands();
   Manager manager;
   if (manager.InitManager( TopDir, systems_file )) return 1;
-  if (!input_file.empty())
-    return Commands::ReadInput(input_file, manager);
-  else
-    return Commands::Prompt(manager);
+  if (!input_file.empty()) {
+    Exec::RetType ret = Commands::ReadInput(input_file, manager);
+    if (ret == Exec::QUIT) return 0;
+    if (ret == Exec::ERR)
+      Msg("Warning: Errors encountered while reading input file '%s'\n", input_file.c_str());
+  }
+  return Commands::Prompt(manager);
 
   // If start_run and stop_run are both -1, see if systems.opts exists
   // for Manager mode.

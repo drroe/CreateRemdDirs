@@ -5,6 +5,7 @@
 #include "CmdList.h"
 #include "FileRoutines.h"
 #include "Messages.h"
+#include "StringRoutines.h"
 #include "TextFile.h"
 #include <readline.h>
 #include <history.h>
@@ -167,29 +168,29 @@ Exec::RetType Commands::ProcessCommand(std::string const& inp, Manager& manager)
 }
 
 /** Read input from a file. */
-int Commands::ReadInput(std::string const& fname, Manager& manager)
+Exec::RetType Commands::ReadInput(std::string const& fname, Manager& manager)
 {
   TextFile infile;
   // Change to manager top directory
-  if (FileRoutines::ChangeDir( manager.TopDirName())) return 1;
-  if (infile.OpenRead( fname )) return 1;
+  if (FileRoutines::ChangeDir( manager.TopDirName())) return Exec::ERR;
+  if (infile.OpenRead( fname )) return Exec::ERR;
   Msg("Reading input from file '%s'\n", fname.c_str());
   const char* ptr = infile.Gets();
   while ( ptr != 0) {
     std::string inp( ptr );
-    Exec::RetType ret = ProcessCommand( inp, manager );
+    Exec::RetType ret = ProcessCommand( StringRoutines::NoTrailingWhitespace(inp), manager );
     if (ret == Exec::QUIT) {
       infile.Close();
-      return 0;
+      return Exec::QUIT;
     } else if (ret == Exec::ERR) {
       ErrorMsg("Bad input in file '%s'\n", fname.c_str());
       infile.Close();
-      return 1;
+      return Exec::ERR;
     }
     ptr = infile.Gets();
   }
   infile.Close();
-  return 0;
+  return Exec::OK;
 }
 
 /** Command-line prompt for manager mode. */

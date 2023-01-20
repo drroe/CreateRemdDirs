@@ -12,6 +12,6 @@ namespace Commands {
   /// Manager command prompt
   int Prompt(Manager&);
   /// Read Manager input from a file
-  int ReadInput(std::string const&, Manager&);
+  Exec::RetType ReadInput(std::string const&, Manager&);
 }
 #endif
