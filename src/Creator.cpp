@@ -538,6 +538,7 @@ int Creator::setupCreator() {
   if (!mdopts_.TimeStep().IsSet()) {
     Msg("Warning: DT not specified. Using default: %g\n", mdopts_.TimeStep().Val());
   }
+  // FIXME check for all needed input eventually
   if (needsMdin && mdin_file_.empty()) {
     ErrorMsg("No MDIN_FILE specified and '--nomdin' not specified.\n");
     return 1;
