@@ -7,10 +7,14 @@ class ReplicaDimension;
 class RepIndexArray {
   public:
     typedef std::vector<unsigned int> Iarray;
+    /// CONSTRUCTOR - no indices
+    RepIndexArray() {}
     /// CONSTRUCTOR - take number of dimensions
     RepIndexArray(unsigned int n) : indices_(n, 0) {}
     /// \return index array
     Iarray const& Indices() const { return indices_; }
+    /// \return true if no indices
+    bool Empty() const { return indices_.empty(); }
     /// Increment array
     void Increment(std::vector<ReplicaDimension*> const&);
     /// \return Index in specified dimension
