@@ -2,6 +2,7 @@
 #define INC_MDPACKAGE_AMBER_H
 #include "MdPackage.h"
 #include "MdinFile.h"
+class TextFile;
 /// Amber-specific options
 class MdPackage_Amber : public MdPackage {
   public:
@@ -17,6 +18,9 @@ class MdPackage_Amber : public MdPackage {
     /// Read amber-specific input options from file
     int ReadInputOptions(std::string const&);
   private:
+    /// Write given namelist to specified file
+    void WriteNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
+
     std::string additionalInput_; ///< Hold any additional MDIN input
     bool override_irest_;         ///< If true do not set irest, use from MDIN
     bool override_ntx_;           ///< If true do not set ntx, use from MDIN

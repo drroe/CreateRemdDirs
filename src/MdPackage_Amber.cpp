@@ -1,6 +1,7 @@
 #include "MdPackage_Amber.h"
 #include "FileRoutines.h"
 #include "Messages.h"
+#include "TextFile.h"
 
 using namespace Messages;
 
@@ -96,4 +97,28 @@ int MdPackage_Amber::ReadInputOptions(std::string const& fname) {
   }
 
   return 0;
+}
+
+/** Write given namelist to input file. */
+void MdPackage_Amber::WriteNamelist(TextFile& MDIN, std::string const& namelist,
+                                    MdinFile::TokenArray const& tokens)
+const
+{
+  MDIN.Printf(" %s\n", namelist.c_str());
+  unsigned int col = 0;
+  for (MdinFile::token_iterator tkn = tokens.begin(); tkn != tokens.end(); ++tkn)
+  {
+    if (col == 0)
+      MDIN.Printf("   ");
+    
+    MDIN.Printf("%s = %s, ", tkn->first.c_str(), tkn->second.c_str());
+    col++;
+    if (col == 4) {
+      MDIN.Printf("\n");
+      col = 0;
+    }
+  }
+  if (col != 0)
+    MDIN.Printf("\n");
+  MDIN.Printf(" &end\n");
 }
