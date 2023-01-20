@@ -17,9 +17,12 @@ class MdPackage_Amber : public MdPackage {
     MdPackage* Copy() const { return (MdPackage*)new MdPackage_Amber(*this); }
     /// Read amber-specific input options from file
     int ReadInputOptions(std::string const&);
+    /// Write Amber MDIN file
+    int WriteMdInputFile(MdOptions const&, std::string const&, int, std::string const&,
+                         RepIndexArray const&, unsigned int) const;
   private:
     /// Write given namelist to specified file
-    void WriteNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
+    void writeNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
 
     std::string additionalInput_; ///< Hold any additional MDIN input
     bool override_irest_;         ///< If true do not set irest, use from MDIN

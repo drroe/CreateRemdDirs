@@ -1,6 +1,8 @@
 #ifndef INC_MDPACKAGE_H
 #define INC_MDPACKAGE_H
 #include <string>
+class RepIndexArray;
+class MdOptions;
 /// Abstract base class for various MD packages.
 class MdPackage {
   public:
@@ -20,6 +22,9 @@ class MdPackage {
     virtual MdPackage* Copy() const = 0;
     /// Read package-specific input options from a file
     virtual int ReadInputOptions(std::string const&) = 0;
+    /// Write package-specific input file
+    virtual int WriteMdInputFile(MdOptions const&,std::string const&, int, std::string const&,
+                                 RepIndexArray const&, unsigned int) const = 0;
 
     void SetDebug(int d) { debug_ = d; }
     /// \return debug level

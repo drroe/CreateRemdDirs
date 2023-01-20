@@ -1,7 +1,8 @@
 #ifndef INC_CREATOR_H
 #define INC_CREATOR_H
-#include "MdinFile.h"
+#include <vector>
 #include "MdOptions.h"
+#include "MdInterface.h"
 class TextFile;
 class ReplicaDimension;
 class RepIndexArray;
@@ -87,17 +88,18 @@ class Creator {
 
     int LoadDimension(std::string const&);
     std::string RefFileName(std::string const&) const; // TODO deprecate
-    void WriteNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
+    //void WriteNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
 
     // File and MDIN variables
     std::string top_file_;
     std::string trajoutargs_;
     std::string fullarchive_;
-    std::string mdin_file_;
+    //std::string mdin_file_;
     std::string rst_file_;
     MdOptions mdopts_;            ///< Hold MD options
 
-    MdinFile mdinFile_;           ///< Used to parse input from Amber MDIN file
+    MdInterface mdInterface_;     ///< Use to interface with different MD packages
+    //MdinFile mdinFile_;           ///< Used to parse input from Amber MDIN file
     DimArray Dims_;               ///< Hold any replica dimensions
     unsigned int totalReplicas_;  ///< Total # of replicas based on dimensions
     int top_dim_;                 ///< Set to index of temp0 dim or -1 = global temp
@@ -107,8 +109,8 @@ class Creator {
     int n_md_runs_;               ///< Number of MD runs.
     int umbrella_;                ///< When > 0 indicates umbrella sampling write frequency.
     int fileExtWidth_;            ///< Filename extension width
-    bool override_irest_;         ///< If true do not set irest, use from MDIN
-    bool override_ntx_;           ///< If true do not set ntx, use from MDIN
+    //bool override_irest_;         ///< If true do not set irest, use from MDIN
+    //bool override_ntx_;           ///< If true do not set ntx, use from MDIN
     bool uselog_;                 ///< If true use -l in groupfile
     bool crdDirSpecified_;        ///< If true, restart coords dir specified on command line. TODO deprecate
     RUNTYPE runType_;             ///< Type of run from options file.

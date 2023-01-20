@@ -2,6 +2,8 @@
 #include "FileRoutines.h"
 #include "Messages.h"
 #include "TextFile.h"
+#include "RepIndexArray.h"
+#include "MdOptions.h"
 
 using namespace Messages;
 
@@ -100,7 +102,7 @@ int MdPackage_Amber::ReadInputOptions(std::string const& fname) {
 }
 
 /** Write given namelist to input file. */
-void MdPackage_Amber::WriteNamelist(TextFile& MDIN, std::string const& namelist,
+void MdPackage_Amber::writeNamelist(TextFile& MDIN, std::string const& namelist,
                                     MdinFile::TokenArray const& tokens)
 const
 {
@@ -122,3 +124,94 @@ const
     MDIN.Printf("\n");
   MDIN.Printf(" &end\n");
 }
+
+/** Write amber MDIN file. */
+int MdPackage_Amber::WriteMdInputFile(MdOptions const& mdopts,
+                                      std::string const& fname, int run_num, 
+                                      std::string const& EXT, 
+                                      RepIndexArray const& Indices, unsigned int rep)
+const
+{
+   // Create input
+  // Get temperature for this MDIN
+  double currentTemp0 = mdopts.Temperature0().Val();
+
+  int irest = 1;
+  int ntx = 5;
+  if (!override_irest_) {
+    if (run_num == 0) {
+      if (rep == 0)
+        Msg("    Run 0: irest=0, ntx=1\n");
+      irest = 0;
+      ntx = 1;
+    }
+  } else
+    Msg("    Using irest/ntx from MDIN.\n");
+  //if (debug_ > 1)
+    Msg("\t\tMDIN: %s\n", fname.c_str()); // DEBUG
+
+  TextFile MDIN;
+  if (MDIN.OpenWrite(fname)) return 1;
+  double total_time = mdopts.TimeStep().Val() * (double)mdopts.N_Steps().Val();
+  if (Indices.Empty()) {
+    // MD header
+    MDIN.Printf("%s %g ps\n"
+                " &cntrl\n"
+                "    imin = 0, nstlim = %i, dt = %f,\n",
+                runDescription_.c_str(), total_time, mdopts.N_Steps().Val(), mdopts.TimeStep().Val());
+  } else {
+    // REMD header
+    MDIN.Printf("%s", runDescription_.c_str());
+    // Write indices to mdin for MREMD
+    if (Dims_.size() > 1) {
+      MDIN.Printf(" { %s }", Indices.IndicesStr(1).c_str());
+    }
+    // for Top %u at %g K 
+    MDIN.Printf(" (rep %u), %g ps/exchg\n"
+                " &cntrl\n"
+                "    imin = 0, nstlim = %i, dt = %f,\n",
+                rep+1, total_time, mdopts.N_Steps().Val(), mdopts.TimeStep().Val());
+  }
+
+  if (!override_irest_)
+    MDIN.Printf("    irest = %i, ntx = %i, ig = %i,\n",
+                irest, ntx, mdopts.RandomSeed().Val());
+  else
+    MDIN.Printf("    ig = %i,\n", mdopts.RandomSeed().Val());
+  if (mdopts.N_Exchanges().Val() > -1)
+    MDIN.Printf("    numexchg = %i,\n", mdopts.N_Exchanges().Val());
+  if (ph_dim_ != -1)
+      MDIN.Printf("    solvph = %f,\n", Dims_[ph_dim_]->SolvPH( Indices[ph_dim_] ));
+  MDIN.Printf("    temp0 = %f, tempi = %f,\n%s",
+              currentTemp0, currentTemp0, additionalInput_.c_str());
+  if (!rst_file_.empty()) {
+    MDIN.Printf("    nmropt=1,\n");
+    Msg("    Using NMR restraints.\n");
+  }
+  for (unsigned int id = 0; id != Dims_.size(); id++)
+      Dims_[id]->WriteMdin(Indices[id], MDIN);
+  MDIN.Printf(" &end\n");
+  // Add any additional namelists
+  for (MdinFile::const_iterator nl = mdinFile_.nl_begin(); nl != mdinFile_.nl_end(); ++nl)
+    if (nl->first != "&cntrl")
+      writeNamelist(MDIN, nl->first, nl->second);
+
+  if (!rst_file_.empty()) {
+    // Restraints
+    std::string rf_name = add_path_prefix(rst_file_ + EXT);
+    // Ensure restraint file exists if specified.
+    if (!fileExists( rf_name )) {
+      ErrorMsg("Restraint file '%s' not found. Must specify absolute path"
+               " or path relative to system dir.\n", rf_name.c_str());
+      return 1;
+    }
+    if (umbrella_ > 0)
+      MDIN.Printf("&wt\n   TYPE=\"DUMPFREQ\", istep1 = %i,\n&end\n", umbrella_);
+    MDIN.Printf("&wt\n   TYPE=\"END\",\n&end\nDISANG=%s\n", rf_name.c_str());
+    if (umbrella_ > 0) // TODO: customize dumpave name?
+      MDIN.Printf("DUMPAVE=dumpave%s\n", EXT.c_str());
+    MDIN.Printf("/\n");
+  }
+  MDIN.Close();
+  return 0;
+} 

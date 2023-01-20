@@ -7,6 +7,7 @@
 #include "ReplicaDimension.h"
 #include "FileRoutines.h" // CheckExists, fileExists
 #include "RepIndexArray.h"
+#include "MdPackage.h"
 
 using namespace Messages;
 using namespace StringRoutines;
@@ -22,8 +23,8 @@ Creator::Creator() :
   n_md_runs_(0),
   umbrella_(0),
   fileExtWidth_(3),
-  override_irest_(false),
-  override_ntx_(false),
+//  override_irest_(false),
+//  override_ntx_(false),
   uselog_(true),
   crdDirSpecified_(false),
   crd_ext_("rst7") //FIXME this is Amber-specific
@@ -278,6 +279,7 @@ Msg("\n  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--
 
 // Creator::ReadOptions()
 int Creator::ReadOptions(std::string const& input_file) {
+  std::string mdin_file;
   // Read options from input file
   if (CheckExists("Input file", input_file)) return 1;
   std::string fname = tildeExpansion( input_file );
@@ -335,7 +337,7 @@ int Creator::ReadOptions(std::string const& input_file) {
       else if (OPT == "MDIN_FILE")
       {
         if (CheckExists("MDIN file", VAR)) { return 1; }
-        mdin_file_ = tildeExpansion( VAR );
+        mdin_file = tildeExpansion( VAR );
       }
       else if (OPT == "RST_FILE")
       {
@@ -368,6 +370,18 @@ int Creator::ReadOptions(std::string const& input_file) {
         return 1;
       }
   }
+  // MD-package specific stuff
+  if (mdInterface_.AllocatePackage(MdInterface::AMBER)) {
+    ErrorMsg("MD package allocate failed.\n");
+    return 1;
+  }
+  if (!mdin_file.empty()) {
+    if (mdInterface_.Package()->ReadInputOptions( mdin_file )) {
+      ErrorMsg("Reading MD package input options failed.\n");
+      return 1;
+    }
+  }
+/*
   // If MDIN file specified, store it in a string.
   override_irest_ = false;
   override_ntx_ = false;
@@ -426,7 +440,7 @@ int Creator::ReadOptions(std::string const& input_file) {
       ErrorMsg("Both 'irest' and 'ntx' must be in '%s' if either are.\n", mdin_file_.c_str());
       return 1;
     }
-  }
+  }*/
   if (setupCreator()) {
     ErrorMsg("Invalid or missing options in file '%s'\n", input_file.c_str());
     return 1;
@@ -465,7 +479,7 @@ int Creator::LoadDimension(std::string const& dfile) {
 // Creator::Setup()
 //int Creator::Setup(std::string const& crdDirIn, bool needsMdin) {
 int Creator::setupCreator() {
-  bool needsMdin = true; // TODO does this need to be an option?
+  //bool needsMdin = true; // TODO does this need to be an option?
   // Command line input coordinates override any in options file.
 //  if (!crdDirIn.empty()) {
 //    crdDirSpecified_ = true;
@@ -569,10 +583,10 @@ int Creator::setupCreator() {
     Msg("Warning: DT not specified. Using default: %g\n", mdopts_.TimeStep().Val());
   }
   // FIXME check for all needed input eventually
-  if (needsMdin && mdin_file_.empty()) {
+/*  if (needsMdin && mdin_file.empty()) {
     ErrorMsg("No MDIN_FILE specified and '--nomdin' not specified.\n");
     return 1;
-  }
+  }*/
   if (umbrella_ > 0 && n_md_runs_ < 2) {
     ErrorMsg("If UMBRELLA is specified MDRUNS must be > 1.\n");
     return 1;
@@ -583,7 +597,7 @@ int Creator::setupCreator() {
 
 // Creator::Info()
 void Creator::Info() const {
-  Msg(    "  MDIN_FILE           : %s\n", mdin_file_.c_str());
+  //Msg(    "  MDIN_FILE           : %s\n", mdin_file_.c_str());
   Msg(    "  Time step           : %g\n", mdopts_.TimeStep().Val());
   Msg(    "  Random seed         : %i\n", mdopts_.RandomSeed().Val());
   if (runType_ == MD) {
@@ -880,29 +894,6 @@ std::string Creator::RefFileName(std::string const& EXT) const {
   return repRef;
 }
 
-void Creator::WriteNamelist(TextFile& MDIN, std::string const& namelist,
-                             MdinFile::TokenArray const& tokens)
-const
-{
-  MDIN.Printf(" %s\n", namelist.c_str());
-  unsigned int col = 0;
-  for (MdinFile::token_iterator tkn = tokens.begin(); tkn != tokens.end(); ++tkn)
-  {
-    if (col == 0)
-      MDIN.Printf("   ");
-    
-    MDIN.Printf("%s = %s, ", tkn->first.c_str(), tkn->second.c_str());
-    col++;
-    if (col == 4) {
-      MDIN.Printf("\n");
-      col = 0;
-    }
-  }
-  if (col != 0)
-    MDIN.Printf("\n");
-  MDIN.Printf(" &end\n");
-}
-
 // =============================================================================
 /** Create input file for MD.
   * \param fname Name of MDIN file.
@@ -915,6 +906,10 @@ int Creator::MakeMdinForMD(std::string const& fname, int run_num,
 const
 {
   // Create input
+  MdOptions currentMdOpts = mdopts_;
+  currentMdOpts.Set_Temperature0().SetVal( Temperature( Indices ) );
+  return mdInterface_.Package()->WriteMdInputFile(currentMdOpts, fname, run_num, EXT, Indices, rep);
+/*
   // Get temperature for this MDIN
   double currentTemp0 = Temperature( Indices );
 
@@ -995,7 +990,7 @@ const
     MDIN.Printf("/\n");
   }
   MDIN.Close();
-  return 0;
+  return 0;*/
 }
 
 /** Create input file for MD.
@@ -1007,5 +1002,5 @@ int Creator::MakeMdinForMD(std::string const& fname, int run_num,
                            std::string const& EXT)
 const
 {
-  return MakeMdinForMD(fname, run_num, EXT, RepIndexArray(0), 0);
+  return MakeMdinForMD(fname, run_num, EXT, RepIndexArray(), 0);
 }
