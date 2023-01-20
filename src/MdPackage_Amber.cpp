@@ -164,7 +164,7 @@ const
     // REMD header
     MDIN.Printf("%s", runDescription.c_str());
     // Write indices to mdin for MREMD
-    if (Dims_.size() > 1) {
+    if (Indices.Indices().size() > 1) {
       MDIN.Printf(" { %s }", Indices.IndicesStr(1).c_str());
     }
     // for Top %u at %g K 
@@ -189,8 +189,31 @@ const
     MDIN.Printf("    nmropt=1,\n");
     Msg("    Using NMR restraints.\n");
   }
-  for (unsigned int id = 0; id != Dims_.size(); id++)
-      Dims_[id]->WriteMdin(Indices[id], MDIN);
+  if (mdopts.AmdBoost().IsSet()) {
+    int iamd = 0;
+    if (mdopts.AmdBoost().Val() == MdOptions::AMD_TORSIONS)
+      iamd = 2;
+    else {
+      ErrorMsg("Unsupported AMD value.\n");
+      return 1;
+    }
+    MDIN.Printf("    iamd=%i, EthreshD=%f, alphaD=%f,\n", iamd,
+                mdopts.AmdEthresh().Val(), mdopts.AmdAlpha().Val());
+  }
+  if (mdopts.Sgld().IsSet()) {
+    int isgld = 0;
+    if (mdopts.Sgld().Val() == MdOptions::SGLD)
+      isgld = 1;
+    else {
+      ErrorMsg("Unsupported SGLD value.\n");
+      return 1;
+    }
+    MDIN.Printf("    isgld=%i, tsgavg=%f, tempsg=%f\n", isgld,
+                mdopts.SgldAvgTime().Val(), mdopts.SgldTemp().Val());
+  }
+
+  //for (unsigned int id = 0; id != Dims_.size(); id++)
+  //    Dims_[id]->WriteMdin(Indices[id], MDIN);
   MDIN.Printf(" &end\n");
   // Add any additional namelists
   for (MdinFile::const_iterator nl = mdinFile_.nl_begin(); nl != mdinFile_.nl_end(); ++nl)

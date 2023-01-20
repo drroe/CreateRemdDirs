@@ -934,6 +934,14 @@ const
       AmdDihedralDim const& amd = static_cast<AmdDihedralDim const&>( *(Dims_[id]) );
       currentMdOpts.Set_AmdEthresh().SetVal( amd.Ethresh()[ Indices[id] ] );
       currentMdOpts.Set_AmdAlpha().SetVal( amd.Alpha()[ Indices[id] ] );
+    } else if (Dims_[id]->Type() == ReplicaDimension::ReplicaDimension::SGLD) { // TODO check for multiple sgld dims?
+      currentMdOpts.Set_Sgld().SetVal( MdOptions::SGLD );
+      SgldDim const& sgld = static_cast<SgldDim const&>( *(Dims_[id]) );
+      currentMdOpts.Set_SgldTemp().SetVal( sgld.SgTemps()[ Indices[id] ] );
+      // FIXME put in sgld dim
+      double sgldAvgTime = 0.2;
+      Msg("Warning: Using default SGLD avg time of %f\n", sgldAvgTime);
+      currentMdOpts.Set_SgldAvgTime().SetVal( sgldAvgTime );
     }
   }
 

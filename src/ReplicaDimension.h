@@ -140,6 +140,9 @@ class SgldDim : public ReplicaDimension {
     const char* name()      const { return "RXSGLD"; }
     int LoadDim(std::string const&);
     int WriteMdin(int, TextFile&) const;
+
+    /// \return Array of SGLD temperatures
+    Darray const& SgTemps() const { return sgtemps_; }
   private:
     Darray sgtemps_; ///< Self-guided Langevin temperatures.
 };
