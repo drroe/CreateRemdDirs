@@ -13,6 +13,7 @@ FileRoutines.o : FileRoutines.cpp FileRoutines.h Messages.h
 Groups.o : Groups.cpp Groups.h Messages.h TextFile.h
 main.o : main.cpp CheckRuns.h Commands.h Creator.h Exec.h FileRoutines.h Groups.h Manager.h MdOptions.h MdinFile.h Messages.h Option.h Project.h RemdDirs.h StringRoutines.h Submit.h Submitter.h System.h TextFile.h
 Manager.o : Manager.cpp Creator.h FileRoutines.h Manager.h MdOptions.h MdinFile.h Messages.h Option.h Project.h Submitter.h System.h TextFile.h
+MdInterface.o : MdInterface.cpp MdInterface.h MdPackage.h MdPackage_Amber.h Messages.h
 MdOptions.o : MdOptions.cpp MdOptions.h Option.h
 MdPackage_Amber.o : MdPackage_Amber.cpp FileRoutines.h MdPackage.h MdPackage_Amber.h MdinFile.h Messages.h
 MdinFile.o : MdinFile.cpp Cols.h MdinFile.h Messages.h StringRoutines.h TextFile.h

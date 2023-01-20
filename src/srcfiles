@@ -14,6 +14,7 @@ FileRoutines.cpp \
 Groups.cpp \
 main.cpp \
 Manager.cpp \
+MdInterface.cpp \
 MdOptions.cpp \
 MdPackage_Amber.cpp \
 MdinFile.cpp \
