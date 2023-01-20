@@ -279,9 +279,9 @@ int Creator::ReadOptions(std::string const& input_file) {
       else if (OPT == "DT")
         mdopts_.Set_TimeStep().SetVal( atof( VAR.c_str() ) );
       else if (OPT == "IG")
-        ig_ = atoi( VAR.c_str() );
+        mdopts_.Set_RandomSeed().SetVal( atoi( VAR.c_str() ) );
       else if (OPT == "NUMEXCHG")
-        numexchg_ = atoi( VAR.c_str() );
+        mdopts_.Set_N_Exchanges().SetVal( atoi( VAR.c_str() ) );
       else if (OPT == "UMBRELLA")
         umbrella_ = atoi( VAR.c_str() );
       else if (OPT == "TOPOLOGY")
@@ -297,7 +297,7 @@ int Creator::ReadOptions(std::string const& input_file) {
       else if (OPT == "REF_FILE")  // Format: <ref_dir>/EXT.rst7
         ref_dir_ = VAR;
       else if (OPT == "TEMPERATURE")
-        temp0_ = atof( VAR.c_str() );
+        mdopts_.Set_Temperature0().SetVal( atof( VAR.c_str() ) );
       else if (OPT == "TRAJOUTARGS")
         trajoutargs_ = VAR;
       else if (OPT == "FULLARCHIVE")
@@ -447,9 +447,8 @@ int Creator::setupCreator() {
     Msg("  No dimensions defined: assuming MD run.\n");
     runType_ = MD;
     runDescription_.assign("MD");
-    if (temp0_ < 0.0) {
-      ErrorMsg("TEMPERATURE not specified.\n");
-      return 1;
+    if (!mdopts_.Temperature0().IsSet()) {
+      Msg("Warning: TEMPERATURE not specified. Using default value: %g\n", mdopts_.Temperature0().Val());
     }
     if (top_file_.empty()) {
       ErrorMsg("TOPOLOGY not specified.\n");
@@ -497,9 +496,9 @@ int Creator::setupCreator() {
     if (providesTemp0 > 1) {
       ErrorMsg("At most one dimension that provides temperatures should be specified.\n");
       return 1;
-    } else if (providesTemp0 == 0 && temp0_ < 0.0) {
-      ErrorMsg("No dimension provides temperature and TEMPERATURE not specified.\n");
-      return 1;
+    } else if (providesTemp0 == 0 && !mdopts_.Temperature0().IsSet()) {
+      Msg("Warning: No dimension provides temperature and TEMPERATURE not specified.\n");
+      Msg("Warning:   Using default temperature: %g\n", mdopts_.Temperature0().Val());
     }
     if (providesPh > 1) {
       ErrorMsg("At most one dimension that provides pH should be specified.\n");
@@ -520,13 +519,20 @@ int Creator::setupCreator() {
           top_dim_, temp0_dim_, ph_dim_);
   }
   // Perform some more error checking
-  if (nstlim_ < 1 || (runType_ != MD && numexchg_ < 1)) {
-    ErrorMsg("NSTLIM or NUMEXCHG < 1\n");
-    return 1;
+  if (runType_ == MD) {
+    if (!mdopts_.N_Steps().IsSet()) {
+      ErrorMsg("NSTLIM not set.\n");
+      return 1;
+    }
+  } else {
+    // REMD
+    if (!mdopts_.N_Steps().IsSet() || !mdopts_.N_Exchanges().IsSet()) {
+      ErrorMsg("NSTLIM or NUMEXCHG not set.\n");
+      return 1;
+    }
   }
-  if (dt_ < 0.0) {
-    ErrorMsg("DT must be specified.\n");
-    return 1;
+  if (!mdopts_.TimeStep().IsSet()) {
+    Msg("Warning: DT not specified. Using default: %g\n", mdopts_.TimeStep().Val());
   }
   if (needsMdin && mdin_file_.empty()) {
     ErrorMsg("No MDIN_FILE specified and '--nomdin' not specified.\n");
@@ -542,24 +548,33 @@ int Creator::setupCreator() {
 
 // Creator::Info()
 void Creator::Info() const {
-  Msg("  MDIN_FILE        : %s\n", mdin_file_.c_str());
-  Msg("  NSTLIM=%i, DT=%f\n", nstlim_, dt_);
+  Msg(    "  MDIN_FILE           : %s\n", mdin_file_.c_str());
+  Msg(    "  Time step           : %g\n", mdopts_.TimeStep().Val());
+  Msg(    "  Random seed         : %i\n", mdopts_.RandomSeed().Val());
   if (runType_ == MD) {
-    Msg("  CRD              : %s\n", crd_dir_.c_str());
+    // Regular MD
+    Msg(  "  Number of steps     : %i\n", mdopts_.N_Steps().Val());
+    Msg(  "  Temperature         : %g\n", mdopts_.Temperature0().Val());
+
+    Msg(  "  CRD                 : %s\n", crd_dir_.c_str());
     if (!ref_file_.empty())
-      Msg("  REF              : %s\n", ref_file_.c_str());
+      Msg("  REF                 : %s\n", ref_file_.c_str());
     if (!ref_dir_.empty())
-      Msg("  REF              : %s\n", ref_dir_.c_str());
+      Msg("  REF                 : %s\n", ref_dir_.c_str());
     if (!top_file_.empty())
-      Msg("  TOP              : %s\n", top_file_.c_str());
-  } else { // Some type of replica run
-    Msg("  NUMEXCHG=%i\n", numexchg_);
-    Msg("  CRD_DIR          : %s\n", crd_dir_.c_str());
+      Msg("  TOP                 : %s\n", top_file_.c_str());
+  } else {
+    // Some type of replica exchange run
+    if (temp0_dim_ == -1)
+      Msg("  Temperature         : %g\n", mdopts_.Temperature0().Val());
+    Msg(  "  Number of exchanges : %i\n", mdopts_.N_Exchanges().Val());
+    Msg(  "  Steps per exchange  : %i\n", mdopts_.N_Steps().Val());
+    Msg(  "  CRD_DIR             : %s\n", crd_dir_.c_str());
     if (!ref_file_.empty())
-      Msg("  REF_PREFIX       : %s\n", ref_file_.c_str());
+      Msg("  REF_PREFIX          : %s\n", ref_file_.c_str());
     else if (!ref_dir_.empty())
-      Msg("  REF_DIR          : %s\n", ref_dir_.c_str());
-    Msg("  %u dimensions, %u total replicas.\n", Dims_.size(), totalReplicas_);
+      Msg("  REF_DIR             : %s\n", ref_dir_.c_str());
+    Msg(  "  %u dimensions, %u total replicas.\n", Dims_.size(), totalReplicas_);
   }
 }
 
@@ -888,13 +903,13 @@ const
 
   TextFile MDIN;
   if (MDIN.OpenWrite(fname)) return 1;
+  double total_time = mdopts_.TimeStep().Val() * (double)mdopts_.N_Steps().Val();
   if (runType_ == MD) {
-    double total_time = dt_ * (double)nstlim_;
     // MD header
     MDIN.Printf("%s %g ps\n"
                 " &cntrl\n"
                 "    imin = 0, nstlim = %i, dt = %f,\n",
-                runDescription_.c_str(), total_time, nstlim_, dt_);
+                runDescription_.c_str(), total_time, mdopts_.N_Steps().Val(), mdopts_.TimeStep().Val());
   } else {
     // REMD header
     MDIN.Printf("%s", runDescription_.c_str());
@@ -902,21 +917,20 @@ const
     if (Dims_.size() > 1) {
       MDIN.Printf(" { %s }", Indices.IndicesStr(1).c_str());
     }
-    double ps_per_exchg = dt_ * (double)nstlim_;
     // for Top %u at %g K 
     MDIN.Printf(" (rep %u), %g ps/exchg\n"
                 " &cntrl\n"
                 "    imin = 0, nstlim = %i, dt = %f,\n",
-                rep+1, ps_per_exchg, nstlim_, dt_);
+                rep+1, total_time, mdopts_.N_Steps().Val(), mdopts_.TimeStep().Val());
   }
 
   if (!override_irest_)
     MDIN.Printf("    irest = %i, ntx = %i, ig = %i,\n",
-                irest, ntx, ig_);
+                irest, ntx, mdopts_.RandomSeed().Val());
   else
-    MDIN.Printf("    ig = %i,\n", ig_);
-  if (numexchg_ > -1)
-    MDIN.Printf("    numexchg = %i,\n", numexchg_);
+    MDIN.Printf("    ig = %i,\n", mdopts_.RandomSeed().Val());
+  if (mdopts_.N_Exchanges().Val() > -1)
+    MDIN.Printf("    numexchg = %i,\n", mdopts_.N_Exchanges().Val());
   if (ph_dim_ != -1)
       MDIN.Printf("    solvph = %f,\n", Dims_[ph_dim_]->SolvPH( Indices[ph_dim_] ));
   MDIN.Printf("    temp0 = %f, tempi = %f,\n%s",
