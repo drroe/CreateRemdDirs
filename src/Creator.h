@@ -58,9 +58,9 @@ class Creator {
     bool UseLog() const { return uselog_; }
     // ----- File names --------------------------
     /// \return Name of first topology file from the top_dim_ dimension or MD top file.
-    std::string const& TopologyName() const;
+    std::string TopologyName() const;
     /// \return Name of topology at specified index in top_dim_ dimension (or MD top file).
-    std::string const& TopologyName(RepIndexArray const&) const;
+    std::string TopologyName(RepIndexArray const&) const;
     /// \return Temperature at specified index in temperature dim, or MD temperature if no dim.
     double Temperature(RepIndexArray const&) const;
     /// \return Array of input coordinate files based on run number

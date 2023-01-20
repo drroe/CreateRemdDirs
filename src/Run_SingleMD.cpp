@@ -49,9 +49,9 @@ const
     return 1;
   }
   // Ensure topology exists.
-  if (!fileExists( creator.TopologyName() )) {
-    ErrorMsg("Topology '%s' not found. Must specify absolute path"
-             " or path relative to '%s'\n", creator.TopologyName().c_str(), run_dir.c_str());
+  std::string topname = creator.TopologyName();
+  if (topname.empty()) {
+    ErrorMsg("Could not get topology file name.\n");
     return 1;
   }
   // Get reference coords if any
@@ -59,7 +59,7 @@ const
 
   // Set up run command 
   std::string cmd_opts;
-  cmd_opts.assign("-i md.in -p " + creator.TopologyName() + " -c " + crd_files.front() + 
+  cmd_opts.assign("-i md.in -p " + topname + " -c " + crd_files.front() + 
                     " -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info");
 /*    std::string mdRef;
     if (!ref_file_.empty() || !ref_dir_.empty()) {
@@ -82,8 +82,8 @@ const
   creator.WriteRunMD( cmd_opts );
   // Info for this run.
   if (Debug() >= 0) // 1 
-      Msg("\tMD: top=%s\n", creator.TopologyName().c_str());
-      //Msg("\tMD: top=%s  temp0=%f\n", creator.TopologyName().c_str(), temp0_);
+      Msg("\tMD: top=%s\n", topname.c_str());
+      //Msg("\tMD: top=%s  temp0=%f\n", topname.c_str(), temp0_);
   // Create input for non-umbrella runs.
   if (creator.UmbrellaWriteFreq() == 0) {
     if (creator.MakeMdinForMD("md.in", run_num, "",run_dir)) return 1;

@@ -89,10 +89,8 @@ const
     std::string EXT = creator.NumericalExt(rep, creator.TotalReplicas());
     // Get topology for this replica
     std::string currentTop = creator.TopologyName( Indices );
-    // Ensure topology exists.
-    if (!fileExists( currentTop )) {
-      ErrorMsg("Topology '%s' not found. Must specify absolute path"
-               " or path relative to '%s'\n", currentTop.c_str(), run_dir.c_str());
+    if (currentTop.empty()) {
+      ErrorMsg("Could not get topology name.\n");
       return 1;
     }
     // Get temperature for this replica

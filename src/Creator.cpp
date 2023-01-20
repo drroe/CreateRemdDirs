@@ -35,16 +35,46 @@ Creator::~Creator() {
     if (*dim != 0) delete *dim;
 }
 
+/** If given path is a relative path, add a '../' prefix. */
+static inline std::string add_path_prefix(std::string const& path) {
+  if (path.empty() || path[0] == '/')
+    // No path or absolute path
+    return path;
+  else
+    // Not an absolute path
+    return std::string("../" + path);
+}
+
 /** \return First topology file name from the top_dim_ dimension (REMD) or MD topology file. */
-std::string const& Creator::TopologyName() const {
-  if (top_dim_ == -1) return top_file_;
-  return Dims_[top_dim_]->TopName( 0 );
+std::string Creator::TopologyName() const {
+  std::string topname;
+  if (top_dim_ == -1)
+    topname = add_path_prefix(top_file_);
+  else
+    topname = add_path_prefix(Dims_[top_dim_]->TopName( 0 ));
+  // Topology must always exist
+  if (!fileExists( topname )) {
+    ErrorMsg("Topology '%s' not found. Must specify absolute path"
+             " or path relative to system directory.\n", topname.c_str());
+    return std::string("");
+  }
+  return topname;
 }
 
 /** \return Topology at specified index in topology dimension, or MD topology file if no dim. */
-std::string const& Creator::TopologyName(RepIndexArray const& Indices) const {
-  if (top_dim_ == -1) return top_file_;
-  return Dims_[top_dim_]->TopName( Indices[top_dim_] );
+std::string Creator::TopologyName(RepIndexArray const& Indices) const {
+  std::string topname;
+  if (top_dim_ == -1)
+    topname = add_path_prefix(top_file_);
+  else
+    topname = add_path_prefix(Dims_[top_dim_]->TopName( Indices[top_dim_] ));
+  // Topology must always exist
+  if (!fileExists( topname )) {
+    ErrorMsg("Topology '%s' not found. Must specify absolute path"
+             " or path relative to system directory.\n", topname.c_str());
+    return std::string("");
+  }
+  return topname;
 }
 
 /** \return Temperature at specified index in temperature dim, or MD temperature if no dim. */
@@ -158,10 +188,10 @@ Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startR
       if (n_md_runs_ > 1) {
         // Multiple input coords, one for each MD group. Expect files named
         // <DIR>/XXX.<ext>
-        crd_files = inputCrds_multiple_md( specified_crd_, crd_dir_ );
+        crd_files = inputCrds_multiple_md( add_path_prefix(specified_crd_), add_path_prefix(crd_dir_) );
       } else {
         // Single input coords for MD.
-        crd_files = inputCrds_single_md( specified_crd_, crd_dir_);
+        crd_files = inputCrds_single_md( add_path_prefix(specified_crd_), add_path_prefix(crd_dir_) );
       }
     } else if (runType_ == TREMD ||
                runType_ == HREMD ||
@@ -169,7 +199,7 @@ Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startR
                runType_ == MREMD)
     {
       // REMD run
-      crd_files = inputCrds_multiple_md( specified_crd_, crd_dir_ );
+      crd_files = inputCrds_multiple_md( add_path_prefix(specified_crd_), add_path_prefix(crd_dir_) );
       return Sarray();
     } else {
       ErrorMsg("Unhandled run type in InputCoordsNames()\n");
@@ -185,10 +215,10 @@ Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startR
     if (runType_ == MD) {
       // MD run
       if (n_md_runs_ > 1) {
-        crd_files = inputCrds_multiple_md( specified, prevDir );
+        crd_files = inputCrds_multiple_md( add_path_prefix(specified), prevDir );
       } else {
         std::string prev_name = prevDir + "/mdrst.rst7";
-        crd_files = inputCrds_single_md( specified, prev_name );
+        crd_files = inputCrds_single_md( add_path_prefix(specified), prev_name );
       }
     } else if (runType_ == TREMD ||
                runType_ == HREMD ||
@@ -197,7 +227,7 @@ Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startR
     {
       // REMD run
       std::string prev_dir = prevDir + "/RST";
-      crd_files = inputCrds_multiple_md( specified, prev_dir );
+      crd_files = inputCrds_multiple_md( add_path_prefix(specified), prev_dir );
       return Sarray();
     } else {
       ErrorMsg("Unhandled run type in InputCoordsNames()\n");
@@ -209,7 +239,7 @@ Creator::Sarray Creator::InputCoordsNames(std::string const& run_dir, int startR
     for (Sarray::const_iterator it = crd_files.begin(); it != crd_files.end(); ++it) {
       if (!fileExists( *it )) {
         ErrorMsg("Coords file '%s' not found. Must specify absolute path"
-                 " or path relative to '%s'\n", it->c_str(), run_dir.c_str());
+                 " or path relative to system directory.\n", it->c_str());
         return Sarray();
       }
     }
