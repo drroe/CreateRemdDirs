@@ -101,18 +101,22 @@ Run* System::allocateFromCreator(std::string const& runDir) const {
 /** Search for run directories in dirname_ */
 int System::FindRuns() {
   using namespace FileRoutines;
-  ChangeDir( topDir_ );
-  ChangeDir( dirname_ );
+  if (ChangeToSystemDir()) {
+    ErrorMsg("Could not change to system directory %s/%s\n", topDir_.c_str(), dirname_.c_str());
+    return 1;
+  }
 
   // See if creation options exist
   if (fileExists( createOptsFilename_ )) {
     if (creator_.ReadOptions( createOptsFilename_ )) {
-      ErrorMsg("Reading creation options file name '%s' failed.\n", createOptsFilename_.c_str());
+      ErrorMsg("Reading creation options file name '%s' in dir '%s' failed.\n", createOptsFilename_.c_str(), dirname_.c_str());
       return 1;
     }
     creator_.Info();
   }
   // See if submission options exist
+  // FIXME re-enable this when the time comes
+/*
   if (fileExists( submitOptsFilename_ )) {
     if (submitter_.ReadOptions( submitOptsFilename_ )) {
       ErrorMsg("Reading submission options file name '%s' failed.\n", submitOptsFilename_.c_str());
@@ -123,6 +127,7 @@ int System::FindRuns() {
       return 1;
     }
   }
+*/
 
   // Search for runs
   StrArray runDirs = ExpandToFilenames(runDirPrefix_ + ".*");

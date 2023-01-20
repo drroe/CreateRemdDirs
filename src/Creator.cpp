@@ -397,7 +397,11 @@ int Creator::ReadOptions(std::string const& input_file) {
       return 1;
     }
   }
-  return setupCreator();
+  if (setupCreator()) {
+    ErrorMsg("Invalid or missing options in file '%s'\n", input_file.c_str());
+    return 1;
+  }
+  return 0;
 }
 
 // Creator::LoadDimension()
