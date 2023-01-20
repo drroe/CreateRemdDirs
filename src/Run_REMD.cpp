@@ -48,13 +48,13 @@ const
   if (Mkdir(run_dir)) return 1;
   if (ChangeDir(run_dir)) return 1;
   // Get Coords
-  Creator::Sarray crd_files = creator.InputCoordsNames(run_dir, start_run, run_num, prevDir);
+  Creator::Sarray crd_files = creator.InputCoordsNames(start_run, run_num, prevDir);
   if (crd_files.empty()) {
     ErrorMsg("Could not get COORDS for REMD.\n");
     return 1;
   }
   // Get any ref coords
-  Creator::Sarray ref_files = creator.RefCoordsNames(run_dir);
+  Creator::Sarray ref_files = creator.RefCoordsNames();
 /*
   // Ensure that coords directory exists.
   if (crdDirSpecified_ && !fileExists(crd_dir_)) {
@@ -106,7 +106,7 @@ const
     // Create input
     std::string mdin_name = input_dir + "/in." + EXT;
     if (creator.MakeMdinForMD(mdin_name, run_num,
-                              EXT, run_dir, Indices, rep))
+                              EXT, Indices, rep))
     {
       ErrorMsg("Create input failed for rep %u\n", rep);
       return 1;

@@ -41,9 +41,9 @@ class Creator {
     DimArray const& Dims() const { return Dims_; }
 
     /// Create MDIN file for REMD
-    int MakeMdinForMD(std::string const&, int, std::string const&, std::string const&, RepIndexArray const&, unsigned int) const;
+    int MakeMdinForMD(std::string const&, int, std::string const&, RepIndexArray const&, unsigned int) const;
     /// Create MDIN file for MD
-    int MakeMdinForMD(std::string const&, int, std::string const&, std::string const&) const;
+    int MakeMdinForMD(std::string const&, int, std::string const&) const;
     /// Create Run script for MD
     int WriteRunMD(std::string const&) const;
 
@@ -88,8 +88,7 @@ class Creator {
     int LoadDimension(std::string const&);
     std::string RefFileName(std::string const&) const; // TODO deprecate
     void WriteNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
-    //int CreateRemd(int, int, std::string const&);
-    //int CreateMD(int, int, std::string const&);
+
     // File and MDIN variables
     std::string top_file_;
     std::string trajoutargs_;

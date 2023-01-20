@@ -903,10 +903,6 @@ const
   MDIN.Printf(" &end\n");
 }
 
-// Creator::CreateRemd()
-//int Creator::CreateRemd(int start_run, int run_num, std::string const& run_dir) {
-//}
-
 // =============================================================================
 /** Create input file for MD.
   * \param fname Name of MDIN file.
@@ -914,7 +910,7 @@ const
   * \param EXT Extension for restraint/dumpave files when umbrella sampling.
   */
 int Creator::MakeMdinForMD(std::string const& fname, int run_num, 
-                           std::string const& EXT, std::string const& run_dir,
+                           std::string const& EXT, 
                            RepIndexArray const& Indices, unsigned int rep)
 const
 {
@@ -984,11 +980,11 @@ const
 
   if (!rst_file_.empty()) {
     // Restraints
-    std::string rf_name(rst_file_ + EXT);
+    std::string rf_name = add_path_prefix(rst_file_ + EXT);
     // Ensure restraint file exists if specified.
     if (!fileExists( rf_name )) {
       ErrorMsg("Restraint file '%s' not found. Must specify absolute path"
-               " or path relative to '%s'\n", rf_name.c_str(), run_dir.c_str());
+               " or path relative to system dir.\n", rf_name.c_str());
       return 1;
     }
     if (umbrella_ > 0)
@@ -1008,8 +1004,8 @@ const
   * \param EXT Extension for restraint/dumpave files when umbrella sampling.
   */
 int Creator::MakeMdinForMD(std::string const& fname, int run_num, 
-                           std::string const& EXT, std::string const& run_dir)
+                           std::string const& EXT)
 const
 {
-  return MakeMdinForMD(fname, run_num, EXT, run_dir, RepIndexArray(0), 0);
+  return MakeMdinForMD(fname, run_num, EXT, RepIndexArray(0), 0);
 }

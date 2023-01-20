@@ -43,7 +43,7 @@ const
   if (Mkdir(run_dir)) return 1;
   if (ChangeDir(run_dir)) return 1;
   // Get input coordinates array
-  Creator::Sarray crd_files = creator.InputCoordsNames(run_dir, start_run, run_num, prevDir);
+  Creator::Sarray crd_files = creator.InputCoordsNames(start_run, run_num, prevDir);
   if (crd_files.empty()) {
     ErrorMsg("Could not get input coords for MD.\n");
     return 1;
@@ -55,7 +55,7 @@ const
     return 1;
   }
   // Get reference coords if any
-  Creator::Sarray ref_files = creator.RefCoordsNames( run_dir );
+  Creator::Sarray ref_files = creator.RefCoordsNames();
 
   // Set up run command 
   std::string cmd_opts;
@@ -86,7 +86,7 @@ const
       //Msg("\tMD: top=%s  temp0=%f\n", topname.c_str(), temp0_);
   // Create input for non-umbrella runs.
   if (creator.UmbrellaWriteFreq() == 0) {
-    if (creator.MakeMdinForMD("md.in", run_num, "",run_dir)) return 1;
+    if (creator.MakeMdinForMD("md.in", run_num, "")) return 1;
   }
   // Input coordinates for next run will be restarts of this
   //crd_dir_ = "../" + run_dir + "/";
