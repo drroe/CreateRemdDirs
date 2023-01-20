@@ -169,7 +169,10 @@ int main(int argc, char** argv) {
   Commands::InitCommands();
   Manager manager;
   if (manager.InitManager( TopDir, systems_file )) return 1;
-  return Commands::Prompt(manager);
+  if (!input_file.empty())
+    return Commands::ReadInput(input_file, manager);
+  else
+    return Commands::Prompt(manager);
 
   // If start_run and stop_run are both -1, see if systems.opts exists
   // for Manager mode.

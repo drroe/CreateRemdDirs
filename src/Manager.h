@@ -16,7 +16,7 @@ class Manager {
     /// \return true if no projects
     bool NoProjects() const { return projects_.empty(); }
     /// \return Top directory name
-    //std::string const& TopDirName() const { return topDir_; }
+    std::string const& TopDirName() const { return topDir_; }
     /// \return Top directory name
     const char* topDirName() const { return topDir_.c_str(); }
     /// \return Global debug level
@@ -34,8 +34,6 @@ class Manager {
     int SetActiveProjectSystem(int, int);
   private:
     enum RetType { OK = 0, ERR, QUIT };
-    /// Process command
-    RetType ProcessCommand(std::string const&);
 
     ProjectArray projects_; ///< Hold all Projects from the systems file
     std::string topDir_;    ///< The current (top) working directory

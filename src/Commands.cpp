@@ -3,7 +3,9 @@
 #include "Cols.h"
 #include "Cmd.h"
 #include "CmdList.h"
+#include "FileRoutines.h"
 #include "Messages.h"
+#include "TextFile.h"
 #include <readline.h>
 #include <history.h>
 #include <cstdarg>
@@ -162,6 +164,32 @@ Exec::RetType Commands::ProcessCommand(std::string const& inp, Manager& manager)
   // Execute command
   Exec::RetType retVal = cmd.CmdExec()->Execute( manager, line );
   return retVal;
+}
+
+/** Read input from a file. */
+int Commands::ReadInput(std::string const& fname, Manager& manager)
+{
+  TextFile infile;
+  // Change to manager top directory
+  if (FileRoutines::ChangeDir( manager.TopDirName())) return 1;
+  if (infile.OpenRead( fname )) return 1;
+  Msg("Reading input from file '%s'\n", fname.c_str());
+  const char* ptr = infile.Gets();
+  while ( ptr != 0) {
+    std::string inp( ptr );
+    Exec::RetType ret = ProcessCommand( inp, manager );
+    if (ret == Exec::QUIT) {
+      infile.Close();
+      return 0;
+    } else if (ret == Exec::ERR) {
+      ErrorMsg("Bad input in file '%s'\n", fname.c_str());
+      infile.Close();
+      return 1;
+    }
+    ptr = infile.Gets();
+  }
+  infile.Close();
+  return 0;
 }
 
 /** Command-line prompt for manager mode. */
