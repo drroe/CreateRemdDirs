@@ -9,16 +9,16 @@ using namespace Messages;
 
 /** CONSTRUCTOR */
 MdPackage_Amber::MdPackage_Amber() :
-  override_ntx_(false),
-  override_irest_(false)
+  override_irest_(false),
+  override_ntx_(false)
 {}
 
 /** COPY CONSTRUCTOR */
 MdPackage_Amber::MdPackage_Amber(MdPackage_Amber const& rhs) :
   MdPackage(rhs),
   additionalInput_(rhs.additionalInput_),
-  override_ntx_(rhs.override_ntx_),
   override_irest_(rhs.override_irest_),
+  override_ntx_(rhs.override_ntx_),
   mdinFile_(rhs.mdinFile_)
 {}
 
