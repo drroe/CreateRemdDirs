@@ -72,7 +72,8 @@ int main(int argc, char** argv) {
   std::vector<bool> ModeEnabled( 3, false );
   std::vector<bool> InputEnabled( 3, false );
   // Command line option defaults.
-  std::string input_file = "remd.opts";
+  //std::string input_file = "remd.opts";
+  std::string input_file;
   int debug = 0;
   int start_run = -1;
   int stop_run = -1;
