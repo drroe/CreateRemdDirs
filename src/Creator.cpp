@@ -955,7 +955,7 @@ const
     }
   }
 
-  return mdInterface_.Package()->WriteMdInputFile(runDescription_, currentMdOpts, fname, run_num, EXT, Indices, rep);
+  return mdInterface_.Package()->WriteMdInputFile(runDescription_, currentMdOpts, fname, run_num, Indices, rep);
 /*
   // Get temperature for this MDIN
   double currentTemp0 = Temperature( Indices );

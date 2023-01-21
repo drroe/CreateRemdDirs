@@ -129,7 +129,6 @@ const
 int MdPackage_Amber::WriteMdInputFile(std::string const& runDescription,
                                       MdOptions const& mdopts,
                                       std::string const& fname, int run_num, 
-                                      std::string const& EXT, 
                                       RepIndexArray const& Indices, unsigned int rep)
 const
 {
