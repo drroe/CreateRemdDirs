@@ -85,9 +85,9 @@ const
       Msg("\tMD: top=%s\n", topname.c_str());
       //Msg("\tMD: top=%s  temp0=%f\n", topname.c_str(), temp0_);
   // Create input for non-umbrella runs.
-  if (creator.UmbrellaWriteFreq() == 0) {
+  //if (creator.UmbrellaWriteFreq() == 0) {
     if (creator.MakeMdinForMD("md.in", run_num, "")) return 1;
-  }
+  //}
   // Input coordinates for next run will be restarts of this
   //crd_dir_ = "../" + run_dir + "/";
   //if (creator.N_MD_Runs() < 2) crd_dir_.append("mdrst.rst7");

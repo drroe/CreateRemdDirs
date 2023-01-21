@@ -65,11 +65,11 @@ const
   for (int grp = 1; grp <= creator.N_MD_Runs(); grp++) {
     std::string EXT = creator.NumericalExt(grp, creator.N_MD_Runs());//integerToString(grp, width);
     std::string mdin_name("md.in");
-    if (creator.UmbrellaWriteFreq() > 0) {
+    //if (creator.UmbrellaWriteFreq() > 0) {
       // Create input for umbrella runs
       mdin_name.append("." + EXT);
-      if (creator.MakeMdinForMD(mdin_name, run_num, "." + EXT)) return 1;
-    }
+      if (creator.MakeMdinForMD(mdin_name, run_num, EXT)) return 1;
+    //}
     GROUP.Printf("-i %s -p %s -c %s -x md.nc.%s -r %s.rst7 -o md.out.%s -inf md.info.%s",
                  mdin_name.c_str(), topname.c_str(), crd_files[grp-1].c_str(),
                  EXT.c_str(), EXT.c_str(), EXT.c_str(), EXT.c_str());
@@ -93,9 +93,9 @@ const
       Msg("\tMultiMD: top=%s\n", topname.c_str());
       //Msg("\tMD: top=%s  temp0=%f\n", topname.c_str(), temp0_);
   // Create input for non-umbrella runs.
-  if (creator.UmbrellaWriteFreq() == 0) {
-    if (creator.MakeMdinForMD("md.in", run_num, "")) return 1;
-  }
+  //if (creator.UmbrellaWriteFreq() == 0) {
+  //  if (creator.MakeMdinForMD("md.in", run_num, "")) return 1;
+  //}
 
   return 1;
 }
