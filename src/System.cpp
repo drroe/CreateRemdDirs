@@ -192,6 +192,19 @@ int System::ChangeToSystemDir() const {
   return 0;
 }
 
+/** \return Index of run with specified runNum or -1 if not present. */
+int System::findRunIdx(int runNum) const {
+  int existingRunIdx = -1;
+  for (unsigned int ridx = 0; ridx < Runs_.size(); ridx++) {
+    if ( Runs_[ridx]->RunIndex() == runNum) {
+      Msg(" Run %i exists.\n", runNum);
+      existingRunIdx = (int)ridx;
+      break;
+    }
+  }
+  return existingRunIdx;
+}
+
 /** Create run directories in system directory. */
 int System::CreateRunDirectories(std::string const& crd_dir,
                                  int start_run, int nruns, bool overwrite)
@@ -218,18 +231,17 @@ int System::CreateRunDirectories(std::string const& crd_dir,
   int runWidth = std::max( StringRoutines::DigitWidth(stop_run), runDirExtWidth_ );
   Msg("Creating %i runs from %i to %i\n", stop_run - start_run + 1, start_run, stop_run);
   std::string prevDir;
+  // See if there is a run before start_run
+  if (start_run > 0) {
+    int prevIdx = findRunIdx(start_run - 1);
+    if (prevIdx > -1)
+      prevDir = Runs_[prevIdx]->RunDirName();
+  }
   // Loop over runs
   for (int runNum = start_run; runNum <= stop_run; ++runNum)
   {
     // See if this run already exists
-    int existingRunIdx = -1;
-    for (unsigned int ridx = 0; ridx < Runs_.size(); ridx++) {
-      if ( Runs_[ridx]->RunIndex() == runNum) {
-        Msg(" Run %i exists.\n", runNum);
-        existingRunIdx = (int)ridx;
-        break;
-      }
-    }
+    int existingRunIdx = findRunIdx(runNum);
     if (existingRunIdx > -1) {
       if (overwrite)
         Msg("Will overwrite run.\n");

@@ -42,6 +42,8 @@ class System {
     void clearRuns();
     /// Allocate Run from creator_
     Run* allocateFromCreator(std::string const&) const;
+    /// Find existing run index if present
+    int findRunIdx(int) const;
 
     RunArray Runs_;           ///< Array of runs for the system
     std::string topDir_;      ///< Top level directory
