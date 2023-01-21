@@ -928,6 +928,14 @@ const
       return 1;
     }
     currentMdOpts.Set_RstFilename().SetVal( rf_name );
+    if (mdopts_.RstWriteFreq().IsSet() &&
+        mdopts_.RstWriteFreq().Val() > 0)
+    {
+      if (EXT.empty())
+        currentMdOpts.Set_RstWriteFile().SetVal("dumpave"); // FIXME allow user to customize
+      else
+        currentMdOpts.Set_RstWriteFile().SetVal("dumpave." + EXT);
+    }
   }
   // Dimension-specific options
   for (unsigned int id = 0; id != Dims_.size(); id++) {

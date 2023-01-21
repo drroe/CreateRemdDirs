@@ -21,6 +21,7 @@ class MdOptions {
     Option<double>& Set_pH()           { return pH_; }
     Sopt&           Set_RstFilename()  { return rst_file_; }
     Option<int>&    Set_RstWriteFreq() { return rstWriteFreq_; }
+    Sopt&           Set_RstWriteFile() { return rstWriteFile_; }
     Option<AmdBoostType>& Set_AmdBoost() { return amdBoost_; }
     Option<double>& Set_AmdEthresh()     { return amdEthresh_; }
     Option<double>& Set_AmdAlpha()       { return amdAlpha_; }
@@ -36,6 +37,7 @@ class MdOptions {
     Option<double> const& pH()           const { return pH_; }
     Sopt           const& RstFilename()  const { return rst_file_; }
     Option<int>    const& RstWriteFreq() const { return rstWriteFreq_; }
+    Sopt           const& RstWriteFile() const { return rstWriteFile_; }
     Option<AmdBoostType> const& AmdBoost() const { return amdBoost_; }
     Option<double> const& AmdEthresh()   const { return amdEthresh_; }
     Option<double> const& AmdAlpha()     const { return amdAlpha_; }
@@ -51,6 +53,7 @@ class MdOptions {
     Option<double> pH_;        ///< Simulation pH.
     Sopt rst_file_;            ///< File holding restraint definitions
     Option<int> rstWriteFreq_; ///< Restraint value write frequency
+    Sopt rstWriteFile_;        ///< Restraint value write file
     Option<AmdBoostType> amdBoost_; ///< Accelerated MD boost type
     Option<double> amdEthresh_; ///< Accelerated MD boost energy threshhold
     Option<double> amdAlpha_;   ///< Accelerated MD boost alpha
