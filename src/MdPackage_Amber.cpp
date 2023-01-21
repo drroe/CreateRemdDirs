@@ -225,8 +225,12 @@ const
     if (mdopts.RstWriteFreq().IsSet())
       MDIN.Printf("&wt\n   TYPE=\"DUMPFREQ\", istep1 = %i,\n&end\n", mdopts.RstWriteFreq().Val());
     MDIN.Printf("&wt\n   TYPE=\"END\",\n&end\nDISANG=%s\n", mdopts.RstFilename().Val().c_str());
-    if (mdopts.RstWriteFreq().IsSet() > 0) // TODO: customize dumpave name?
-      MDIN.Printf("DUMPAVE=dumpave%s\n", EXT.c_str());
+    if (mdopts.RstWriteFreq().IsSet() > 0) { // TODO: customize dumpave name?
+      if (EXT.empty())
+        MDIN.Printf("DUMPAVE=dumpave\n");
+      else
+        MDIN.Printf("DUMPAVE=dumpave.%s\n", EXT.c_str());
+    }
     MDIN.Printf("/\n");
   }
   MDIN.Close();
