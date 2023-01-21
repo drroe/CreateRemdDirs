@@ -18,15 +18,21 @@ MdInterface::~MdInterface() {
 
 /** COPY CONSTRUCTOR */
 MdInterface::MdInterface(MdInterface const& rhs) :
-  package_(rhs.package_->Copy()),
+  package_(0),
   type_(rhs.type_)
-{}
+{
+  if (rhs.package_ != 0)
+    package_ = rhs.package_->Copy();
+}
 
 /** ASSIGNMENT */
 MdInterface& MdInterface::operator=(MdInterface const& rhs) {
   if (&rhs == this) return *this;
   if (package_ != 0) delete package_;
-  package_ = rhs.package_->Copy();
+  if (rhs.package_ == 0)
+    package_ = 0;
+  else
+    package_ = rhs.package_->Copy();
   type_ = rhs.type_;
   return *this;
 }
