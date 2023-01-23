@@ -4,6 +4,7 @@
 #include "TextFile.h"
 #include "RepIndexArray.h"
 #include "MdOptions.h"
+#include "MdSetup.h"
 
 using namespace Messages;
 
@@ -233,7 +234,8 @@ const
   return 0;
 }
 
-int MdPackage_Amber::create_singleMD(std::string const& crd_file,
+int MdPackage_Amber::create_singleMD(MdSetup const& mdsetup,
+                                     std::string const& crd_file,
                                      std::string const& top_file,
                                      std::string const& ref_file)
 const
@@ -286,10 +288,13 @@ const
       //Msg("\tMD: top=%s  temp0=%f\n", top_file.c_str(), temp0_);
   // Create input for non-umbrella runs.
   //if (creator.UmbrellaWriteFreq() == 0) {
-    if (creator.MakeMdinForMD("md.in", run_num, "")) return 1;
+  MdOptions currentMdOpts;
+  if (mdsetup.MakeMdinForMD(currentMdOpts, run_num, "", RepIndexArray())) return 1;
+  //  if (creator.MakeMdinForMD("md.in", run_num, "")) return 1;
   //}
+  
   // Input coordinates for next run will be restarts of this
   //crd_dir_ = "../" + run_dir + "/";
   //if (creator.N_MD_Runs() < 2) crd_dir_.append("mdrst.rst7");
-  return 0;
+  return WriteMdInputFile(runDescription_, currentMdOpts, fname, run_num, RepIndexArray(), rep);
 }

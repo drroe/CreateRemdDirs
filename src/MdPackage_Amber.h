@@ -2,6 +2,7 @@
 #define INC_MDPACKAGE_AMBER_H
 #include "MdPackage.h"
 #include "MdinFile.h"
+class MdSetup;
 class TextFile;
 /// Amber-specific options
 class MdPackage_Amber : public MdPackage {
@@ -24,7 +25,7 @@ class MdPackage_Amber : public MdPackage {
     /// Write given namelist to specified file
     void writeNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
     /// Create input files for single MD run
-    int create_singleMD(std::string const&, std::string const&, std::string const&) const;
+    int create_singleMD(MdSetup const&, std::string const&, std::string const&, std::string const&) const;
 
     std::string additionalInput_; ///< Hold any additional MDIN input
     bool override_irest_;         ///< If true do not set irest, use from MDIN
