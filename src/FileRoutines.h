@@ -29,5 +29,7 @@ int ChangePermissions(std::string const&);
 std::string UserName();
 /// \return portion of file name after final '.'
 std::string Extension(std::string const&);
+/// \return path with ../ prefix if not an absolute path
+std::string add_path_prefix(std::string const&);
 }
 #endif
