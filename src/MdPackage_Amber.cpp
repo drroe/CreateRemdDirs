@@ -231,4 +231,65 @@ const
   }
   MDIN.Close();
   return 0;
-} 
+}
+
+int MdPackage_Amber::create_singleMD(std::string const& crd_file,
+                                     std::string const& top_file,
+                                     std::string const& ref_file)
+const
+{
+  using namespace FileRoutines;
+  // Create and change to run directory. // FIXME NEEDS TO BE DONE BEFORE CALLING
+//  if (Mkdir(run_dir)) return 1;
+//  if (ChangeDir(run_dir)) return 1;
+  // Get input coordinates array
+  //Creator::Sarray crd_files = creator.InputCoordsNames(start_run, run_num, prevDir);
+  if (crd_file.empty()) {
+    ErrorMsg("Could not get input coords for MD.\n");
+    return 1;
+  }
+  // Ensure topology exists.
+  //std::string top_file = creator.TopologyName();
+  if (top_file.empty()) {
+    ErrorMsg("Could not get topology file name.\n");
+    return 1;
+  }
+  // Get reference coords if any
+  //Creator::Sarray ref_files = creator.RefCoordsNames();
+
+  // Set up run command 
+  std::string cmd_opts;
+  cmd_opts.assign("-i md.in -p " + top_file + " -c " + crd_file + 
+                    " -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info");
+/*    std::string mdRef;
+    if (!ref_file_.empty() || !ref_dir_.empty()) {
+      if (!ref_file_.empty())
+        mdRef = ref_file_;
+      else if (!ref_dir_.empty())
+        mdRef = ref_dir_;
+      if (!ref_file_.empty() && !ref_dir_.empty())
+        Msg("Warning: Both reference dir and prefix defined. Using '%s'\n", mdRef.c_str());
+      if (!fileExists( mdRef )) {
+        ErrorMsg("Reference file '%s' not found. Must specify absolute path"
+                 " or path relative to '%s'\n", mdRef.c_str(), run_dir.c_str());
+        return 1;
+      }
+      cmd_opts.append(" -ref " + tildeExpansion(mdRef));
+    }*/
+  if (!ref_file.empty())
+    cmd_opts.append(" -ref " + ref_file);
+
+  creator.WriteRunMD( cmd_opts );
+  // Info for this run.
+  if (Debug() >= 0) // 1 
+      Msg("\tMD: top=%s\n", top_file.c_str());
+      //Msg("\tMD: top=%s  temp0=%f\n", top_file.c_str(), temp0_);
+  // Create input for non-umbrella runs.
+  //if (creator.UmbrellaWriteFreq() == 0) {
+    if (creator.MakeMdinForMD("md.in", run_num, "")) return 1;
+  //}
+  // Input coordinates for next run will be restarts of this
+  //crd_dir_ = "../" + run_dir + "/";
+  //if (creator.N_MD_Runs() < 2) crd_dir_.append("mdrst.rst7");
+  return 0;
+}

@@ -23,6 +23,8 @@ class MdPackage_Amber : public MdPackage {
   private:
     /// Write given namelist to specified file
     void writeNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
+    /// Create input files for single MD run
+    int create_singleMD(std::string const&, std::string const&, std::string const&) const;
 
     std::string additionalInput_; ///< Hold any additional MDIN input
     bool override_irest_;         ///< If true do not set irest, use from MDIN
