@@ -897,13 +897,13 @@ std::string Creator::RefFileName(std::string const& EXT) const {
   * \param Indices Array of replica indices if REMD
   * \param rep Overall replica index if REMD
   */
-int Creator::MakeMdinForMD(std::string const& fname, int run_num, 
+int Creator::MakeMdinForMD(MdOptions& currentMdOpts,
                            std::string const& EXT, 
-                           RepIndexArray const& Indices, unsigned int rep)
+                           RepIndexArray const& Indices)
 const
 {
   // Create input
-  MdOptions currentMdOpts = mdopts_;
+  currentMdOpts = mdopts_;
   currentMdOpts.Set_Temperature0().SetVal( Temperature( Indices ) );
   if (ph_dim_ != -1)
     currentMdOpts.Set_pH().SetVal( Dims_[ph_dim_]->SolvPH( Indices[ph_dim_] ));
@@ -944,7 +944,7 @@ const
     }
   }
 
-  return mdInterface_.Package()->WriteMdInputFile(runDescription_, currentMdOpts, fname, run_num, Indices, rep);
+  return 0;
 }
 
 /** Create input file for MD.
@@ -952,9 +952,8 @@ const
   * \param run_num Run number, for setting irest/ntx.
   * \param EXT Extension for restraint/dumpave files when umbrella sampling.
   */
-int Creator::MakeMdinForMD(std::string const& fname, int run_num, 
-                           std::string const& EXT)
+int Creator::MakeMdinForMD(MdOptions& currentMdOpts, std::string const& EXT)
 const
 {
-  return MakeMdinForMD(fname, run_num, EXT, RepIndexArray(), 0);
+  return MakeMdinForMD(currentMdOpts, EXT, RepIndexArray());
 }
