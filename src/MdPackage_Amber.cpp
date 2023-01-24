@@ -332,7 +332,72 @@ const
 int MdPackage_Amber::create_singlemd_input(Creator const& creator, int start_run, int run_num, std::string const& run_dir, std::string const& prevDir)
 const
 {
-  return 1;
+  using namespace FileRoutines;
+  // Create and change to run directory.
+  if (Mkdir(run_dir)) return 1;
+  if (ChangeDir(run_dir)) return 1;
+  // Get input coordinates array
+  Creator::Sarray crd_files = creator.InputCoordsNames(start_run, run_num, prevDir);
+  if (crd_files.empty()) {
+    ErrorMsg("Could not get input coords for MD.\n");
+    return 1;
+  }
+  // Ensure topology exists.
+  std::string topname = creator.TopologyName();
+  if (topname.empty()) {
+    ErrorMsg("Could not get topology file name.\n");
+    return 1;
+  }
+  // Get reference coords if any
+  Creator::Sarray ref_files = creator.RefCoordsNames();
+
+  // Set up run command 
+  std::string cmd_opts;
+  cmd_opts.assign("-i md.in -p " + topname + " -c " + crd_files.front() + 
+                    " -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info");
+/*    std::string mdRef;
+    if (!ref_file_.empty() || !ref_dir_.empty()) {
+      if (!ref_file_.empty())
+        mdRef = ref_file_;
+      else if (!ref_dir_.empty())
+        mdRef = ref_dir_;
+      if (!ref_file_.empty() && !ref_dir_.empty())
+        Msg("Warning: Both reference dir and prefix defined. Using '%s'\n", mdRef.c_str());
+      if (!fileExists( mdRef )) {
+        ErrorMsg("Reference file '%s' not found. Must specify absolute path"
+                 " or path relative to '%s'\n", mdRef.c_str(), run_dir.c_str());
+        return 1;
+      }
+      cmd_opts.append(" -ref " + tildeExpansion(mdRef));
+    }*/
+  if (!ref_files.empty())
+    cmd_opts.append(" -ref " + ref_files.front());
+
+  creator.WriteRunMD( cmd_opts );
+  // Info for this run.
+  if (Debug() >= 0) // 1 
+      Msg("\tMD: top=%s\n", topname.c_str());
+      //Msg("\tMD: top=%s  temp0=%f\n", topname.c_str(), temp0_);
+  // Create input for non-umbrella runs.
+  //if (creator.UmbrellaWriteFreq() == 0) {
+    
+    MdOptions currentMdOpts;
+    if (creator.MakeMdinForMD(currentMdOpts, "")) {
+      ErrorMsg("Making input options for MD failed.\n");
+      return 1;
+    }
+    if (writeMdInputFile(creator.RunDescription(), currentMdOpts,
+                         "md.in", run_num, RepIndexArray(), 0)) // TODO customize md.in name
+    {
+      ErrorMsg("Create input failed for MD\n");
+      return 1;
+    }
+  //}
+  // Input coordinates for next run will be restarts of this
+  //crd_dir_ = "../" + run_dir + "/";
+  //if (creator.N_MD_Runs() < 2) crd_dir_.append("mdrst.rst7");
+
+  return 0;
 }
 
 /** Create input files for Amber REMD run. */
