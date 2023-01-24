@@ -1,6 +1,6 @@
 #include <cstdlib> //atoi
 #include "RemdDirs.h"
-#include "CheckRuns.h"
+//#include "CheckRuns.h"
 #include "Submit.h"
 #include "Messages.h"
 #include "FileRoutines.h"
@@ -227,8 +227,9 @@ int main(int argc, char** argv) {
     // If analysis or archive input requested, run check unless explicitly told not to.
     if (InputEnabled[ANALYZE] || InputEnabled[ARCHIVE]) {
       if (runCheck) {
-        CheckRuns runChecker;
-        if (runChecker.DoCheck( TopDir, RunDirs, checkFirst )) return 1;
+        //CheckRuns runChecker;
+        //if (runChecker.DoCheck( TopDir, RunDirs, checkFirst )) return 1;
+        Msg("Warning: Run checker disabled.\n");
       } else
         Msg("Warning: Not running check on run directories.\n");
       create.CreateAnalyzeArchive(TopDir, RunDirs, start_run, stop_run, overwrite, runCheck,
@@ -237,8 +238,9 @@ int main(int argc, char** argv) {
   }
   // ----- Run Check -----------------------------
   if (ModeEnabled[CHECK]) {
-    CheckRuns runChecker;
-    if (runChecker.DoCheck( TopDir, RunDirs, checkFirst )) return 1;
+    //CheckRuns runChecker;
+    //if (runChecker.DoCheck( TopDir, RunDirs, checkFirst )) return 1;
+    Msg("Warning: Run checker disabled.\n");
   }
   // ----- Job submission ------------------------
   if (ModeEnabled[SUBMIT]) {
