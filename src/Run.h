@@ -12,7 +12,8 @@ class Run {
     int RunIndex() const { return idx_; }
     /// \return run dir name
     std::string const& RunDirName() const { return rundir_; }
-
+    /// Setup existing directory - run dir name
+    int SetupExisting(std::string const&);
     
   private:
     std::string rundir_;   ///< Run directory. May be relative.
