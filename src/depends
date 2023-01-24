@@ -15,7 +15,7 @@ main.o : main.cpp CheckRuns.h Commands.h Creator.h Exec.h FileRoutines.h Groups.
 Manager.o : Manager.cpp Creator.h FileRoutines.h Manager.h MdInterface.h MdOptions.h Messages.h Option.h Project.h Submitter.h System.h TextFile.h
 MdInterface.o : MdInterface.cpp MdInterface.h MdPackage.h MdPackage_Amber.h MdinFile.h Messages.h
 MdOptions.o : MdOptions.cpp MdOptions.h Option.h
-MdPackage_Amber.o : MdPackage_Amber.cpp FileRoutines.h MdOptions.h MdPackage.h MdPackage_Amber.h MdinFile.h Messages.h Option.h RepIndexArray.h TextFile.h
+MdPackage_Amber.o : MdPackage_Amber.cpp Creator.h FileRoutines.h Groups.h MdOptions.h MdPackage.h MdPackage_Amber.h MdinFile.h Messages.h Option.h RepIndexArray.h ReplicaDimension.h StringRoutines.h TextFile.h
 MdinFile.o : MdinFile.cpp Cols.h MdinFile.h Messages.h StringRoutines.h TextFile.h
 Messages.o : Messages.cpp Messages.h
 NC.o : NC.cpp Messages.h NC.h
@@ -23,13 +23,10 @@ QueueOpts.o : QueueOpts.cpp FileRoutines.h Messages.h QueueOpts.h StringRoutines
 RemdDirs.o : RemdDirs.cpp FileRoutines.h Groups.h MdinFile.h Messages.h RemdDirs.h ReplicaDimension.h StringRoutines.h TextFile.h
 RepIndexArray.o : RepIndexArray.cpp RepIndexArray.h ReplicaDimension.h StringRoutines.h TextFile.h
 ReplicaDimension.o : ReplicaDimension.cpp FileRoutines.h Messages.h ReplicaDimension.h StringRoutines.h TextFile.h
-Run.o : Run.cpp FileRoutines.h Messages.h Run.h StringRoutines.h
-Run_MultiMD.o : Run_MultiMD.cpp Creator.h FileRoutines.h MdOptions.h Messages.h Option.h Run.h Run_MultiMD.h StringRoutines.h TextFile.h
-Run_REMD.o : Run_REMD.cpp Creator.h FileRoutines.h Groups.h MdOptions.h Messages.h Option.h RepIndexArray.h ReplicaDimension.h Run.h Run_REMD.h StringRoutines.h TextFile.h
-Run_SingleMD.o : Run_SingleMD.cpp Creator.h FileRoutines.h MdOptions.h Messages.h Option.h Run.h Run_SingleMD.h Simulation.h TextFile.h
+Run.o : Run.cpp Run.h
 Simulation.o : Simulation.cpp Messages.h NC.h Simulation.h TextFile.h
 StringRoutines.o : StringRoutines.cpp Messages.h StringRoutines.h
 Submit.o : Submit.cpp FileRoutines.h Messages.h StringRoutines.h Submit.h TextFile.h
 Submitter.o : Submitter.cpp FileRoutines.h Messages.h QueueOpts.h StringRoutines.h Submitter.h TextFile.h
-System.o : System.cpp Creator.h FileRoutines.h MdInterface.h MdOptions.h MdPackage.h Messages.h Option.h Run.h Run_MultiMD.h Run_REMD.h Run_SingleMD.h Simulation.h StringRoutines.h Submitter.h System.h
+System.o : System.cpp Creator.h FileRoutines.h MdInterface.h MdOptions.h MdPackage.h Messages.h Option.h Run.h StringRoutines.h Submitter.h System.h
 TextFile.o : TextFile.cpp Messages.h TextFile.h
