@@ -115,21 +115,13 @@ int System::FindRuns() {
   Msg("Run directories:\n");
   for (StrArray::const_iterator it = runDirs.begin(); it != runDirs.end(); ++it)
   {
-    ChangeDir( *it );
     Msg("\t%s\n", it->c_str());
-    // Get a list of any files in the directory 
-    FileRoutines::StrArray all_files = FileRoutines::ExpandToFilenames("*", false);
     // Set up the directory
     Runs_.push_back( Run() );
     if (Runs_.back().SetupExisting( *it )) {
       ErrorMsg("Setting up existing run '%s' failed.\n", it->c_str());
       return 1;
     }
-
-    if (all_files.empty())
-      Msg("Warning: Run directory '%s' is empty.\n", it->c_str());
-    // Search for existing output files.
-    // FIXME add setup
     // Change directory back
     if (ChangeToSystemDir()) return 1;
   }

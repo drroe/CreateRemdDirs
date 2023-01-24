@@ -16,10 +16,20 @@ Run::Run() :
 int Run::SetupExisting(std::string const& runDir)
 {
   using namespace FileRoutines;
+  if (ChangeDir( runDir )) return 1;
+
   rundir_ = runDir;
   idx_ = StringRoutines::convertToInteger( Extension(runDir) );
   setupDir_ = GetWorkingDir();
   Msg("DEBUG: Run::SetupExisting: '%s' '%s' '%i'\n", rundir_.c_str(), setupDir_.c_str(), idx_);
+
+  // Get list of files
+  StrArray all_files = FileRoutines::ExpandToFilenames("*", false);
+
+  if (all_files.empty())
+      Msg("Warning: Run directory '%s' is empty.\n", rundir_.c_str());
+
+  // FIXME add detection
   return 0;
 }
 
