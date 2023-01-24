@@ -279,7 +279,6 @@ Msg("\n  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--
 
 // Creator::ReadOptions()
 int Creator::ReadOptions(std::string const& input_file) {
-  std::string mdin_file;
   // Read options from input file
   if (CheckExists("Input file", input_file)) return 1;
   std::string fname = tildeExpansion( input_file );
@@ -337,7 +336,7 @@ int Creator::ReadOptions(std::string const& input_file) {
       else if (OPT == "MDIN_FILE")
       {
         if (CheckExists("MDIN file", VAR)) { return 1; }
-        mdin_file = tildeExpansion( VAR );
+        mdin_file_ = tildeExpansion( VAR );
       }
       else if (OPT == "RST_FILE")
       {
@@ -369,17 +368,7 @@ int Creator::ReadOptions(std::string const& input_file) {
         return 1;
       }
   }
-  // MD-package specific stuff
-  if (mdInterface_.AllocatePackage(MdInterface::AMBER)) {
-    ErrorMsg("MD package allocate failed.\n");
-    return 1;
-  }
-  if (!mdin_file.empty()) {
-    if (mdInterface_.Package()->ReadInputOptions( mdin_file )) {
-      ErrorMsg("Reading MD package input options failed.\n");
-      return 1;
-    }
-  }
+
 /*
   // If MDIN file specified, store it in a string.
   override_irest_ = false;

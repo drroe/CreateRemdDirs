@@ -2,7 +2,6 @@
 #define INC_CREATOR_H
 #include <vector>
 #include "MdOptions.h"
-#include "MdInterface.h"
 class TextFile;
 class ReplicaDimension;
 class RepIndexArray;
@@ -28,6 +27,8 @@ class Creator {
     void Info() const;
     /// \return Run type that this has been set for
     RUNTYPE TypeOfRun() const { return runType_; }
+    /// \return MD-specific package input file name
+    std::string const& MdinFileName() const { return mdin_file_; }
     //int CreateRuns(std::string const&, FileRoutines::StrArray const&, int, bool);
     //int CreateAnalyzeArchive(std::string const&, FileRoutines::StrArray const&, int, int, bool, bool, bool, bool);
     /// Set debug level
@@ -98,7 +99,6 @@ class Creator {
     //std::string rst_file_;
     MdOptions mdopts_;            ///< Hold MD options
 
-    MdInterface mdInterface_;     ///< Use to interface with different MD packages
     //MdinFile mdinFile_;           ///< Used to parse input from Amber MDIN file
     DimArray Dims_;               ///< Hold any replica dimensions
     unsigned int totalReplicas_;  ///< Total # of replicas based on dimensions
@@ -122,5 +122,6 @@ class Creator {
     std::string cpin_file_;       ///< CPIN file for constant pH
     std::string ref_file_;        ///< Reference file (MD) or path prefix (REMD)
     std::string ref_dir_;         ///< Directory where reference coords are (like crd_dir_)
+    std::string mdin_file_;       ///< Md package-specific input file
 };
 #endif

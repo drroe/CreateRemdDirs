@@ -3,6 +3,7 @@
 #include "Messages.h"
 #include "Run.h"
 #include "StringRoutines.h"
+#include "MdPackage.h"
 // ----- Run types -----
 #include "Run_SingleMD.h"
 #include "Run_MultiMD.h"
@@ -113,6 +114,17 @@ int System::FindRuns() {
       return 1;
     }
     creator_.Info();
+  }
+  // MD-package specific stuff
+  if (mdInterface_.AllocatePackage(MdInterface::AMBER)) {
+    ErrorMsg("MD package allocate failed.\n");
+    return 1;
+  }
+  if (!creator_.MdinFileName().empty()) {
+    if (mdInterface_.Package()->ReadInputOptions( creator_.MdinFileName() )) {
+      ErrorMsg("Reading MD package input options failed.\n");
+      return 1;
+    }
   }
   // See if submission options exist
   // FIXME re-enable this when the time comes

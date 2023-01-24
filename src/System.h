@@ -4,6 +4,7 @@
 #include <vector>
 #include "Creator.h"
 #include "Submitter.h"
+#include "MdInterface.h"
 class Run;
 /// Hold information on runs for a system
 class System {
@@ -55,5 +56,6 @@ class System {
     int runDirExtWidth_;             ///< Width of run directory numerical suffix
     Creator creator_;                ///< For creating runs
     Submitter submitter_;            ///< For submitting runs
+    MdInterface mdInterface_;        ///< Use to interface with different MD packages
 };
 #endif
