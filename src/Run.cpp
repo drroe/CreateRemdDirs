@@ -28,6 +28,10 @@ int Run::SetupExisting(std::string const& runDir)
 
   if (all_files.empty())
       Msg("Warning: Run directory '%s' is empty.\n", rundir_.c_str());
+  else {
+    for (StrArray::const_iterator it = all_files.begin(); it != all_files.end(); ++it)
+      Msg("DEBUG: Existing file: %s\n", it->c_str());
+  }
 
   // FIXME add detection
   return 0;
