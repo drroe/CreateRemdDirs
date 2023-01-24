@@ -29,6 +29,8 @@ class Creator {
     RUNTYPE TypeOfRun() const { return runType_; }
     /// \return MD-specific package input file name
     std::string const& MdinFileName() const { return mdin_file_; }
+    /// \return Run description
+    std::string const& RunDescription() const { return runDescription_; }
     //int CreateRuns(std::string const&, FileRoutines::StrArray const&, int, bool);
     //int CreateAnalyzeArchive(std::string const&, FileRoutines::StrArray const&, int, int, bool, bool, bool, bool);
     /// Set debug level

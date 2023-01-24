@@ -3,6 +3,7 @@
 #include <string>
 class RepIndexArray;
 class MdOptions;
+class Creator;
 /// Abstract base class for various MD packages.
 class MdPackage {
   public:
@@ -22,6 +23,8 @@ class MdPackage {
     virtual MdPackage* Copy() const = 0;
     /// Read package-specific input options from a file
     virtual int ReadInputOptions(std::string const&) = 0;
+    /// Create package-specific input files
+    virtual int CreateInputFiles(Creator const&, int, int, std::string const&, std::string const&) const = 0;
     /// Write package-specific input file
     virtual int WriteMdInputFile(std::string const&, MdOptions const&,std::string const&, int,
                                  RepIndexArray const&, unsigned int) const = 0;
