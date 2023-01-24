@@ -19,16 +19,15 @@ class MdPackage {
     }
     /// DESTRUCTOR - virtual since inherited
     virtual ~MdPackage() {}
+    // ---------------------------------
     /// \return a Copy of the class
     virtual MdPackage* Copy() const = 0;
     /// Read package-specific input options from a file
     virtual int ReadInputOptions(std::string const&) = 0;
     /// Create package-specific input files
     virtual int CreateInputFiles(Creator const&, int, int, std::string const&, std::string const&) const = 0;
-    /// Write package-specific input file
-    virtual int WriteMdInputFile(std::string const&, MdOptions const&,std::string const&, int,
-                                 RepIndexArray const&, unsigned int) const = 0;
-
+    // ---------------------------------
+    /// Set debug level
     void SetDebug(int d) { debug_ = d; }
     /// \return debug level
     int Debug() const { return debug_; }

@@ -19,12 +19,19 @@ class MdPackage_Amber : public MdPackage {
     int ReadInputOptions(std::string const&);
     /// Create amber-specific input files
     int CreateInputFiles(Creator const&, int, int, std::string const&, std::string const&) const;
-    /// Write Amber MDIN file
-    int WriteMdInputFile(std::string const&, MdOptions const&, std::string const&, int,
-                         RepIndexArray const&, unsigned int) const;
+
   private:
     /// Write given namelist to specified file
     void writeNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
+    /// Write Amber MDIN file
+    int writeMdInputFile(std::string const&, MdOptions const&, std::string const&, int,
+                         RepIndexArray const&, unsigned int) const;
+    /// Create multi-group MD input
+    int create_multimd_input(Creator const&, int, int, std::string const&, std::string const&) const;
+    /// Create single MD input
+    int create_singlemd_input(Creator const&, int, int, std::string const&, std::string const&) const;
+    /// Create remd input
+    int create_remd_input(Creator const&, int, int, std::string const&, std::string const&) const;
 
     std::string additionalInput_; ///< Hold any additional MDIN input
     bool override_irest_;         ///< If true do not set irest, use from MDIN

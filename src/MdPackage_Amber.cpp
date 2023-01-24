@@ -130,7 +130,7 @@ const
 }
 
 /** Write amber MDIN file. */
-int MdPackage_Amber::WriteMdInputFile(std::string const& runDescription,
+int MdPackage_Amber::writeMdInputFile(std::string const& runDescription,
                                       MdOptions const& mdopts,
                                       std::string const& fname, int run_num, 
                                       RepIndexArray const& Indices, unsigned int rep)
@@ -241,6 +241,35 @@ const
 int MdPackage_Amber::CreateInputFiles(Creator const& creator, int start_run, int run_num, std::string const& run_dir, std::string const& prevDir)
 const
 {
+  int err = 1;
+  if (creator.IsSetupForMD()) {
+    if (creator.N_MD_Runs() > 1)
+      err = create_multimd_input( creator, start_run, run_num, run_dir, prevDir );
+    else
+      err = create_singlemd_input( creator, start_run, run_num, run_dir, prevDir );
+  } else
+    err = create_remd_input( creator, start_run, run_num, run_dir, prevDir );
+  return err;
+}
+
+/** Create input files for Amber multi-group MD run */
+int MdPackage_Amber::create_multimd_input(Creator const& creator, int start_run, int run_num, std::string const& run_dir, std::string const& prevDir)
+const
+{
+  return 1;
+}
+
+/** Create input files for Amber single MD run. */
+int MdPackage_Amber::create_singlemd_input(Creator const& creator, int start_run, int run_num, std::string const& run_dir, std::string const& prevDir)
+const
+{
+  return 1;
+}
+
+/** Create input files for Amber REMD run. */
+int MdPackage_Amber::create_remd_input(Creator const& creator, int start_run, int run_num, std::string const& run_dir, std::string const& prevDir)
+const
+{
   using namespace FileRoutines;
   using namespace StringRoutines;
   // Create and change to run directory.
@@ -309,7 +338,7 @@ const
       ErrorMsg("Making input options for rep %u failed.\n", rep);
       return 1;
     }
-    if (WriteMdInputFile(creator.RunDescription(), currentMdOpts,
+    if (writeMdInputFile(creator.RunDescription(), currentMdOpts,
                          mdin_name, run_num, Indices, rep))
     {
       ErrorMsg("Create input failed for rep %u\n", rep);
