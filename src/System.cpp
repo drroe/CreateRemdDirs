@@ -4,10 +4,7 @@
 #include "Run.h"
 #include "StringRoutines.h"
 #include "MdPackage.h"
-// ----- Run types -----
-#include "Run_SingleMD.h"
-#include "Run_MultiMD.h"
-#include "Run_REMD.h"
+#include "Run.h"
 
 using namespace Messages;
 
@@ -32,6 +29,7 @@ System::System(std::string const& top, std::string const& dirname, std::string c
 
 /** COPY CONSTRUCTOR */
 System::System(System const& rhs) :
+  Runs_(rhs.Runs_),
   topDir_(rhs.topDir_),
   dirname_(rhs.dirname_),
   description_(rhs.description_),
@@ -40,16 +38,14 @@ System::System(System const& rhs) :
   runDirPrefix_(rhs.runDirPrefix_),
   runDirExtWidth_(rhs.runDirExtWidth_),
   creator_(rhs.creator_),
-  submitter_(rhs.submitter_)
-{
-  Runs_.reserve( rhs.Runs_.size() );
-  for (std::vector<Run*>::const_iterator it = rhs.Runs_.begin(); it != rhs.Runs_.end(); ++it)
-    Runs_.push_back( (*it)->Copy() );
-}
+  submitter_(rhs.submitter_),
+  mdInterface_(rhs.mdInterface_)
+{}
 
 /** Assignment */
 System& System::operator=(System const& rhs) {
   if (this == &rhs) return *this;
+  Runs_ = rhs.Runs_;
   topDir_ = rhs.topDir_;
   dirname_ = rhs.dirname_;
   description_ = rhs.description_;
@@ -59,44 +55,14 @@ System& System::operator=(System const& rhs) {
   runDirExtWidth_ = rhs.runDirExtWidth_;
   creator_ = rhs.creator_;
   submitter_ = rhs.submitter_;
-  clearRuns();
-  Runs_.reserve( rhs.Runs_.size() );
-  for (std::vector<Run*>::const_iterator it = rhs.Runs_.begin(); it != rhs.Runs_.end(); ++it)
-    Runs_.push_back( (*it)->Copy() );
+  mdInterface_ = rhs.mdInterface_;
 
   return *this;
 }
 
 /** Clear all runs. */
 void System::clearRuns() {
-  for (std::vector<Run*>::iterator it = Runs_.begin(); it != Runs_.end(); ++it)
-    delete *it;
-}
-
-/** DESTRUCTOR */
-System::~System() {
-  clearRuns();
-}
-
-/** Allocate Run based on creator_. */
-Run* System::allocateFromCreator(std::string const& runDir) const {
-  Run* thisRun = 0;
-  if (creator_.IsSetupForMD()) {
-    if (creator_.N_MD_Runs() > 1)
-      thisRun = Run_MultiMD::Alloc();
-    else
-      thisRun = Run_SingleMD::Alloc();
-  } else
-    thisRun = Run_REMD::Alloc();
-  if (thisRun != 0) {
-    if (thisRun->SetupRun( runDir )) {
-      ErrorMsg("Could not set up run '%s' from run directory.\n", runDir.c_str());
-      delete thisRun;
-      return 0;
-    }
-  }
-
-  return thisRun;
+  Runs_.clear(); 
 }
 
 /** Search for run directories in dirname_ */
@@ -145,38 +111,25 @@ int System::FindRuns() {
   StrArray runDirs = ExpandToFilenames(runDirPrefix_ + ".*");
   //if (runDirs.empty()) return 1;
 
+  clearRuns(); 
   Msg("Run directories:\n");
   for (StrArray::const_iterator it = runDirs.begin(); it != runDirs.end(); ++it)
   {
     ChangeDir( *it );
     Msg("\t%s\n", it->c_str());
-    // Check if directory is empty.
+    // Get a list of any files in the directory 
     FileRoutines::StrArray all_files = FileRoutines::ExpandToFilenames("*", false);
+    // Set up the directory
+    Runs_.push_back( Run() );
+    if (Runs_.back().SetupExisting( *it )) {
+      ErrorMsg("Setting up existing run '%s' failed.\n", it->c_str());
+      return 1;
+    }
+
     if (all_files.empty())
       Msg("Warning: Run directory '%s' is empty.\n", it->c_str());
     // Search for existing output files.
-    StrArray output_files;
-    Run::Type runType = Run::DetectType(output_files);
-    Msg("\tType: %s\n", Run::typeStr(runType));
-
-    // Allocate run
-    Run* run = 0;
-    switch (runType) {
-      case Run::SINGLE_MD : run = Run_SingleMD::Alloc(); break;
-      case Run::MULTI_MD  : run = Run_MultiMD::Alloc(); break;
-      case Run::REMD      : run = Run_REMD::Alloc(); break;
-      case Run::UNKNOWN   : break;
-    }
-    if (run == 0) {
-      Msg("Warning: Run detection failed. Allocating based on '%s'\n", createOptsFilename_.c_str());
-      run = allocateFromCreator( *it );
-    } else
-      run->SetupRun( *it, output_files );
-    if (run == 0) {
-      ErrorMsg("Run allocation failed.\n");
-      return 1;
-    } else
-      Runs_.push_back( run );
+    // FIXME add setup
     // Change directory back
     if (ChangeToSystemDir()) return 1;
   }
@@ -208,7 +161,7 @@ int System::ChangeToSystemDir() const {
 int System::findRunIdx(int runNum) const {
   int existingRunIdx = -1;
   for (unsigned int ridx = 0; ridx < Runs_.size(); ridx++) {
-    if ( Runs_[ridx]->RunIndex() == runNum) {
+    if ( Runs_[ridx].RunIndex() == runNum) {
       Msg(" Run %i exists.\n", runNum);
       existingRunIdx = (int)ridx;
       break;
@@ -235,7 +188,7 @@ int System::CreateRunDirectories(std::string const& crd_dir,
   if (Runs_.empty())
     lowest_run_idx = start_run;
   else {
-    lowest_run_idx = Runs_.front()->RunIndex();
+    lowest_run_idx = Runs_.front().RunIndex();
     Msg("Lowest existing run index is %i\n", lowest_run_idx);
   }
   // Loop over desired run numbers 
@@ -247,7 +200,7 @@ int System::CreateRunDirectories(std::string const& crd_dir,
   if (start_run > 0) {
     int prevIdx = findRunIdx(start_run - 1);
     if (prevIdx > -1)
-      prevDir = Runs_[prevIdx]->RunDirName();
+      prevDir = Runs_[prevIdx].RunDirName();
   }
   // Loop over runs
   for (int runNum = start_run; runNum <= stop_run; ++runNum)
@@ -258,18 +211,14 @@ int System::CreateRunDirectories(std::string const& crd_dir,
       if (overwrite)
         Msg("Will overwrite run.\n");
       else {
-        Runs_[existingRunIdx]->RunInfo();
-        prevDir = Runs_[existingRunIdx]->RunDirName();
+        Runs_[existingRunIdx].RunInfo();
+        prevDir = Runs_[existingRunIdx].RunDirName();
         continue;
       }
     }
     // Allocate run
     std::string runDir( runDirPrefix_ + "." + StringRoutines::integerToString(runNum, runWidth) );
-    Run* thisRun = allocateFromCreator( runDir );
-    if (thisRun == 0) {
-      ErrorMsg("No allocator yet in CreateRunDirectories.\n");
-      return 1;
-    }
+    
     if (ChangeToSystemDir()) return 1;
 
     Msg("  RUNDIR: %s\n", runDir.c_str());
@@ -277,16 +226,20 @@ int System::CreateRunDirectories(std::string const& crd_dir,
       ErrorMsg("Directory '%s' exists and 'overwrite' not specified.\n", runDir.c_str());
       return 1;
     }
-    // TODO - pass in name of previous directory
-    if (thisRun->CreateRunDir(creator_, lowest_run_idx, runNum, runDir, prevDir)) {
+    int create_stat = 0;
+    if (existingRunIdx > -1)
+      create_stat = Runs_[existingRunIdx].CreateNew(runDir, creator_, mdInterface_.Package(),
+                                                    lowest_run_idx, runNum, prevDir);
+    else {
+      Runs_.push_back( Run() );
+      create_stat = Runs_.back().CreateNew(runDir, creator_, mdInterface_.Package(),
+                                           lowest_run_idx, runNum, prevDir);
+    }
+    if (create_stat != 0) {
       ErrorMsg("Creating run '%s' failed.\n", runDir.c_str());
       return 1;
     }
-    if (existingRunIdx > -1) {
-      delete Runs_[existingRunIdx];
-      Runs_[existingRunIdx] = thisRun;
-    } else
-      Runs_.push_back( thisRun );
+
     prevDir = runDir;
   }
  

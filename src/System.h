@@ -9,11 +9,9 @@ class Run;
 /// Hold information on runs for a system
 class System {
   public:
-    typedef std::vector<Run*> RunArray;
+    typedef std::vector<Run> RunArray;
     /// CONSTRUCTOR
     System();
-    /// DESTRUCTOR
-    ~System();
     /// CONSTRUCTOR - top directory, run directory, description
     System(std::string const&, std::string const&, std::string const&);
     /// COPY CONSTRUCTOR
@@ -41,8 +39,6 @@ class System {
     typedef std::vector<std::string> Sarray;
     /// Clear all runs
     void clearRuns();
-    /// Allocate Run from creator_
-    Run* allocateFromCreator(std::string const&) const;
     /// Find existing run index if present
     int findRunIdx(int) const;
 
