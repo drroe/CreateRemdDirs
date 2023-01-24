@@ -5,7 +5,7 @@
 #include "Creator.h"
 #include "Submitter.h"
 #include "MdInterface.h"
-class Run;
+#include "Run.h"
 /// Hold information on runs for a system
 class System {
   public:
