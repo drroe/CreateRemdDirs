@@ -237,7 +237,7 @@ const
   return 0;
 }
 
-/** Create input files for Amber run. */
+/** Create input files for Amber run. Should already be in run_dir. */
 int MdPackage_Amber::CreateInputFiles(Creator const& creator, int start_run, int run_num, std::string const& run_dir, std::string const& prevDir)
 const
 {
@@ -257,9 +257,9 @@ int MdPackage_Amber::create_multimd_input(Creator const& creator, int start_run,
 const
 {
   using namespace FileRoutines;
-  // Create and change to run directory.
-  if (Mkdir(run_dir)) return 1;
-  if (ChangeDir(run_dir)) return 1;
+//  // Create and change to run directory.
+//  if (Mkdir(run_dir)) return 1;
+//  if (ChangeDir(run_dir)) return 1;
   // Get input coordinates array
   Creator::Sarray crd_files = creator.InputCoordsNames(start_run, run_num, prevDir);
   if (crd_files.empty()) {
@@ -333,9 +333,9 @@ int MdPackage_Amber::create_singlemd_input(Creator const& creator, int start_run
 const
 {
   using namespace FileRoutines;
-  // Create and change to run directory.
-  if (Mkdir(run_dir)) return 1;
-  if (ChangeDir(run_dir)) return 1;
+//  // Create and change to run directory.
+//  if (Mkdir(run_dir)) return 1;
+//  if (ChangeDir(run_dir)) return 1;
   // Get input coordinates array
   Creator::Sarray crd_files = creator.InputCoordsNames(start_run, run_num, prevDir);
   if (crd_files.empty()) {
@@ -406,9 +406,9 @@ const
 {
   using namespace FileRoutines;
   using namespace StringRoutines;
-  // Create and change to run directory.
-  if (Mkdir(run_dir)) return 1;
-  if (ChangeDir(run_dir)) return 1;
+//  // Create and change to run directory.
+//  if (Mkdir(run_dir)) return 1;
+//  if (ChangeDir(run_dir)) return 1;
   // Get Coords
   Creator::Sarray crd_files = creator.InputCoordsNames(start_run, run_num, prevDir);
   if (crd_files.empty()) {
