@@ -25,7 +25,6 @@ RepIndexArray.cpp \
 ReplicaDimension.cpp \
 Run.cpp \
 RunStatus.cpp \
-Simulation.cpp \
 StringRoutines.cpp \
 Submit.cpp \
 Submitter.cpp \
