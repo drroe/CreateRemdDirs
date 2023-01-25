@@ -1,9 +1,11 @@
 #ifndef INC_MDPACKAGE_H
 #define INC_MDPACKAGE_H
 #include <string>
+#include <vector>
 class RepIndexArray;
 class MdOptions;
 class Creator;
+class RunStatus;
 /// Abstract base class for various MD packages.
 class MdPackage {
   public:
@@ -26,6 +28,8 @@ class MdPackage {
     virtual int ReadInputOptions(std::string const&) = 0;
     /// Create package-specific input files
     virtual int CreateInputFiles(Creator const&, int, int, std::string const&, std::string const&) const = 0;
+    /// \return Information on an existing run from output files
+    virtual RunStatus RunCurrentStatus(std::vector<std::string> const&) const = 0;
     // ---------------------------------
     /// Set debug level
     void SetDebug(int d) { debug_ = d; }

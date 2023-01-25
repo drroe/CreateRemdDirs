@@ -8,6 +8,7 @@
 #include "Creator.h"
 #include "Groups.h"
 #include "ReplicaDimension.h"
+#include "RunStatus.h"
 
 using namespace Messages;
 
@@ -561,4 +562,10 @@ const
   // Input coordinates for next run will be restarts of this
   //crd_dir_ = "../" + run_dir + "/RST";
   return 0;
+}
+
+// -----------------------------------------------------------------------------
+/** \return Info on a current run. */
+RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& files) const {
+  return RunStatus();
 } 

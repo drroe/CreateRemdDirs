@@ -19,7 +19,8 @@ class MdPackage_Amber : public MdPackage {
     int ReadInputOptions(std::string const&);
     /// Create amber-specific input files
     int CreateInputFiles(Creator const&, int, int, std::string const&, std::string const&) const;
-
+    /// \return Information on an existing run from output files
+    RunStatus RunCurrentStatus(std::vector<std::string> const&) const;
   private:
     /// Write given namelist to specified file
     void writeNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
