@@ -3,6 +3,7 @@ Cmd.cpp \
 CmdList.cpp \
 Cols.cpp \
 Commands.cpp \
+CpptrajInterface.cpp \
 Creator.cpp \
 Exec_Active.cpp \
 Exec_Create.cpp \

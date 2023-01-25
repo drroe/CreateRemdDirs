@@ -6,6 +6,8 @@ class CpptrajInterface {
   public:
     /// CONSTRUCTOR
     CpptrajInterface();
+    /// \return True if cpptraj is available
+    bool Available() const;
   private:
     std::string shellCmd(std::string const&) const;
 };
