@@ -3,6 +3,7 @@
 #include "FileRoutines.h"
 #include "TextFile.h"
 #include "StringRoutines.h"
+#include <cstdlib> // atoi
 
 using namespace Messages;
 using namespace FileRoutines;
