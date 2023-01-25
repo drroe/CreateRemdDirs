@@ -48,8 +48,12 @@ class MdOptions {
     Option<double> const& SgldTemp()       const { return sgld_temp_; }
 
     // Derived quantities
-    /// \return expected # frames based on # steps and traj write freq.
+    /// \return total expected # steps based on # steps and # exchanges.
+    int Total_Steps() const;
+    /// \return expected # frames based on total expected steps and traj write freq.
     int Expected_Frames() const;
+    /// \return total expected time based on total expected steps and time step.
+    double Total_Time() const;
   private:
     Option<int> nsteps_;            ///< Number of simulation steps.
     Option<int> traj_write_freq_;   ///< Trajectory write frequency in steps
