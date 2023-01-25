@@ -4,12 +4,19 @@
 /// Hold information for an existing run
 class RunStatus {
   public:
-    /// CONSTRUCTOR
-    RunStatus();
-
+    /// Various status types - SYNC WITH StatStr_
     enum StatusType { UNKNOWN=0, EMPTY, INCOMPLETE, COMPLETE };
 
+    /// CONSTRUCTOR
+    RunStatus();
+    /// CONSTRUCTOR - status only
+    RunStatus(StatusType);
+
+    /// Print status to stdout
+    void PrintStatus() const;
   private:
+    static const char* StatStr_[];
+
     MdOptions runOpts_; ///< Run MD options
     StatusType stat_;   ///< Current run status
     int current_traj_frames_; ///< Current number of frames in trajectory

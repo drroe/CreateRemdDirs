@@ -26,9 +26,10 @@ int Run::SetupExisting(std::string const& runDir)
   // Get list of files
   StrArray all_files = FileRoutines::ExpandToFilenames("*", false);
 
-  if (all_files.empty())
+  if (all_files.empty()) {
       Msg("Warning: Run directory '%s' is empty.\n", rundir_.c_str());
-  else {
+    runStat_ = RunStatus(RunStatus::EMPTY);
+  } else {
     for (StrArray::const_iterator it = all_files.begin(); it != all_files.end(); ++it)
       Msg("DEBUG: Existing file: %s\n", it->c_str());
   }
@@ -56,5 +57,7 @@ int Run::CreateNew(std::string const& runDir, Creator const& creator, MdPackage*
 
 /** Print run info to stdout. */
 void Run::RunInfo() const {
-  Msg("Placeholder.\n"); //FIXME
+  Msg("%-8s : ", rundir_.c_str());
+  runStat_.PrintStatus();
+  Msg("\n");
 }

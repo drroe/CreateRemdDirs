@@ -1,4 +1,3 @@
-CheckRuns.o : CheckRuns.cpp CheckRuns.h FileRoutines.h MdOptions.h Messages.h NC.h Option.h Run.h RunStatus.h TextFile.h
 Cmd.o : Cmd.cpp Cmd.h Exec.h
 CmdList.o : CmdList.cpp Cmd.h CmdList.h
 Cols.o : Cols.cpp Cols.h Messages.h StringRoutines.h
@@ -15,7 +14,7 @@ main.o : main.cpp Commands.h Creator.h Exec.h FileRoutines.h Groups.h Manager.h 
 Manager.o : Manager.cpp Creator.h FileRoutines.h Manager.h MdInterface.h MdOptions.h Messages.h Option.h Project.h Run.h RunStatus.h Submitter.h System.h TextFile.h
 MdInterface.o : MdInterface.cpp MdInterface.h MdPackage.h MdPackage_Amber.h MdinFile.h Messages.h
 MdOptions.o : MdOptions.cpp MdOptions.h Option.h
-MdPackage_Amber.o : MdPackage_Amber.cpp Creator.h FileRoutines.h Groups.h MdOptions.h MdPackage.h MdPackage_Amber.h MdinFile.h Messages.h Option.h RepIndexArray.h ReplicaDimension.h StringRoutines.h TextFile.h
+MdPackage_Amber.o : MdPackage_Amber.cpp Creator.h FileRoutines.h Groups.h MdOptions.h MdPackage.h MdPackage_Amber.h MdinFile.h Messages.h Option.h RepIndexArray.h ReplicaDimension.h RunStatus.h StringRoutines.h TextFile.h
 MdinFile.o : MdinFile.cpp Cols.h MdinFile.h Messages.h StringRoutines.h TextFile.h
 Messages.o : Messages.cpp Messages.h
 NC.o : NC.cpp Messages.h NC.h
@@ -24,7 +23,7 @@ RemdDirs.o : RemdDirs.cpp FileRoutines.h Groups.h MdinFile.h Messages.h RemdDirs
 RepIndexArray.o : RepIndexArray.cpp RepIndexArray.h ReplicaDimension.h StringRoutines.h TextFile.h
 ReplicaDimension.o : ReplicaDimension.cpp FileRoutines.h Messages.h ReplicaDimension.h StringRoutines.h TextFile.h
 Run.o : Run.cpp FileRoutines.h MdOptions.h MdPackage.h Messages.h Option.h Run.h RunStatus.h StringRoutines.h
-RunStatus.o : RunStatus.cpp MdOptions.h Option.h RunStatus.h
+RunStatus.o : RunStatus.cpp MdOptions.h Messages.h Option.h RunStatus.h
 Simulation.o : Simulation.cpp Messages.h NC.h Simulation.h TextFile.h
 StringRoutines.o : StringRoutines.cpp Messages.h StringRoutines.h
 Submit.o : Submit.cpp FileRoutines.h Messages.h StringRoutines.h Submit.h TextFile.h

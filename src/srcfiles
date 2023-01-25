@@ -1,5 +1,4 @@
 SOURCES= \
-CheckRuns.cpp \
 Cmd.cpp \
 CmdList.cpp \
 Cols.cpp \
