@@ -114,7 +114,7 @@ int System::FindRuns() {
   Msg("Run directories:\n");
   for (StrArray::const_iterator it = runDirs.begin(); it != runDirs.end(); ++it)
   {
-    Msg("\t%s\n", it->c_str());
+    Msg("  Directory: %s\n", it->c_str());
     // Set up the directory
     Runs_.push_back( Run() );
     if (Runs_.back().SetupExisting( *it )) {
