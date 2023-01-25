@@ -33,8 +33,10 @@ class MdPackage_Amber : public MdPackage {
     int create_singlemd_input(Creator const&, int, int, std::string const&, std::string const&) const;
     /// Create remd input
     int create_remd_input(Creator const&, int, int, std::string const&, std::string const&) const;
-    /// Read info from an MDOUT file
-    int read_mdout(RunStatus&, std::string const&) const;
+    /// Read info from an MDOUT file; gets top name
+    int read_mdout(RunStatus&, std::string const&, std::string&) const;
+    /// Read # frames from traj file
+    int read_traj_nframes(RunStatus&, std::string const&, std::string const&) const;
 
     std::string additionalInput_; ///< Hold any additional MDIN input
     bool override_irest_;         ///< If true do not set irest, use from MDIN

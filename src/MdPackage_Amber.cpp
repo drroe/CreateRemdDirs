@@ -9,6 +9,7 @@
 #include "Groups.h"
 #include "ReplicaDimension.h"
 #include "RunStatus.h"
+#include "CpptrajInterface.h"
 
 using namespace Messages;
 
@@ -566,7 +567,10 @@ const
 
 // -----------------------------------------------------------------------------
 /** Read run info from an mdout file. */
-int MdPackage_Amber::read_mdout(RunStatus& currentStat, std::string const& fname) const {
+int MdPackage_Amber::read_mdout(RunStatus& currentStat, std::string const& fname,
+                                std::string& topname)
+const
+{
   using namespace StringRoutines;
   TextFile mdout;
   if (mdout.OpenRead( fname )) {
@@ -578,9 +582,20 @@ int MdPackage_Amber::read_mdout(RunStatus& currentStat, std::string const& fname
   const char* SEP = " ,=\r\n";
   int ncols = mdout.GetColumns(SEP);
   while (ncols > -1) {
-    if (readInput == 0 && ncols > 2) {
+    if (readInput == 0 && ncols >= 2) {
       if (mdout.Token(0) == "2." && mdout.Token(1) == "CONTROL")
         readInput = 1;
+      else if (mdout.Token(0) == "File" && mdout.Token(1) == "Assignments:")
+        readInput = 2;
+    } else if (readInput == 2) {
+      if (ncols == 0)
+        readInput = 0;
+      else {
+        if (mdout.Token(1) == "PARM:") {
+          topname = mdout.Token(2);
+          Msg("Top: %s\n", topname.c_str());
+        }
+      }
     } else if (readInput == 1 && ncols > 1) {
       if (mdout.Token(0) == "3." && mdout.Token(1) == "ATOMIC")
         break;
@@ -618,6 +633,19 @@ int MdPackage_Amber::read_mdout(RunStatus& currentStat, std::string const& fname
   return 0;
 }
 
+/** Read # of traj frames from trajectory using cpptraj. */
+int MdPackage_Amber::read_traj_nframes(RunStatus& currentStatus, std::string const& topname, std::string const& trajname) const {
+  CpptrajInterface cpptraj;
+
+  if (!cpptraj.Available()) return 0;
+
+  int nframes = cpptraj.GetTrajFrames(topname, trajname);
+  Msg("DEBUG: nframes %i\n", nframes);
+  currentStatus.Set_CurrentTrajFrames( nframes );
+
+  return 0;
+}
+
 /** \return Info on a current run. */
 RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& files) const {
   // Special cases
@@ -627,14 +655,23 @@ RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& file
   }
   // Scan through files
   RunStatus currentStat;
+  std::string topname;
+  std::string trajname;
   for (std::vector<std::string>::const_iterator fname = files.begin();
                                                 fname != files.end(); ++fname)
   {
     if (*fname == "md.out") {
-      if (read_mdout( currentStat, *fname )) {
+      if (read_mdout( currentStat, *fname, topname )) {
         ErrorMsg("Could not read '%s'\n", fname->c_str());
       }
+    } else if (*fname == "mdcrd.nc") {
+       trajname = *fname;
     }
   }
+  if (!topname.empty() && !trajname.empty()) {
+    if (read_traj_nframes( currentStat, topname, trajname )) {
+      ErrorMsg("Could not read # frames from '%s'\n", trajname.c_str());
+    }
+  } 
   return currentStat;
 }

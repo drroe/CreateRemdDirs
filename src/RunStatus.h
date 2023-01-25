@@ -19,6 +19,8 @@ class RunStatus {
     MdOptions& Set_Opts() { return runOpts_; }
     /// Set status
     void Set_Status(StatusType s) { stat_ = s; }
+    /// Set current # frames
+    void Set_CurrentTrajFrames(int n) { current_traj_frames_ = n; }
   private:
     static const char* StatStr_[];
 
