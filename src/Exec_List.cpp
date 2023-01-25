@@ -31,6 +31,9 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
   // If a specific project was chosen, list all runs by default.
   if (tgtSystemIdx > -1)
     tgtRunIdx = SHOW_ALL;
+  // If there is only 1 project and 1 system, list all runs by default.
+  if (manager.Projects().size() == 1 && manager.Projects()[0].Systems().size() == 1)
+    tgtRunIdx = SHOW_ALL;
   // 'all' overrides everything else that is not already set to a specific index
   if (args.HasKey("all")) {
     if (tgtProjectIdx < 0)
