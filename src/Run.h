@@ -1,6 +1,7 @@
 #ifndef INC_RUN_H
 #define INC_RUN_H
 #include <string>
+#include "RunStatus.h"
 class Creator;
 class MdPackage;
 /// Hold information for a single run
@@ -24,7 +25,7 @@ class Run {
   private:
     std::string rundir_;   ///< Run directory. May be relative.
     std::string setupDir_; ///< Directory in which SetupRun gets invoked. Should be absolute run dir
-
+    RunStatus runStat_;    ///< Current run status
     int idx_;              ///< Run index, based on directory name extension
     int debug_;            ///< Debug level
 };
