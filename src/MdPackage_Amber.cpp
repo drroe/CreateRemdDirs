@@ -640,7 +640,7 @@ int MdPackage_Amber::read_traj_nframes(RunStatus& currentStatus, std::string con
   if (!cpptraj.Available()) return 0;
 
   int nframes = cpptraj.GetTrajFrames(topname, trajname);
-  Msg("DEBUG: nframes %i\n", nframes);
+  //Msg("DEBUG: nframes %i\n", nframes);
   currentStatus.Set_CurrentTrajFrames( nframes );
 
   return 0;

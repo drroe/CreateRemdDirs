@@ -67,13 +67,13 @@ int CpptrajInterface::GetTrajFrames(std::string const& topname, std::string cons
     pclose( infile );
     return -1;
   }
-  Msg("DEBUG: '%s'\n", buffer);
+  //Msg("DEBUG: '%s'\n", buffer);
   int nframes = 0;
   //                     0123456789
   // Expected output is 'Frames: #'
   if (buffer[0] == 'F' && buffer[6] == ':') {
     std::string num = StringRoutines::NoTrailingWhitespace(std::string(buffer+8));
-    Msg("DEBUG: num=%s\n", num.c_str());
+    //Msg("DEBUG: num=%s\n", num.c_str());
     if (StringRoutines::validInteger(num))
       nframes = StringRoutines::convertToInteger(num);
   }
