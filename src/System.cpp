@@ -117,7 +117,7 @@ int System::FindRuns() {
     Msg("  Directory: %s\n", it->c_str());
     // Set up the directory
     Runs_.push_back( Run() );
-    if (Runs_.back().SetupExisting( *it )) {
+    if (Runs_.back().SetupExisting( *it, mdInterface_.Package() )) {
       ErrorMsg("Setting up existing run '%s' failed.\n", it->c_str());
       return 1;
     }

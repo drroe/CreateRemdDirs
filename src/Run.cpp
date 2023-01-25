@@ -13,7 +13,7 @@ Run::Run() :
 {}
 
 /** Setup existing run dir (no changes). Assumes we are in that dir. FIXME should it?*/
-int Run::SetupExisting(std::string const& runDir)
+int Run::SetupExisting(std::string const& runDir, MdPackage* mdpackage)
 {
   using namespace FileRoutines;
   if (ChangeDir( runDir )) return 1;
@@ -33,6 +33,7 @@ int Run::SetupExisting(std::string const& runDir)
     Msg("DEBUG: Existing files:\n");
     for (StrArray::const_iterator it = all_files.begin(); it != all_files.end(); ++it)
       Msg("\t%s\n", it->c_str());
+    runStat_ = mdpackage->RunCurrentStatus( all_files );
   }
 
   // FIXME add detection

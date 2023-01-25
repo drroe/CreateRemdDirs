@@ -21,13 +21,14 @@ RunStatus::RunStatus(StatusType t) :
 const char* RunStatus::StatStr_[] = {
   "Unknown",
   "Empty",
+  "Pending",
   "Incomplete",
   "Complete"
 };
 
 /** Print status to stdout (no newline). */
 void RunStatus::PrintStatus() const {
-  if (stat_ == EMPTY)
+  if (stat_ == EMPTY || stat_ == PENDING)
     Msg("%10s", StatStr_[stat_]);
   else
     Msg("%10s Time=%12.4g Frames=%10i Expected=%10i",

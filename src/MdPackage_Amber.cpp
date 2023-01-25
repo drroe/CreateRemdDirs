@@ -567,5 +567,10 @@ const
 // -----------------------------------------------------------------------------
 /** \return Info on a current run. */
 RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& files) const {
+  // Special cases
+  if (files.size() == 2) {
+    if (files[0] == "RunMD.sh" && files[1] == "md.in")
+      return RunStatus(RunStatus::PENDING);
+  }
   return RunStatus();
 } 
