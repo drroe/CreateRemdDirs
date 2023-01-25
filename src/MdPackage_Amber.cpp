@@ -565,6 +565,59 @@ const
 }
 
 // -----------------------------------------------------------------------------
+/** Read run info from an mdout file. */
+int MdPackage_Amber::read_mdout(RunStatus& currentStat, std::string const& fname) const {
+  using namespace StringRoutines;
+  TextFile mdout;
+  if (mdout.OpenRead( fname )) {
+    ErrorMsg("Could not open output file '%s'\n", fname.c_str());
+    return 1;
+  }
+  // Read the '2. CONTROL DATA FOR THE RUN' section of MDOUT
+  int readInput = 0;
+  const char* SEP = " ,=\r\n";
+  int ncols = mdout.GetColumns(SEP);
+  while (ncols > -1) {
+    if (readInput == 0 && ncols > 2) {
+      if (mdout.Token(0) == "2." && mdout.Token(1) == "CONTROL")
+        readInput = 1;
+    } else if (readInput == 1 && ncols > 1) {
+      if (mdout.Token(0) == "3." && mdout.Token(1) == "ATOMIC")
+        break;
+      else {
+        for (int col = 0; col != ncols - 1; col++) {
+          if (mdout.Token(col) == "nstlim")
+            currentStat.Set_Opts().Set_N_Steps().SetVal( convertToInteger(mdout.Token(col+1)) );
+          else if (mdout.Token(col) == "dt")
+            currentStat.Set_Opts().Set_TimeStep().SetVal( convertToDouble(mdout.Token(col+1)) );
+          else if (mdout.Token(col) == "numexchg")
+            currentStat.Set_Opts().Set_N_Exchanges().SetVal( convertToInteger(mdout.Token(col+1)) );
+          else if (mdout.Token(col) == "ntwx")
+            currentStat.Set_Opts().Set_TrajWriteFreq().SetVal( convertToInteger(mdout.Token(col+1)) );
+        }
+      }
+    }
+    ncols = mdout.GetColumns(SEP);
+  }
+  // Scan down to '5. TIMINGS'
+  bool completed = false;
+  const char* ptr = mdout.Gets();
+  while (ptr != 0) {
+    if (std::string(ptr).compare(0, 14, "   5.  TIMINGS") == 0) {
+      completed = true;
+      break;
+    }
+    ptr = mdout.Gets();
+  }
+  mdout.Close();
+  if (completed)
+    currentStat.Set_Status( RunStatus::COMPLETE );
+  else
+    currentStat.Set_Status( RunStatus::INCOMPLETE );
+
+  return 0;
+}
+
 /** \return Info on a current run. */
 RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& files) const {
   // Special cases
@@ -572,5 +625,16 @@ RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& file
     if (files[0] == "RunMD.sh" && files[1] == "md.in")
       return RunStatus(RunStatus::PENDING);
   }
-  return RunStatus();
-} 
+  // Scan through files
+  RunStatus currentStat;
+  for (std::vector<std::string>::const_iterator fname = files.begin();
+                                                fname != files.end(); ++fname)
+  {
+    if (*fname == "md.out") {
+      if (read_mdout( currentStat, *fname )) {
+        ErrorMsg("Could not read '%s'\n", fname->c_str());
+      }
+    }
+  }
+  return currentStat;
+}

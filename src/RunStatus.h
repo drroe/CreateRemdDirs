@@ -14,6 +14,11 @@ class RunStatus {
 
     /// Print status to stdout
     void PrintStatus() const;
+
+    /// Used to set MD options
+    MdOptions& Set_Opts() { return runOpts_; }
+    /// Set status
+    void Set_Status(StatusType s) { stat_ = s; }
   private:
     static const char* StatStr_[];
 

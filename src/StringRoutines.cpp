@@ -59,6 +59,19 @@ int StringRoutines::convertToInteger(std::string const &s) {
   return (int)i;
 }
 
+/** Convert the input string to a double. */
+double StringRoutines::convertToDouble(std::string const &s) {
+  std::istringstream iss(s);
+  double d;
+  iss >> d;
+  if (iss.fail()) {
+    Messages::ErrorMsg("Could not convert '%s' to double.\n", s.c_str());
+    return 0;
+  }
+    //throw BadConversion("convertToDouble(\"" + s + "\")");
+  return d;
+}
+
 
 std::string StringRoutines::doubleToString(double d) {
   std::ostringstream oss;
