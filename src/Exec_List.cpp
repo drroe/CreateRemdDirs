@@ -75,8 +75,8 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
                                               ++run, ++ridx)
           {
             if (tgtRunIdx == SHOW_ALL || tgtRunIdx == ridx) {
-              Msg("    %i: ", (*run)->RunIndex());
-              (*run)->RunInfo();
+              Msg("    %i: ", run->RunIndex());
+              run->RunInfo();
             }
           }
         } // END loop over systems
