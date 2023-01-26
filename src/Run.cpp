@@ -54,7 +54,13 @@ int Run::CreateNew(std::string const& runDir, Creator const& creator, MdPackage*
   if (ChangeDir(rundir_)) return 1;
   setupDir_ = GetWorkingDir();
 
-  return mdpackage->CreateInputFiles(creator, start_run, run_num, rundir_, prevDir);
+  if (mdpackage->CreateInputFiles(creator, start_run, run_num, rundir_, prevDir)) {
+    ErrorMsg("Error creating run in %s\n", runDir.c_str());
+    return 1;
+  }
+  // Set status
+  runStat_ = mdpackage->RunCurrentStatus( FileRoutines::ExpandToFilenames("*", false) );
+  return 0;
 }
 
 /** Print run info to stdout. */
