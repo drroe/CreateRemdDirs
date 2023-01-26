@@ -14,12 +14,13 @@ Groups.o : Groups.cpp Groups.h Messages.h TextFile.h
 main.o : main.cpp Commands.h Creator.h Exec.h FileRoutines.h Manager.h MdInterface.h MdOptions.h Messages.h Option.h Project.h Run.h RunStatus.h StringRoutines.h Submitter.h System.h TextFile.h
 Manager.o : Manager.cpp Creator.h FileRoutines.h Manager.h MdInterface.h MdOptions.h Messages.h Option.h Project.h Run.h RunStatus.h Submitter.h System.h TextFile.h
 MdInterface.o : MdInterface.cpp MdInterface.h MdPackage.h MdPackage_Amber.h MdinFile.h Messages.h
-MdOptions.o : MdOptions.cpp MdOptions.h Option.h
+MdOptions.o : MdOptions.cpp MdOptions.h Messages.h Option.h
 MdPackage_Amber.o : MdPackage_Amber.cpp CpptrajInterface.h Creator.h FileRoutines.h Groups.h MdOptions.h MdPackage.h MdPackage_Amber.h MdinFile.h Messages.h Option.h RepIndexArray.h ReplicaDimension.h RunStatus.h StringRoutines.h TextFile.h
 MdinFile.o : MdinFile.cpp Cols.h MdinFile.h Messages.h StringRoutines.h TextFile.h
 Messages.o : Messages.cpp Messages.h
 QueueOpts.o : QueueOpts.cpp FileRoutines.h Messages.h QueueOpts.h StringRoutines.h TextFile.h
 RepIndexArray.o : RepIndexArray.cpp RepIndexArray.h ReplicaDimension.h StringRoutines.h
+ReplicaDimArray.o : ReplicaDimArray.cpp Messages.h ReplicaDimArray.h ReplicaDimension.h TextFile.h
 ReplicaDimension.o : ReplicaDimension.cpp FileRoutines.h Messages.h ReplicaDimension.h TextFile.h
 Run.o : Run.cpp FileRoutines.h MdOptions.h MdPackage.h Messages.h Option.h Run.h RunStatus.h StringRoutines.h
 RunStatus.o : RunStatus.cpp MdOptions.h Messages.h Option.h RunStatus.h

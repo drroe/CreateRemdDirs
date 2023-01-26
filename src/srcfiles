@@ -21,6 +21,7 @@ MdinFile.cpp \
 Messages.cpp \
 QueueOpts.cpp \
 RepIndexArray.cpp \
+ReplicaDimArray.cpp \
 ReplicaDimension.cpp \
 Run.cpp \
 RunStatus.cpp \

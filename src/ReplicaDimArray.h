@@ -1,6 +1,7 @@
 #ifndef INC_REPLICADIMARRAY_H
 #define INC_REPLICADIMARRAY_H
 #include <vector>
+#include <string>
 class ReplicaDimension;
 /// Array of pointers to ReplicaDimension
 class ReplicaDimArray {
@@ -16,6 +17,10 @@ class ReplicaDimArray {
 
     /// Clear all dims
     void ClearDims();
+    /// Load a dimension from file
+    int LoadDimension(std::string const&);
+    /// \return Nth dimension
+    ReplicaDimension const& operator[](int idx) const { return *(Dims_[idx]); }
 
   private:
     typedef std::vector<ReplicaDimension*> DimArray;
