@@ -1,7 +1,7 @@
 #include "CpptrajInterface.h"
 #include "Messages.h"
 #include "StringRoutines.h"
-#include <cstdio> // popen
+#include "TextFile.h"
 
 using namespace Messages;
 
@@ -24,26 +24,22 @@ CpptrajInterface::CpptrajInterface() {
   if (CpptrajInterface_needs_setup_) {
     CpptrajInterface_needs_setup_ = false;
     std::string cmd = shellCmd("which cpptraj");
-    FILE* infile = popen(cmd.c_str(), "r");
-    if (infile == 0) {
-      perror("Error is:");
+    TextFile infile;
+    if (infile.OpenPipe( cmd )) {
       ErrorMsg("Command '%s' failed.\n", cmd.c_str());
       return;
     }
-    char buffer[1024];
-    if (fgets(buffer, 1023, infile) == 0) {
-      perror("Error is:");
+    const char* ptr = infile.Gets();
+    if (ptr == 0) {
       ErrorMsg("Getting cpptraj path failed.\n");
-      pclose( infile );
       return;
     }
     // If string does not begin with a slash, no file found.
-    if (buffer[0] == '/') {
-      CpptrajInterface_path_ = StringRoutines::NoTrailingWhitespace(std::string(buffer));
+    if (ptr[0] == '/') {
+      CpptrajInterface_path_ = StringRoutines::NoTrailingWhitespace(std::string(ptr));
       Msg("DEBUG: Cpptraj path: '%s'\n", CpptrajInterface_path_.c_str());
     } else
       Msg("Warning: No cpptraj found.\n");
-    pclose( infile );
   }
 }
 
@@ -55,24 +51,23 @@ bool CpptrajInterface::Available() const {
 /** \return Number of frames in top/traj combo */
 int CpptrajInterface::GetTrajFrames(std::string const& topname, std::string const& trajname) const {
   std::string cmd = shellCmd( CpptrajInterface_path_ + " -p " + topname + " -y " + trajname + " -tl" );
-  FILE* infile = popen(cmd.c_str(), "r");
-  if (infile == 0) {
-    perror("Error is:");
+  TextFile infile;
+  if (infile.OpenPipe(cmd)) {
+    ErrorMsg("Command '%s' failed.\n", cmd.c_str());
     return -1;
   }
-  char buffer[1024];
-  if (fgets(buffer, 1023, infile) == 0) {
-    perror("Error is:");
+  //                     0123456789
+  // Expected output is 'Frames: #'
+  const char* ptr = infile.Gets();
+  if (ptr == 0) {
     ErrorMsg("Getting number of frames from cpptraj failed.\n");
-    pclose( infile );
     return -1;
   }
   //Msg("DEBUG: '%s'\n", buffer);
   int nframes = 0;
-  //                     0123456789
-  // Expected output is 'Frames: #'
-  if (buffer[0] == 'F' && buffer[6] == ':') {
-    std::string num = StringRoutines::NoTrailingWhitespace(std::string(buffer+8));
+
+  if (ptr[0] == 'F' && ptr[6] == ':') {
+    std::string num = StringRoutines::NoTrailingWhitespace(std::string(ptr+8));
     //Msg("DEBUG: num=%s\n", num.c_str());
     if (StringRoutines::validInteger(num))
       nframes = StringRoutines::convertToInteger(num);

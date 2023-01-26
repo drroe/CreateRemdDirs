@@ -8,9 +8,11 @@ using namespace Messages;
 
 TextFile::~TextFile() { Close(); }
 
+/** Open file for reading. */
 int TextFile::OpenRead(std::string const& fname) {
   FILE* infile = fopen(fname.c_str(), "rb");
   if (infile == 0) {
+    perror("Error is:");
     ErrorMsg("Opening file '%s'\n", fname.c_str());
     return 1;
   }
@@ -18,9 +20,11 @@ int TextFile::OpenRead(std::string const& fname) {
   return 0;
 }
 
+/** Open file for reading from a pipe. */
 int TextFile::OpenPipe(std::string const& cmd) {
   FILE* pipe = popen(cmd.c_str(), "r");
   if (pipe == 0) {
+    perror("Error is:");
     ErrorMsg("Opening pipe: '%s'\n", cmd.c_str());
     return 1;
   }
@@ -29,9 +33,11 @@ int TextFile::OpenPipe(std::string const& cmd) {
   return 0;
 }
 
+/** Open file for writing. */
 int TextFile::OpenWrite(std::string const& fname) {
   FILE* outfile = fopen(fname.c_str(), "wb");
   if (outfile == 0) {
+    perror("Error is:");
     ErrorMsg("Opening file '%s'\n", fname.c_str());
     return 1;
   }
@@ -39,6 +45,7 @@ int TextFile::OpenWrite(std::string const& fname) {
   return 0;
 }
 
+/** Close file. */
 void TextFile::Close() {
   if (file_ != 0) {
     if (isPipe_) {
@@ -50,11 +57,13 @@ void TextFile::Close() {
   file_ = 0;
 }
 
+/** \return Pointer to next line in the raw buffer. */
 const char* TextFile::Gets() {
-  if (file_ == 0) return 0;
+  if (file_ == 0) return 0; // TODO perror?
   return (const char*)fgets(buffer_, BUF_SIZE-1, (FILE*)file_);
 }
 
+/** \return Next line as a string, no terminal whitespace. */
 std::string TextFile::GetString() {
   if (file_ == 0) return std::string("");
   char* ptr = fgets(buffer_, BUF_SIZE-1, (FILE*)file_);
