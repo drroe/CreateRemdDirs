@@ -27,7 +27,7 @@ class MdPackage {
     /// Read package-specific creator options from a file
     virtual int ParseCreatorOption(std::string const&, std::string const&) = 0;
     /// Read package-specific input options from a file
-    virtual int ReadPackageInput(std::string const&) = 0;
+    virtual int ReadPackageInput(MdOptions&, std::string const&) = 0;
     /// Create package-specific input files
     virtual int CreateInputFiles(Creator const&, int, int, std::string const&, std::string const&) const = 0;
     /// \return Information on an existing run from output files

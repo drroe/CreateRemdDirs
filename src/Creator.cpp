@@ -364,6 +364,19 @@ int Creator::ReadOptions(std::string const& input_file) {
   return 0;
 }
 
+/** Set MD options from external source. */
+int Creator::SetMdOptions(MdOptions const& opts) {
+  if (opts.TrajWriteFreq().IsSet()) {
+    if (mdopts_.TrajWriteFreq().IsSet())
+      Msg("\tTrajectory write frequency is already set to %i, will not overwrite with %i\n", mdopts_.TrajWriteFreq().Val(), opts.TrajWriteFreq().Val());
+    else {
+      Msg("\tUsing trajectory write frequency of %i\n", opts.TrajWriteFreq().Val());
+      mdopts_.Set_TrajWriteFreq().SetVal( opts.TrajWriteFreq().Val() );
+    }
+  }
+  return 0;
+}
+
 // Creator::LoadDimension()
 int Creator::LoadDimension(std::string const& dfile) {
   TextFile infile;

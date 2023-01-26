@@ -97,8 +97,14 @@ int System::FindRuns() {
     }
   }
   if (!creator_.MdinFileName().empty()) {
-    if (mdInterface_.Package()->ReadPackageInput( creator_.MdinFileName() )) {
+    MdOptions packageOpts;
+    if (mdInterface_.Package()->ReadPackageInput( packageOpts, creator_.MdinFileName() )) {
       ErrorMsg("Reading MD package input options failed.\n");
+      return 1;
+    }
+    // See if we want to use any of the package options
+    if (creator_.SetMdOptions( packageOpts )) {
+      ErrorMsg("Setting MD options from package options failed.\n");
       return 1;
     }
   }

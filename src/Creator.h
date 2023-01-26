@@ -36,6 +36,8 @@ class Creator {
     void SetDebug(int d) { debug_ = d; }
     /// Set alternate coordinates location
     void SetSpecifiedCoords(std::string const& c) { specified_crd_ = c; }
+    /// Set MD options
+    int SetMdOptions(MdOptions const&);
 
     /// \return Debug level
     int Debug() const { return debug_; }

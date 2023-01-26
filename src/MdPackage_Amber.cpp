@@ -58,8 +58,9 @@ int MdPackage_Amber::ParseCreatorOption(std::string const& OPT, std::string cons
 }
 
 /** Read amber-specific input from MDIN file. */
-int MdPackage_Amber::ReadPackageInput(std::string const& fname) {
+int MdPackage_Amber::ReadPackageInput(MdOptions& opts, std::string const& fname) {
   using namespace FileRoutines;
+  using namespace StringRoutines;
 
   if (CheckExists("Amber MDIN file", fname)) return 1;
   std::string mdin_fileName = tildeExpansion(fname);
@@ -86,8 +87,12 @@ int MdPackage_Amber::ReadPackageInput(std::string const& fname) {
       unsigned int col = 0;
       for (MdinFile::token_iterator tkn = nl->second.begin(); tkn != nl->second.end(); ++tkn)
       {
+        // Vars to set in opts
+        if (tkn->first == "ntwx") {
+          opts.Set_TrajWriteFreq().SetVal( convertToInteger(tkn->second) );
+          continue;
         // Avoid vars which will be set
-        if (tkn->first == "imin" ||
+        } else if (tkn->first == "imin" ||
             tkn->first == "nstlim" ||
             tkn->first == "ntwx" ||
             tkn->first == "dt" ||
