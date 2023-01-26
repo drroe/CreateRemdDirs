@@ -517,7 +517,7 @@ int Creator::setupCreator() {
   } else {
     // REMD
     if (!mdopts_.N_Steps().IsSet() || !mdopts_.N_Exchanges().IsSet()) {
-      ErrorMsg("NSTLIM or NUMEXCHG not set.\n");
+      ErrorMsg("NSTLIM or NUMEXCHG not set for REMD run.\n");
       return 1;
     }
   }
