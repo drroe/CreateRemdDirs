@@ -14,8 +14,10 @@ class MdInterface {
     /// ASSIGNMENT
     MdInterface& operator=(MdInterface const&);
 
-    /// Allocate package
-    int AllocatePackage(Type);
+    /// Allocate package with given debug level
+    int AllocatePackage(Type, int);
+    /// Set package debug level
+    void SetDebug(int) const;
     /// \return allocated package
     MdPackage* Package() const { return package_; }
   private:

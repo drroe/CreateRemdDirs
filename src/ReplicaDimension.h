@@ -1,6 +1,7 @@
 #ifndef INC_REPLICADIMENSION_H
 #define INC_REPLICADIMENSION_H
-#include "TextFile.h"
+#include <string>
+#include <vector>
 /// Abstract base class for replica dimension type.
 class ReplicaDimension {
   public:
@@ -24,8 +25,6 @@ class ReplicaDimension {
     virtual bool ProvidesTopFiles() const = 0;
     /// \return Dimension name.
     virtual const char* name() const = 0;
-    /// Write relevant input to MDIN if necessary
-    virtual int WriteMdin(int, TextFile&) const { return 0; }
     /// \return any necessary additions to the groupfile
     virtual std::string Groupline(std::string const&) const { return std::string(""); }
     /// \return output dir if necessary
@@ -117,7 +116,6 @@ class AmdDihedralDim : public ReplicaDimension {
     const char* name()      const { return "AMDHREMD"; }
     int LoadDim(std::string const&);
     std::string Groupline(std::string const&) const;
-    int WriteMdin(int, TextFile&) const;
 
     /// \return Array of AMD alpha values
     Darray const& Alpha() const { return d_alpha_; }
@@ -139,7 +137,6 @@ class SgldDim : public ReplicaDimension {
     bool ProvidesTopFiles() const { return false; }
     const char* name()      const { return "RXSGLD"; }
     int LoadDim(std::string const&);
-    int WriteMdin(int, TextFile&) const;
 
     /// \return Array of SGLD temperatures
     Darray const& SgTemps() const { return sgtemps_; }

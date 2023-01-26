@@ -3,7 +3,7 @@
 #include "ReplicaDimension.h"
 #include "FileRoutines.h"
 #include "Messages.h"
-#include "StringRoutines.h"
+#include "TextFile.h"
 
 using namespace Messages;
 
@@ -126,12 +126,6 @@ int AmdDihedralDim::LoadDim(std::string const& fname) {
   return 0;
 }
 
-int AmdDihedralDim::WriteMdin(int idx, TextFile& mdin) const {
-  if (d_thresh_[idx] > 0.0 || d_alpha_[idx] > 0.0)
-    return mdin.Printf("    iamd=2, EthreshD=%f, alphaD=%f,\n", d_thresh_[idx], d_alpha_[idx]);
-  return 0;
-}
-
 std::string AmdDihedralDim::Groupline(std::string const& EXT) const {
   return std::string(" -amd AMD/amd."+EXT);
 }
@@ -154,10 +148,6 @@ int SgldDim::LoadDim(std::string const& fname) {
   oss << "RXSGLD from " << sgtemps_.front() << " K to " << sgtemps_.back() << " K"; 
   SetDescription(oss.str());
   return 0;
-}
-
-int SgldDim::WriteMdin(int idx, TextFile& mdin) const {
-  return mdin.Printf("    isgld=1, tsgavg=0.2, tempsg=%f\n", sgtemps_[idx]);
 }
 
 // -----------------------------------------------------------------------------

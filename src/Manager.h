@@ -29,7 +29,7 @@ class Manager {
     System& ActiveProjectSystem() { return projects_[activeProjectIdx_].ActiveSystem(); }
 
     /// Set global debug level
-    void SetDebug(int d) { debug_ = d; }
+    void SetDebug(int);
     /// Set active project and system indices
     int SetActiveProjectSystem(int, int);
   private:

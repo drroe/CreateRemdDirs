@@ -10,6 +10,11 @@ Manager::Manager() :
   activeProjectIdx_(0)
 {}
 
+/** Set debug levels. */
+void Manager::SetDebug(int debugIn) {
+  debug_ = debugIn;
+}
+
 /** Initialize with input file. */
 int Manager::InitManager(std::string const& CurrentDir, std::string const& inputFileName) {
   if (inputFileName.empty()) {
@@ -61,6 +66,7 @@ int Manager::InitManager(std::string const& CurrentDir, std::string const& input
             description.append(" " + input.Token(col));
           Msg("System: %s  Description: '%s'\n", input.Token(1).c_str(), description.c_str());
           projects_.back().AddSystem( System(CurrentDir, input.Token(1), description) );
+          projects_.back().LastSystem().SetDebug( debug_ );
           if (projects_.back().LastSystem().FindRuns()) return 1;
         }
       }

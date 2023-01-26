@@ -37,8 +37,11 @@ MdInterface& MdInterface::operator=(MdInterface const& rhs) {
   return *this;
 }
 
+/** Set package debug level. */
+void MdInterface::SetDebug(int d) const { package_->SetDebug(d); }
+
 /** Allocate package. */
-int MdInterface::AllocatePackage(Type typeIn) {
+int MdInterface::AllocatePackage(Type typeIn, int debugIn) {
   if (package_ != 0) delete package_;
   switch (typeIn) {
     case AMBER : package_ = new MdPackage_Amber(); break;
@@ -51,5 +54,6 @@ int MdInterface::AllocatePackage(Type typeIn) {
     ErrorMsg("Could not allocate package.\n");
     return 1;
   }
+  package_->SetDebug( debugIn );
   return 0;
 }

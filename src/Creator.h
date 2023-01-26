@@ -38,6 +38,9 @@ class Creator {
     /// Set alternate coordinates location
     void SetSpecifiedCoords(std::string const& c) { specified_crd_ = c; }
 
+    /// \return Debug level
+    int Debug() const { return debug_; }
+
     /// \return Numerical prefix/extension based on number and expected max
     std::string NumericalExt(int, int) const;
 

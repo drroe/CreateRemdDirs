@@ -81,7 +81,7 @@ int System::FindRuns() {
     creator_.Info();
   }
   // MD-package specific stuff
-  if (mdInterface_.AllocatePackage(MdInterface::AMBER)) {
+  if (mdInterface_.AllocatePackage(MdInterface::AMBER, creator_.Debug())) {
     ErrorMsg("MD package allocate failed.\n");
     return 1;
   }
@@ -131,6 +131,7 @@ int System::FindRuns() {
 /** Set debug level */
 void System::SetDebug(int debugIn) {
   creator_.SetDebug( debugIn );
+  submitter_.SetDebug( debugIn );
 }
 
 /** Print system information. */

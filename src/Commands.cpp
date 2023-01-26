@@ -215,6 +215,5 @@ int Commands::Prompt(Manager& manager) {
         nerr++;
     }
   }
-  Msg("\n");
   return nerr;
 }
