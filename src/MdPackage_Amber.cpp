@@ -94,12 +94,14 @@ int MdPackage_Amber::ReadPackageInput(MdOptions& opts, std::string const& fname)
         } else if (tkn->first == "dt") {
           opts.Set_TimeStep().SetVal( convertToDouble(tkn->second) );
           continue;
+        } else if (tkn->first == "temp0") {
+          opts.Set_Temperature0().SetVal( convertToDouble(tkn->second) );
+          continue;
         // Avoid vars which will be set
         } else if (tkn->first == "imin" ||
             tkn->first == "nstlim" ||
             tkn->first == "ntwx" ||
             tkn->first == "ig" ||
-            tkn->first == "temp0" ||
             tkn->first == "tempi" ||
             tkn->first == "numexchg" ||
             tkn->first == "solvph"

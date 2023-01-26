@@ -383,6 +383,7 @@ template <typename T> void set_mdopt(T& currentOpt, T const& newOpt, std::string
 int Creator::SetMdOptions(MdOptions const& opts) {
   set_mdopt< Option<int> >(mdopts_.Set_TrajWriteFreq(), opts.TrajWriteFreq(), "Trajectory write frequency");
   set_mdopt< Option<double> >(mdopts_.Set_TimeStep(), opts.TimeStep(), "Time step");
+  set_mdopt< Option<double> >(mdopts_.Set_Temperature0(), opts.Temperature0(), "Temperature");
 
   return 0;
 }
