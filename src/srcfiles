@@ -21,13 +21,11 @@ MdinFile.cpp \
 Messages.cpp \
 NC.cpp \
 QueueOpts.cpp \
-RemdDirs.cpp \
 RepIndexArray.cpp \
 ReplicaDimension.cpp \
 Run.cpp \
 RunStatus.cpp \
 StringRoutines.cpp \
-Submit.cpp \
 Submitter.cpp \
 System.cpp \
 TextFile.cpp
