@@ -85,6 +85,7 @@ int System::FindRuns() {
     ErrorMsg("MD package allocate failed.\n");
     return 1;
   }
+  // FIXME check for unparsed options
   for (TextFile::OptArray::const_iterator opair = creator_.PackageOpts().begin();
                                           opair != creator_.PackageOpts().end(); ++opair)
   {
