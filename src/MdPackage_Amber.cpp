@@ -91,11 +91,13 @@ int MdPackage_Amber::ReadPackageInput(MdOptions& opts, std::string const& fname)
         if (tkn->first == "ntwx") {
           opts.Set_TrajWriteFreq().SetVal( convertToInteger(tkn->second) );
           continue;
+        } else if (tkn->first == "dt") {
+          opts.Set_TimeStep().SetVal( convertToDouble(tkn->second) );
+          continue;
         // Avoid vars which will be set
         } else if (tkn->first == "imin" ||
             tkn->first == "nstlim" ||
             tkn->first == "ntwx" ||
-            tkn->first == "dt" ||
             tkn->first == "ig" ||
             tkn->first == "temp0" ||
             tkn->first == "tempi" ||

@@ -372,26 +372,18 @@ template <typename T> void set_mdopt(T& currentOpt, T const& newOpt, std::string
     if (currentOpt.IsSet())
       oss << desc << " is already set to " << currentOpt.Val() << ", will not overwrite with " << newOpt.Val();
     else {
-      oss << "Using " << desc << " of " << newOpt.Val();
+      oss << "Using " << desc << " of " << newOpt.Val() << " from package input";
       currentOpt.SetVal( newOpt.Val() );
     }
-    Msg("\t%s\n", oss.str().c_str());
+    Msg("\t%s.\n", oss.str().c_str());
   }
 }
 
 /** Set MD options from external source. */
 int Creator::SetMdOptions(MdOptions const& opts) {
-  // Trajectory write frequency
   set_mdopt< Option<int> >(mdopts_.Set_TrajWriteFreq(), opts.TrajWriteFreq(), "Trajectory write frequency");
-/*
-  if (opts.TrajWriteFreq().IsSet()) {
-    if (mdopts_.TrajWriteFreq().IsSet())
-      Msg("\tTrajectory write frequency is already set to %i, will not overwrite with %i\n", mdopts_.TrajWriteFreq().Val(), opts.TrajWriteFreq().Val());
-    else {
-      Msg("\tUsing trajectory write frequency of %i\n", opts.TrajWriteFreq().Val());
-      mdopts_.Set_TrajWriteFreq().SetVal( opts.TrajWriteFreq().Val() );
-    }
-  }*/
+  set_mdopt< Option<double> >(mdopts_.Set_TimeStep(), opts.TimeStep(), "Time step");
+
   return 0;
 }
 
