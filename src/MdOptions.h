@@ -54,6 +54,8 @@ class MdOptions {
     int Expected_Frames() const;
     /// \return total expected time based on total expected steps and time step.
     double Total_Time() const;
+    /// Print options to stdout
+    void PrintOpts() const;
   private:
     Option<int> nsteps_;            ///< Number of simulation steps.
     Option<int> traj_write_freq_;   ///< Trajectory write frequency in steps

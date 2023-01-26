@@ -1,4 +1,6 @@
 #include "MdOptions.h"
+#include <sstream>
+#include "Messages.h"
 
 /** CONSTRUCTOR */
 MdOptions::MdOptions() :
@@ -29,4 +31,24 @@ int MdOptions::Expected_Frames() const {
 /** \return Total expected time based on expected total steps and time step. */
 double MdOptions::Total_Time() const {
   return (double)Total_Steps() * timeStep_.Val();
+}
+
+/// Template for printing option
+template <typename T> std::string print_opt(T const& opt) {
+  std::ostringstream oss;
+  if (opt.IsSet())
+    oss << opt.Val();
+  else
+    oss << "*" << opt.Val();
+  return oss.str();
+}
+
+/** Print options to stdout. */
+void MdOptions::PrintOpts() const {
+  using namespace Messages;
+  Msg("  Number of steps   : %s\n", print_opt< Option<int> >( nsteps_ ).c_str());
+  Msg("  Traj. write freq. : %s\n", print_opt< Option<int> >( traj_write_freq_ ).c_str());
+  Msg("  Random seed       : %s\n", print_opt< Option<int> >( random_seed_ ).c_str());
+  Msg("  Time step         : %s\n", print_opt< Option<double> >( timeStep_ ).c_str());
+  Msg("  Temperature       : %s\n", print_opt< Option<double> >( temp0_ ).c_str());
 }
