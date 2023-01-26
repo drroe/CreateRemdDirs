@@ -78,7 +78,6 @@ int System::FindRuns() {
       ErrorMsg("Reading creation options file name '%s' in dir '%s' failed.\n", createOptsFilename_.c_str(), dirname_.c_str());
       return 1;
     }
-    creator_.Info();
   }
   // MD-package specific stuff
   if (mdInterface_.AllocatePackage(MdInterface::AMBER, creator_.Debug())) {
@@ -108,6 +107,7 @@ int System::FindRuns() {
       return 1;
     }
   }
+  creator_.Info();
   // See if submission options exist
   // FIXME re-enable this when the time comes
 /*

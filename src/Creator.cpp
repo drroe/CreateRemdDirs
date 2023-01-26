@@ -540,18 +540,9 @@ int Creator::setupCreator() {
 // Creator::Info()
 void Creator::Info() const {
   //Msg(    "  MDIN_FILE           : %s\n", mdin_file_.c_str());
-  mdopts_.PrintOpts();
-//  Msg(    "  Time step             : %g\n", mdopts_.TimeStep().Val());
-//  Msg(    "  Random seed           : %i\n", mdopts_.RandomSeed().Val());
-  if (mdopts_.RstWriteFreq().IsSet())
-    Msg(  "  Restraint write freq. : %i\n", mdopts_.RstWriteFreq().Val());
+  mdopts_.PrintOpts( (runType_ == MD), temp0_dim_, ph_dim_);
   if (runType_ == MD) {
     // Regular MD
-//    Msg(  "  Number of steps       : %i\n", mdopts_.N_Steps().Val());
-//    Msg(  "  Temperature           : %g\n", mdopts_.Temperature0().Val());
-    if (mdopts_.pH().IsSet())
-      Msg("  pH                    : %g\n", mdopts_.pH().Val());
-
     Msg(  "  CRD                   : %s\n", crd_dir_.c_str());
     if (!ref_file_.empty())
       Msg("  REF                   : %s\n", ref_file_.c_str());
@@ -561,13 +552,6 @@ void Creator::Info() const {
       Msg("  TOP                   : %s\n", top_file_.c_str());
   } else {
     // Some type of replica exchange run
-//    if (temp0_dim_ == -1)
-//      Msg("  Temperature           : %g\n", mdopts_.Temperature0().Val());
-    if (ph_dim_ == -1)
-      Msg("  pH                    : %g\n", mdopts_.pH().Val());
-    Msg(  "  Number of exchanges   : %i\n", mdopts_.N_Exchanges().Val());
-//    Msg(  "  Steps per exchange    : %i\n", mdopts_.N_Steps().Val());
-
     Msg(  "  CRD_DIR               : %s\n", crd_dir_.c_str());
     if (!ref_file_.empty())
       Msg("  REF_PREFIX            : %s\n", ref_file_.c_str());

@@ -33,7 +33,7 @@ double MdOptions::Total_Time() const {
   return (double)Total_Steps() * timeStep_.Val();
 }
 
-/// Template for printing option
+/// Template for printing option, denoting default with '*'
 template <typename T> std::string print_opt(T const& opt) {
   std::ostringstream oss;
   if (opt.IsSet())
@@ -44,11 +44,24 @@ template <typename T> std::string print_opt(T const& opt) {
 }
 
 /** Print options to stdout. */
-void MdOptions::PrintOpts() const {
+void MdOptions::PrintOpts(bool is_md, int temp0_dim, int ph_dim) const {
   using namespace Messages;
-  Msg("  Number of steps   : %s\n", print_opt< Option<int> >( nsteps_ ).c_str());
-  Msg("  Traj. write freq. : %s\n", print_opt< Option<int> >( traj_write_freq_ ).c_str());
-  Msg("  Random seed       : %s\n", print_opt< Option<int> >( random_seed_ ).c_str());
-  Msg("  Time step         : %s\n", print_opt< Option<double> >( timeStep_ ).c_str());
-  Msg("  Temperature       : %s\n", print_opt< Option<double> >( temp0_ ).c_str());
+  Msg(    "  Time step             : %s\n", print_opt< Option<double> >( timeStep_ ).c_str());
+  Msg(    "  Random seed           : %s\n", print_opt< Option<int> >( random_seed_ ).c_str());
+  Msg(    "  Traj. write freq.     : %s\n", print_opt< Option<int> >( traj_write_freq_ ).c_str());
+  if (rstWriteFreq_.IsSet())
+    Msg(  "  Restraint write freq. : %s\n", print_opt< Option<int> >( rstWriteFreq_ ).c_str());
+  if (is_md) {
+    Msg(  "  Number of steps       : %s\n", print_opt< Option<int> >( nsteps_ ).c_str());
+    Msg(  "  Temperature           : %s\n", print_opt< Option<double> >( temp0_ ).c_str());
+    if (pH_.IsSet())
+      Msg("  pH                    : %s\n", print_opt< Option<double> >( pH_ ).c_str());
+  } else {
+    Msg(  "  Number of exchanges   : %s\n", print_opt< Option<int> >( nexchanges_ ).c_str());
+    Msg(  "  Steps per exchange    : %s\n", print_opt< Option<int> >( nsteps_ ).c_str());
+    if (temp0_dim == -1)
+      Msg("  Temperature           : %s\n", print_opt< Option<double> >( temp0_ ).c_str());
+    if (ph_dim == -1 && pH_.IsSet())
+      Msg("  pH                    : %s\n", print_opt< Option<double> >( pH_ ).c_str());
+  }
 }
