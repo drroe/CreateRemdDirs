@@ -13,6 +13,8 @@ class ReplicaDimension {
     ReplicaDimension(DimType t, ExchType e) : type_(t), etype_(e) {}
     virtual ~ReplicaDimension() {}
     // ---------------------------------
+    /// \return Copy of this replica dimension
+    virtual ReplicaDimension* Copy() const = 0;
     /// \return Replica dimension size.
     virtual unsigned int Size() const = 0;
     /// Read dimension file
@@ -64,6 +66,7 @@ class TemperatureDim : public ReplicaDimension {
     double Temp0(int i)     const { return temps_[i]; }
     const char* name()      const { return "TREMD"; }
     int LoadDim(std::string const&);
+    ReplicaDimension* Copy() const { return (ReplicaDimension*)new TemperatureDim(*this); }
   private:
     Darray temps_; ///< List of replica temperatures.
 };
@@ -81,6 +84,7 @@ class PhDim : public ReplicaDimension {
     double SolvPH(int i)    const { return phs_[i]; }
     const char* name()      const { return "PHREMD"; }
     int LoadDim(std::string const&);
+    ReplicaDimension* Copy() const { return (ReplicaDimension*)new PhDim(*this); }
   private:
     Darray phs_; ///< List of replica pHs.
 };
@@ -98,6 +102,7 @@ class TopologyDim : public ReplicaDimension {
     double Temp0(int i)               const { return temps_[i]; }
     const char* name()                const { return "HREMD"; }
     int LoadDim(std::string const&);
+    ReplicaDimension* Copy() const { return (ReplicaDimension*)new TopologyDim(*this); }
   private:
     Sarray tops_; ///< List of replica topologies
     Darray temps_; ///< Optional corresponding list of temperatures
@@ -115,6 +120,7 @@ class AmdDihedralDim : public ReplicaDimension {
     bool ProvidesTopFiles() const { return false; }
     const char* name()      const { return "AMDHREMD"; }
     int LoadDim(std::string const&);
+    ReplicaDimension* Copy() const { return (ReplicaDimension*)new AmdDihedralDim(*this); }
     std::string Groupline(std::string const&) const;
 
     /// \return Array of AMD alpha values
@@ -137,6 +143,7 @@ class SgldDim : public ReplicaDimension {
     bool ProvidesTopFiles() const { return false; }
     const char* name()      const { return "RXSGLD"; }
     int LoadDim(std::string const&);
+    ReplicaDimension* Copy() const { return (ReplicaDimension*)new SgldDim(*this); }
 
     /// \return Array of SGLD temperatures
     Darray const& SgTemps() const { return sgtemps_; }

@@ -14,6 +14,9 @@ class ReplicaDimArray {
     /// DESTRUCTOR
     ~ReplicaDimArray();
 
+    /// Clear all dims
+    void ClearDims();
+
   private:
     typedef std::vector<ReplicaDimension*> DimArray;
     DimArray Dims_;
