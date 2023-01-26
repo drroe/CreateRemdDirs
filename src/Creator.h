@@ -2,7 +2,7 @@
 #define INC_CREATOR_H
 #include <vector>
 #include "MdOptions.h"
-class TextFile;
+#include "TextFile.h"
 class ReplicaDimension;
 class RepIndexArray;
 /// Class responsible for creating run input and script
@@ -31,7 +31,6 @@ class Creator {
     std::string const& MdinFileName() const { return mdin_file_; }
     /// \return Run description
     std::string const& RunDescription() const { return runDescription_; }
-    //int CreateRuns(std::string const&, FileRoutines::StrArray const&, int, bool);
     //int CreateAnalyzeArchive(std::string const&, FileRoutines::StrArray const&, int, int, bool, bool, bool, bool);
     /// Set debug level
     void SetDebug(int d) { debug_ = d; }
@@ -47,6 +46,9 @@ class Creator {
     /// \return Replica dimension array
     DimArray const& Dims() const { return Dims_; }
 
+    /// \return Package-specific options
+    TextFile::OptArray const& PackageOpts() const { return package_opts_; }
+
     /// Create MDIN file for REMD
     int MakeMdinForMD(MdOptions&, std::string const&, RepIndexArray const&) const;
     /// Create MDIN file for MD
@@ -61,8 +63,6 @@ class Creator {
     //int UmbrellaWriteFreq() const { return umbrella_; }
     /// \retrurn Total number of replicas
     unsigned int TotalReplicas() const { return totalReplicas_; }
-    /// \return True if command line needs -log FIXME too Amber-specific
-    bool UseLog() const { return uselog_; }
     // ----- File names --------------------------
     /// \return Name of first topology file from the top_dim_ dimension or MD top file.
     std::string TopologyName() const;
@@ -94,14 +94,11 @@ class Creator {
 
     int LoadDimension(std::string const&);
     std::string RefFileName(std::string const&) const; // TODO deprecate
-    //void WriteNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
 
     // File and MDIN variables
     std::string top_file_;
     std::string trajoutargs_;
     std::string fullarchive_;
-    //std::string mdin_file_;
-    //std::string rst_file_;
     MdOptions mdopts_;            ///< Hold MD options
 
     //MdinFile mdinFile_;           ///< Used to parse input from Amber MDIN file
@@ -112,12 +109,7 @@ class Creator {
     int ph_dim_;                  ///< Set to index of ph dim or -1 = no ph
     int debug_;
     int n_md_runs_;               ///< Number of MD runs.
-    //int umbrella_;                ///< When > 0 indicates umbrella sampling write frequency.
     int fileExtWidth_;            ///< Filename extension width
-    //bool override_irest_;         ///< If true do not set irest, use from MDIN
-    //bool override_ntx_;           ///< If true do not set ntx, use from MDIN
-    bool uselog_;                 ///< If true use -l in groupfile
-    bool crdDirSpecified_;        ///< If true, restart coords dir specified on command line. TODO deprecate
     RUNTYPE runType_;             ///< Type of run from options file.
     std::string runDescription_;  ///< Run description
     std::string additionalInput_; ///< Hold any additional MDIN input.
@@ -128,5 +120,6 @@ class Creator {
     std::string ref_file_;        ///< Reference file (MD) or path prefix (REMD)
     std::string ref_dir_;         ///< Directory where reference coords are (like crd_dir_)
     std::string mdin_file_;       ///< Md package-specific input file
+    TextFile::OptArray package_opts_; ///< Hold any potential package-specific options
 };
 #endif

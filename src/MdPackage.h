@@ -24,6 +24,8 @@ class MdPackage {
     // ---------------------------------
     /// \return a Copy of the class
     virtual MdPackage* Copy() const = 0;
+    /// Read package-specific creator options from a file
+    virtual int ParseCreatorOption(std::string const&, std::string const&) = 0;
     /// Read package-specific input options from a file
     virtual int ReadPackageInput(std::string const&) = 0;
     /// Create package-specific input files

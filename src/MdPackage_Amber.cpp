@@ -40,6 +40,23 @@ MdPackage_Amber& MdPackage_Amber::operator=(MdPackage_Amber const& rhs) {
   return *this;
 }
 
+/** Parse amber-specific creator option. */
+int MdPackage_Amber::ParseCreatorOption(std::string const& OPT, std::string const& VAR) {
+  if (OPT == "USELOG")
+  {
+    if (VAR == "yes")
+      uselog_ = true;
+    else if (VAR == "no")
+      uselog_ = false;
+    else {
+      ErrorMsg("Expected either 'yes' or 'no' for USELOG.\n");
+      //OptHelp(); FIXME
+      return 1;
+    }
+  }
+  return 0;
+}
+
 /** Read amber-specific input from MDIN file. */
 int MdPackage_Amber::ReadPackageInput(std::string const& fname) {
   using namespace FileRoutines;
@@ -501,7 +518,7 @@ const
       }
       GROUPFILE_LINE.append(" -ref " + tildeExpansion(repRef));
     }
-    if (creator.UseLog())
+    if (uselog_)
       GROUPFILE_LINE.append(" -l LOG/logfile." + EXT);
     if (creator.TypeOfRun() == Creator::PHREMD) {
       if (run_num == 0)

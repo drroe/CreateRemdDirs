@@ -15,6 +15,8 @@ class MdPackage_Amber : public MdPackage {
 
     /// \return Copy of this class
     MdPackage* Copy() const { return (MdPackage*)new MdPackage_Amber(*this); }
+    /// Process amber-specific creator option
+    int ParseCreatorOption(std::string const&, std::string const&);
     /// Read amber-specific input options from file
     int ReadPackageInput(std::string const&);
     /// Create amber-specific input files
@@ -42,5 +44,6 @@ class MdPackage_Amber : public MdPackage {
     bool override_irest_;         ///< If true do not set irest, use from MDIN
     bool override_ntx_;           ///< If true do not set ntx, use from MDIN
     MdinFile mdinFile_;           ///< Used to read input from MDIN
+    bool uselog_;                 ///< If true add -l log command line arg
 };
 #endif

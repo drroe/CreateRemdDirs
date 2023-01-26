@@ -85,6 +85,16 @@ int System::FindRuns() {
     ErrorMsg("MD package allocate failed.\n");
     return 1;
   }
+  for (TextFile::OptArray::const_iterator opair = creator_.PackageOpts().begin();
+                                          opair != creator_.PackageOpts().end(); ++opair)
+  {
+    std::string const& OPT = opair->first;
+    std::string const& VAR = opair->second;
+    if (mdInterface_.Package()->ParseCreatorOption(OPT, VAR)) {
+      ErrorMsg("Could not parse package-specific option '%s' = '%s'\n", OPT.c_str(), VAR.c_str());
+      return 1;
+    }
+  }
   if (!creator_.MdinFileName().empty()) {
     if (mdInterface_.Package()->ReadPackageInput( creator_.MdinFileName() )) {
       ErrorMsg("Reading MD package input options failed.\n");

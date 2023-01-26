@@ -2,7 +2,6 @@
 #include <cstdlib> // atof, atoi
 #include "Creator.h"
 #include "Messages.h"
-#include "TextFile.h"
 #include "StringRoutines.h"
 #include "ReplicaDimension.h"
 #include "FileRoutines.h" // CheckExists, fileExists
@@ -22,8 +21,6 @@ Creator::Creator() :
   debug_(0),
   n_md_runs_(0),
   fileExtWidth_(3),
-  uselog_(true),
-  crdDirSpecified_(false),
   crd_ext_("rst7") //FIXME this is Amber-specific
 {}
 
@@ -277,6 +274,7 @@ Msg("\n  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--
 
 // Creator::ReadOptions()
 int Creator::ReadOptions(std::string const& input_file) {
+  package_opts_.clear();
   // Read options from input file
   if (CheckExists("Input file", input_file)) return 1;
   std::string fname = tildeExpansion( input_file );
@@ -349,86 +347,16 @@ int Creator::ReadOptions(std::string const& input_file) {
         if (fileExists(cpin_file_))
           cpin_file_ = tildeExpansion( cpin_file_ );
       }
-      else if (OPT == "USELOG")
-      {
-        if (VAR == "yes")
-          uselog_ = true;
-        else if (VAR == "no")
-          uselog_ = false;
-        else {
-          ErrorMsg("Expected either 'yes' or 'no' for USELOG.\n");
-          OptHelp();
-          return 1;
-        }
-      }
       else
       {
-        ErrorMsg("Unrecognized option '%s' in input file.\n", OPT.c_str());
-        OptHelp();
-        return 1;
+        // Potentially package-specific
+        package_opts_.push_back( *opair );
+        //ErrorMsg("Unrecognized option '%s' in input file.\n", OPT.c_str());
+        //OptHelp();
+        //return 1;
       }
   }
 
-/*
-  // If MDIN file specified, store it in a string.
-  override_irest_ = false;
-  override_ntx_ = false;
-  additionalInput_.clear();
-  if (!mdin_file_.empty()) {
-    if (mdinFile_.ParseFile( mdin_file_ )) return 1;
-    if (debug_ > 0) mdinFile_.PrintNamelists();
-    std::string valname = mdinFile_.GetNamelistVar("&cntrl", "irest");
-    if (!valname.empty()) {
-      Msg("Warning: Using 'irest = %s' in '%s'\n", valname.c_str(), mdin_file_.c_str());
-      override_irest_ = true;
-    }
-    valname = mdinFile_.GetNamelistVar("&cntrl", "ntx");
-    if (!valname.empty()) {
-      Msg("Warning: Using 'ntx = %s' in '%s'\n", valname.c_str(), mdin_file_.c_str());
-      override_ntx_ = true;
-    }
-    // Add any &cntrl variables to additionalInput_
-    for (MdinFile::const_iterator nl = mdinFile_.nl_begin(); nl != mdinFile_.nl_end(); ++nl)
-    {
-      if (nl->first == "&cntrl") {
-        unsigned int col = 0;
-        for (MdinFile::token_iterator tkn = nl->second.begin(); tkn != nl->second.end(); ++tkn)
-        {
-          // Avoid vars which will be set
-          if (tkn->first == "imin" ||
-              tkn->first == "nstlim" ||
-              tkn->first == "dt" ||
-              tkn->first == "ig" ||
-              tkn->first == "temp0" ||
-              tkn->first == "tempi" ||
-              tkn->first == "numexchg" ||
-              tkn->first == "solvph"
-             )
-          {
-            Msg("Warning: Not using variable '%s' found in '%s'\n", tkn->first.c_str(), mdin_file_.c_str());
-            continue;
-          }
-          if (col == 0)
-            additionalInput_.append("   ");
-          
-          additionalInput_.append( tkn->first + " = " + tkn->second + ", " );
-          col++;
-          if (col == 4) {
-            additionalInput_.append("\n");
-            col = 0;
-          }
-        }
-        if (col != 0)
-          additionalInput_.append("\n");
-      } else
-        Msg("Warning: MDIN file contains additonal namelist '%s'\n", nl->first.c_str());
-    }
-
-    if (override_irest_ != override_ntx_) {
-      ErrorMsg("Both 'irest' and 'ntx' must be in '%s' if either are.\n", mdin_file_.c_str());
-      return 1;
-    }
-  }*/
   if (setupCreator()) {
     ErrorMsg("Invalid or missing options in file '%s'\n", input_file.c_str());
     return 1;
