@@ -59,7 +59,8 @@ int Run::CreateNew(std::string const& runDir, Creator const& creator, MdPackage*
     return 1;
   }
   // Set status
-  runStat_ = mdpackage->RunCurrentStatus( FileRoutines::ExpandToFilenames("*", false) );
+  //runStat_ = mdpackage->RunCurrentStatus( FileRoutines::ExpandToFilenames("*", false) );
+  runStat_ = RunStatus(RunStatus::PENDING);
   return 0;
 }
 

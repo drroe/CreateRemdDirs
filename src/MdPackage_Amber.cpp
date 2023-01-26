@@ -72,6 +72,7 @@ int MdPackage_Amber::ReadInputOptions(std::string const& fname) {
         // Avoid vars which will be set
         if (tkn->first == "imin" ||
             tkn->first == "nstlim" ||
+            tkn->first == "ntwx" ||
             tkn->first == "dt" ||
             tkn->first == "ig" ||
             tkn->first == "temp0" ||
@@ -178,6 +179,8 @@ const
                 "    imin = 0, nstlim = %i, dt = %f,\n",
                 rep+1, total_time, mdopts.N_Steps().Val(), mdopts.TimeStep().Val());
   }
+  if (mdopts.TrajWriteFreq().IsSet())
+    MDIN.Printf("    ntwx = %i,\n", mdopts.TrajWriteFreq().Val());
 
   if (!override_irest_)
     MDIN.Printf("    irest = %i, ntx = %i, ig = %i,\n",

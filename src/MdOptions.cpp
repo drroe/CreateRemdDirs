@@ -3,6 +3,7 @@
 /** CONSTRUCTOR */
 MdOptions::MdOptions() :
   nsteps_(0),
+  traj_write_freq_(0),
   random_seed_(-1),
   nexchanges_(0),
   timeStep_(0.002),

@@ -166,7 +166,7 @@ int System::findRunIdx(int runNum) const {
 int System::CreateRunDirectories(std::string const& crd_dir,
                                  int start_run, int nruns, bool overwrite)
 {
-  using namespace FileRoutines;
+  //using namespace FileRoutines;
   if (nruns < 1) {
     ErrorMsg("Less than 1 run for CreateRunDirectories()\n");
     return 1;
@@ -202,6 +202,8 @@ int System::CreateRunDirectories(std::string const& crd_dir,
     if (existingRunIdx > -1) {
       if (overwrite)
         Msg("Will overwrite run.\n");
+      else if (Runs_[existingRunIdx].Stat().CurrentStat() == RunStatus::EMPTY)
+        Msg("Run directory is empty. Creating run.\n");
       else {
         Runs_[existingRunIdx].RunInfo();
         prevDir = Runs_[existingRunIdx].RunDirName();
@@ -214,10 +216,11 @@ int System::CreateRunDirectories(std::string const& crd_dir,
     if (ChangeToSystemDir()) return 1;
 
     Msg("  RUNDIR: %s\n", runDir.c_str());
-    if (fileExists(runDir) && !overwrite) {
-      ErrorMsg("Directory '%s' exists and 'overwrite' not specified.\n", runDir.c_str());
-      return 1;
-    }
+    // NOTE: directory at this point should exist if it is in Runs_ so do not check
+    //if (fileExists(runDir) && !overwrite) {
+    //  ErrorMsg("Directory '%s' exists and 'overwrite' not specified.\n", runDir.c_str());
+    //  return 1;
+    //}
     int create_stat = 0;
     if (existingRunIdx > -1)
       create_stat = Runs_[existingRunIdx].CreateNew(runDir, creator_, mdInterface_.Package(),

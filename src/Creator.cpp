@@ -273,6 +273,7 @@ Msg("\n  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--
       "  DT <step>          : Input file; time step. Required.\n"
       "  IG <seed>          : Input file; random seed.\n"
       "  NUMEXCHG <#>       : Input file; number of exchanges. Required for REMD.\n"
+      "  NTWX <#>           : Input file; trajectory write frequency in steps.\n"
       "  MDRUNS <#>         : Number of MD runs when not REMD (default 1).\n"
       "  UMBRELLA <#>       : Indicates MD umbrella sampling with write frequency <#>.\n\n");
 }
@@ -329,6 +330,8 @@ int Creator::ReadOptions(std::string const& input_file) {
         ref_dir_ = VAR;
       else if (OPT == "TEMPERATURE")
         mdopts_.Set_Temperature0().SetVal( atof( VAR.c_str() ) );
+      else if (OPT == "NTWX")
+        mdopts_.Set_TrajWriteFreq().SetVal( atoi( VAR.c_str() ) );
       else if (OPT == "TRAJOUTARGS")
         trajoutargs_ = VAR;
       else if (OPT == "FULLARCHIVE")

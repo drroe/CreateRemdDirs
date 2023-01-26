@@ -15,6 +15,8 @@ class Run {
     int RunIndex() const { return idx_; }
     /// Print run info to stdout
     void RunInfo() const;
+    /// \return Run status object
+    RunStatus const& Stat() const { return runStat_; }
     /// \return run dir name
     std::string const& RunDirName() const { return rundir_; }
     /// Setup existing directory - run dir name

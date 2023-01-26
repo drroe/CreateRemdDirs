@@ -14,6 +14,8 @@ class RunStatus {
 
     /// Print status to stdout
     void PrintStatus() const;
+    /// \return Current run status
+    StatusType CurrentStat() const { return stat_; }
 
     /// Used to set MD options
     MdOptions& Set_Opts() { return runOpts_; }
