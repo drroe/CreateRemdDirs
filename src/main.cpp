@@ -39,9 +39,9 @@ static void Help(bool extended) {
 
 static void Defines() {
   Msg("Defines:");
-# ifdef HAS_NETCDF
-  Msg(" -DHAS_NETCDF");
-# endif
+//# ifdef HAS_NETCDF
+//  Msg(" -DHAS_NETCDF");
+//# endif
   Msg("\n");
 }
 

@@ -123,7 +123,8 @@ if [[ ! -z $CXX ]] ; then
 else
   COMPILER=g++
 fi
-NETCDFLIB=-lnetcdf
+#NETCDFLIB=-lnetcdf
+NETCDFLIB=
 NETCDF_HOME=""
 NETCDF_SPECIFIED=0
 DIRECTIVES=""

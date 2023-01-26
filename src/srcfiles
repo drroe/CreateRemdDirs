@@ -19,7 +19,6 @@ MdOptions.cpp \
 MdPackage_Amber.cpp \
 MdinFile.cpp \
 Messages.cpp \
-NC.cpp \
 QueueOpts.cpp \
 RepIndexArray.cpp \
 ReplicaDimension.cpp \
