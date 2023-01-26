@@ -482,6 +482,8 @@ int Creator::setupCreator() {
       Msg("    Topology dimension: %i\n    Temp0 dimension: %i    pH dimension: %i\n",
           top_dim_, temp0_dim_, ph_dim_);
   }
+  if (!mdopts_.TrajWriteFreq().IsSet())
+    Msg("Warning: Trajectory write frequency is not set.\n");
   // Perform some more error checking
   if (runType_ == MD) {
     if (!mdopts_.N_Steps().IsSet()) {
