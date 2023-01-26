@@ -25,7 +25,7 @@ class MdPackage {
     /// \return a Copy of the class
     virtual MdPackage* Copy() const = 0;
     /// Read package-specific input options from a file
-    virtual int ReadInputOptions(std::string const&) = 0;
+    virtual int ReadPackageInput(std::string const&) = 0;
     /// Create package-specific input files
     virtual int CreateInputFiles(Creator const&, int, int, std::string const&, std::string const&) const = 0;
     /// \return Information on an existing run from output files

@@ -21,10 +21,7 @@ Creator::Creator() :
   ph_dim_(-1),
   debug_(0),
   n_md_runs_(0),
-//  umbrella_(0),
   fileExtWidth_(3),
-//  override_irest_(false),
-//  override_ntx_(false),
   uselog_(true),
   crdDirSpecified_(false),
   crd_ext_("rst7") //FIXME this is Amber-specific
@@ -624,38 +621,6 @@ void Creator::Info() const {
     Msg(  "  %u dimensions, %u total replicas.\n", Dims_.size(), totalReplicas_);
   }
 }
-
-// Creator::CreateRuns()
-/*
-int Creator::CreateRuns(std::string const& TopDir, StrArray const& RunDirs,
-                         int start, bool overwrite)
-{
-  if (start < 1 && crd_dir_.empty()) {
-    ErrorMsg("No starting coords directory/file specified.\n");
-    return 1;
-  }
-  int run = start;
-  for (StrArray::const_iterator runDir = RunDirs.begin();
-                                runDir != RunDirs.end(); ++runDir, ++run)
-  {
-    if (ChangeDir(TopDir)) return 1;
-    // Determine run directory name, see if it is being overwritten.
-    Msg("  RUNDIR: %s\n", runDir->c_str());
-    if (fileExists(*runDir) && !overwrite) {
-      ErrorMsg("Directory '%s' exists and 'overwrite' not specified.\n", runDir->c_str());
-      return 1;
-    }
-    // Create run input
-    int err;
-    if (runType_ == MD)
-      err = CreateMD(start, run, *runDir);
-    else
-      err = CreateRemd(start, run, *runDir);
-    if (err) return 1;
-  }
-  return 0;
-}
-*/
 
 // Creator::CreateAnalyzeArchive()
 /*

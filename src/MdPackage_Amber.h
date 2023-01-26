@@ -16,7 +16,7 @@ class MdPackage_Amber : public MdPackage {
     /// \return Copy of this class
     MdPackage* Copy() const { return (MdPackage*)new MdPackage_Amber(*this); }
     /// Read amber-specific input options from file
-    int ReadInputOptions(std::string const&);
+    int ReadPackageInput(std::string const&);
     /// Create amber-specific input files
     int CreateInputFiles(Creator const&, int, int, std::string const&, std::string const&) const;
     /// \return Information on an existing run from output files

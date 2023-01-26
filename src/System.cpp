@@ -86,7 +86,7 @@ int System::FindRuns() {
     return 1;
   }
   if (!creator_.MdinFileName().empty()) {
-    if (mdInterface_.Package()->ReadInputOptions( creator_.MdinFileName() )) {
+    if (mdInterface_.Package()->ReadPackageInput( creator_.MdinFileName() )) {
       ErrorMsg("Reading MD package input options failed.\n");
       return 1;
     }

@@ -41,7 +41,7 @@ MdPackage_Amber& MdPackage_Amber::operator=(MdPackage_Amber const& rhs) {
 }
 
 /** Read amber-specific input from MDIN file. */
-int MdPackage_Amber::ReadInputOptions(std::string const& fname) {
+int MdPackage_Amber::ReadPackageInput(std::string const& fname) {
   using namespace FileRoutines;
 
   if (CheckExists("Amber MDIN file", fname)) return 1;
