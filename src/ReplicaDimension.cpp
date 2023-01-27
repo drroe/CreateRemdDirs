@@ -12,7 +12,7 @@ const std::string ReplicaDimension::emptystring_ = "";
 /** Should correspond to ExchType */
 const char* ReplicaDimension::exchString_[] = { "TEMPERATURE", "HAMILTONIAN", "PH", "NONE" };
 
-/// Should correspond to DimType */
+/** Should correspond to DimType */
 const char* ReplicaDimension::typeString_[] = { "temperatures", "topologies", "AMD dihedrals", "self-guided Langevin temperatures", "pH", "NONE" };
 
 int TemperatureDim::LoadDim(std::string const& fname) {
@@ -127,10 +127,6 @@ int AmdDihedralDim::LoadDim(std::string const& fname) {
   }
   SetDescription("AMD with various dihedral boost levels");
   return 0;
-}
-
-std::string AmdDihedralDim::Groupline(std::string const& EXT) const {
-  return std::string(" -amd AMD/amd."+EXT);
 }
 
 // -----------------------------------------------------------------------------

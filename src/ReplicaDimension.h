@@ -28,10 +28,6 @@ class ReplicaDimension {
     virtual bool ProvidesTopFiles() const = 0;
     /// \return Dimension name.
     virtual const char* name() const = 0;
-    /// \return any necessary additions to the groupfile
-    virtual std::string Groupline(std::string const&) const { return std::string(""); }
-    /// \return output dir if necessary
-    virtual const char* OutputDir() const { return 0; }
     /// \return Topology name
     virtual std::string const& TopName(int) const { return emptystring_; }
     /// \return Temperature
@@ -119,13 +115,11 @@ class AmdDihedralDim : public ReplicaDimension {
     AmdDihedralDim() : ReplicaDimension(AMD_DIHEDRAL, HREMD) {}
     static ReplicaDimension* Alloc() { return (ReplicaDimension*)new AmdDihedralDim(); }
     unsigned int Size()     const { return d_alpha_.size(); }
-    const char* OutputDir() const { return "AMD"; }
     bool ProvidesTemp0()    const { return false; }
     bool ProvidesTopFiles() const { return false; }
     const char* name()      const { return "AMDHREMD"; }
     int LoadDim(std::string const&);
     ReplicaDimension* Copy() const { return (ReplicaDimension*)new AmdDihedralDim(*this); }
-    std::string Groupline(std::string const&) const;
 
     /// \return Array of AMD alpha values
     Darray const& Alpha() const { return d_alpha_; }

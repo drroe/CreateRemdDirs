@@ -544,8 +544,11 @@ const
       GROUPFILE_LINE.append(" -cpout CPH/cpout." + EXT +
                             " -cprestrt CPH/cprestrt." + EXT);
     }
-    for (unsigned int id = 0; id != creator.Dims().size(); id++)
-      GROUPFILE_LINE += creator.Dims()[id]->Groupline(EXT);
+    /// Add any dimension-specific flags to groupline
+    for (unsigned int id = 0; id != creator.Dims().size(); id++) {
+      if (creator.Dims()[id]->Type() == ReplicaDimension::AMD_DIHEDRAL)
+        GROUPFILE_LINE += std::string(" -amd AMD/amd." + EXT);
+    }
     GROUPFILE.Printf("%s\n", GROUPFILE_LINE.c_str());
     // Increment first (fastest growing) index.
     Indices.Increment( creator.Dims() );
@@ -584,11 +587,14 @@ const
     if (Mkdir( "CPH" )) return 1;
   }
   // Create any dimension-specific directories
-  for (Creator::DimArray::const_iterator dim = creator.Dims().begin(); dim != creator.Dims().end(); ++dim) {
-    if ((*dim)->OutputDir() != 0) {
-      if (Mkdir( std::string((*dim)->OutputDir()))) return 1;
+  for (unsigned int id = 0; id != creator.Dims().size(); id++) {
+    if (creator.Dims()[id]->Type() == ReplicaDimension::AMD_DIHEDRAL) {
+      if (!fileExists("AMD")) {
+        if (Mkdir("AMD")) return 1;
+      }
     }
   }
+  
   // Input coordinates for next run will be restarts of this
   //crd_dir_ = "../" + run_dir + "/RST";
   return 0;
