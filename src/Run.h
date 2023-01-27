@@ -21,6 +21,8 @@ class Run {
     std::string const& RunDirName() const { return rundir_; }
     /// Setup existing directory - run dir name
     int SetupExisting(std::string const&, MdPackage*);
+    /// Refresh run status
+    int Refresh(MdPackage*);
     /// Create new directory - rundir, creator, mdpackage, start #, run #, prev run dir
     int CreateNew(std::string const&, Creator const&, MdPackage*, int, int, std::string const&);
     

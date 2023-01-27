@@ -41,6 +41,22 @@ int Run::SetupExisting(std::string const& runDir, MdPackage* mdpackage)
   return 0;
 }
 
+/** Refresh existing run. */
+int Run::Refresh(MdPackage* mdpackage) {
+  using namespace FileRoutines;
+  if (ChangeDir( rundir_ )) return 1;
+  // Get list of files
+  StrArray all_files = FileRoutines::ExpandToFilenames("*", false);
+  // Set status
+  if (all_files.empty()) {
+    Msg("Warning: Run directory '%s' is empty.\n", rundir_.c_str());
+    runStat_ = RunStatus(RunStatus::EMPTY);
+  } else {
+    runStat_ = mdpackage->RunCurrentStatus( all_files );
+  }
+  return 0;
+}
+
 /** Create new or overwrite existing run dir. */
 int Run::CreateNew(std::string const& runDir, Creator const& creator, MdPackage* mdpackage,
                    int start_run, int run_num, std::string const& prevDir)

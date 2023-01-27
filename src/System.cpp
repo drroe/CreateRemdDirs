@@ -145,6 +145,27 @@ int System::FindRuns() {
   return 0;
 }
 
+/** Refresh current runs. */
+int System::RefreshCurrentRuns() {
+  using namespace FileRoutines;
+  if (ChangeToSystemDir()) {
+    ErrorMsg("Could not change to system directory %s/%s\n", topDir_.c_str(), dirname_.c_str());
+    return 1;
+  }
+  for (RunArray::iterator run = Runs_.begin(); run != Runs_.end(); ++run)
+  {
+    Msg("  Refreshing directory '%s'\n", run->RunDirName().c_str());
+    if (run->Refresh( mdInterface_.Package() )) {
+      ErrorMsg("Refreshing existing run '%s'\n", run->RunDirName().c_str());
+      return 1;
+    }
+    run->RunInfo();
+    // Change directory back
+    if (ChangeToSystemDir()) return 1;
+  }
+  return 0;
+}
+
 /** Set debug level */
 void System::SetDebug(int debugIn) {
   creator_.SetDebug( debugIn );

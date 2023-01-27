@@ -21,6 +21,8 @@ class System {
 
     /// Find runs in dirname_
     int FindRuns();
+    /// Refresh current runs
+    int RefreshCurrentRuns();
     /// Set debug level
     void SetDebug(int);
 
