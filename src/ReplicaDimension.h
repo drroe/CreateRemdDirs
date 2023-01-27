@@ -122,10 +122,10 @@ class AmdDihedralDim : public ReplicaDimension {
     int LoadDim(std::string const&);
     ReplicaDimension* Copy() const { return (ReplicaDimension*)new AmdDihedralDim(*this); }
 
-    /// \return Array of AMD alpha values
-    Darray const& Alpha() const { return d_alpha_; }
-    /// \return Array of AMD threshhold values
-    Darray const& Ethresh() const { return d_thresh_; }
+    /// \return Specified AMD alpha value
+    double Alpha(int idx)   const { return d_alpha_[idx]; }
+    /// \return Specified AMD threshhold value
+    double Ethresh(int idx) const { return d_thresh_[idx]; }
   private:
     Darray d_alpha_; ///< List of amd dihedral alpha values
     Darray d_thresh_; ///< List of amd dihedral threshhold values
@@ -144,8 +144,8 @@ class SgldDim : public ReplicaDimension {
     int LoadDim(std::string const&);
     ReplicaDimension* Copy() const { return (ReplicaDimension*)new SgldDim(*this); }
 
-    /// \return Array of SGLD temperatures
-    Darray const& SgTemps() const { return sgtemps_; }
+    /// \return Specified SGLD temperature
+    double SgTemp(int idx) const { return sgtemps_[idx]; }
   private:
     Darray sgtemps_; ///< Self-guided Langevin temperatures.
 };

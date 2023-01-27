@@ -1,5 +1,4 @@
 #include "ReplicaDimArray.h"
-#include "ReplicaDimension.h"
 #include "TextFile.h"
 #include "Messages.h"
 
@@ -72,4 +71,22 @@ int ReplicaDimArray::LoadDimension(std::string const& dfile) {
   idxs_[dim->Type()] = (int)(Dims_.size() - 1);
 
   return 0;
+}
+
+/** \return True if specified dimension is present. */
+bool ReplicaDimArray::HasDim(ReplicaDimension::DimType typeIn) const {
+  return (idxs_[typeIn] > -1);
+}
+
+/** \return Specified dimension. */
+ReplicaDimension const& ReplicaDimArray::Dim(ReplicaDimension::DimType typeIn) const {
+  if (!HasDim(typeIn)) {
+    Messages::ErrorMsg("ReplicaDimArray called with invalid type.");
+  }
+  return *(Dims_[ idxs_[typeIn] ]);
+}
+
+/** \return Index of specified dimension. */
+int ReplicaDimArray::DimIdx(ReplicaDimension::DimType typeIn) const {
+  return idxs_[typeIn];
 }

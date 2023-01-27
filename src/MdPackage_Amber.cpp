@@ -465,9 +465,9 @@ const
   }
   // Do we need to setup groups for MREMD?
   Groups groups_;
-  bool setupGroups = (groups_.Empty() && creator.Dims().size() > 1);
+  bool setupGroups = (groups_.Empty() && creator.Dims().Ndims() > 1);
   if (setupGroups)
-    groups_.SetupGroups( creator.Dims().size() );
+    groups_.SetupGroups( creator.Dims().Ndims() );
   // Create INPUT directory if not present.
   std::string input_dir("INPUT");
   if (Mkdir(input_dir)) return 1;
@@ -475,7 +475,7 @@ const
   TextFile GROUPFILE;
   if (GROUPFILE.OpenWrite(creator.GroupfileName())) return 1; 
   // Hold current indices in each dimension.
-  RepIndexArray Indices( creator.Dims().size() );
+  RepIndexArray Indices( creator.Dims().Ndims() );
   for (unsigned int rep = 0; rep != creator.TotalReplicas(); rep++)
   {
     // Get replica extension
@@ -545,8 +545,8 @@ const
                             " -cprestrt CPH/cprestrt." + EXT);
     }
     /// Add any dimension-specific flags to groupline
-    for (unsigned int id = 0; id != creator.Dims().size(); id++) {
-      if (creator.Dims()[id]->Type() == ReplicaDimension::AMD_DIHEDRAL)
+    for (unsigned int id = 0; id != creator.Dims().Ndims(); id++) {
+      if (creator.Dims()[id].Type() == ReplicaDimension::AMD_DIHEDRAL)
         GROUPFILE_LINE += std::string(" -amd AMD/amd." + EXT);
     }
     GROUPFILE.Printf("%s\n", GROUPFILE_LINE.c_str());
@@ -558,11 +558,11 @@ const
   if (Debug() > 1 && !groups_.Empty())
     groups_.PrintGroups();
   // Create remd.dim if necessary.
-  if (creator.Dims().size() > 1) {
+  if (creator.Dims().Ndims() > 1) {
     TextFile REMDDIM;
     if (REMDDIM.OpenWrite(creator.RemdDimName())) return 1;
-    for (unsigned int id = 0; id != creator.Dims().size(); id++)
-      groups_.WriteRemdDim(REMDDIM, id, creator.Dims()[id]->exch_type(), creator.Dims()[id]->description());
+    for (unsigned int id = 0; id != creator.Dims().Ndims(); id++)
+      groups_.WriteRemdDim(REMDDIM, id, creator.Dims()[id].exch_type(), creator.Dims()[id].description());
     REMDDIM.Close();
   }
   // Create Run script
@@ -587,8 +587,8 @@ const
     if (Mkdir( "CPH" )) return 1;
   }
   // Create any dimension-specific directories
-  for (unsigned int id = 0; id != creator.Dims().size(); id++) {
-    if (creator.Dims()[id]->Type() == ReplicaDimension::AMD_DIHEDRAL) {
+  for (unsigned int id = 0; id != creator.Dims().Ndims(); id++) {
+    if (creator.Dims()[id].Type() == ReplicaDimension::AMD_DIHEDRAL) {
       if (!fileExists("AMD")) {
         if (Mkdir("AMD")) return 1;
       }

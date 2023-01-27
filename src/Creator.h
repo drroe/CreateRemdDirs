@@ -3,19 +3,17 @@
 #include <vector>
 #include "MdOptions.h"
 #include "TextFile.h"
-class ReplicaDimension;
+#include "ReplicaDimArray.h"
 class RepIndexArray;
 /// Class responsible for creating run input and script
 class Creator {
   public:
     /// Specific type of run the Creator will make (set in Setup)
     enum RUNTYPE { MD=0, TREMD, HREMD, PHREMD, MREMD };
-
+    /// CONSTRUCTOR
     Creator();
-    ~Creator();
 
     typedef std::vector<std::string> Sarray;
-    typedef std::vector<ReplicaDimension*> DimArray;
 
     static void OptHelp();
     /// Read creation options from a file
@@ -46,7 +44,7 @@ class Creator {
     std::string NumericalExt(int, int) const;
 
     /// \return Replica dimension array
-    DimArray const& Dims() const { return Dims_; }
+    ReplicaDimArray const& Dims() const { return Dims_; }
 
     /// \return Package-specific options
     TextFile::OptArray const& PackageOpts() const { return package_opts_; }
@@ -103,12 +101,8 @@ class Creator {
     std::string fullarchive_;
     MdOptions mdopts_;            ///< Hold MD options
 
-    //MdinFile mdinFile_;           ///< Used to parse input from Amber MDIN file
-    DimArray Dims_;               ///< Hold any replica dimensions
+    ReplicaDimArray Dims_;        ///< Hold any replica dimensions
     unsigned int totalReplicas_;  ///< Total # of replicas based on dimensions
-    int top_dim_;                 ///< Set to index of temp0 dim or -1 = global temp
-    int temp0_dim_;               ///< Set to index to topo dim or -1 = global topo
-    int ph_dim_;                  ///< Set to index of ph dim or -1 = no ph
     int debug_;
     int n_md_runs_;               ///< Number of MD runs.
     int fileExtWidth_;            ///< Filename extension width

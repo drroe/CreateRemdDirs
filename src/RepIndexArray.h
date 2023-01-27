@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 class ReplicaDimension;
+class ReplicaDimArray;
 /// Used to hold and count replica indices in 1 or more dimensions.
 class RepIndexArray {
   public:
@@ -16,7 +17,7 @@ class RepIndexArray {
     /// \return true if no indices
     bool Empty() const { return indices_.empty(); }
     /// Increment array
-    void Increment(std::vector<ReplicaDimension*> const&);
+    void Increment(ReplicaDimArray const&);
     /// \return Index in specified dimension
     unsigned int operator[](int idx) const { return indices_[idx]; }
 /*    /// const iterator type

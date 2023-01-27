@@ -16,22 +16,13 @@ using namespace FileRoutines;
 /** CONSTRUCTOR */
 Creator::Creator() :
   totalReplicas_(0),
-  top_dim_(-1),
-  temp0_dim_(-1),
-  ph_dim_(-1),
   debug_(0),
   n_md_runs_(0),
   fileExtWidth_(3),
   crd_ext_("rst7") //FIXME this is Amber-specific
 {}
 
-// DESTRUCTOR
-Creator::~Creator() {
-  for (DimArray::const_iterator dim = Dims_.begin(); dim != Dims_.end(); ++dim)
-    if (*dim != 0) delete *dim;
-}
-
-/** If given path is a relative path, add a '../' prefix. */
+/** If given path is a relative path, add a '../' prefix. */ // FIXME move to FileRoutines
 static inline std::string add_path_prefix(std::string const& path) {
   if (path.empty() || path[0] == '/')
     // No path or absolute path
@@ -44,10 +35,11 @@ static inline std::string add_path_prefix(std::string const& path) {
 /** \return First topology file name from the top_dim_ dimension (REMD) or MD topology file. */
 std::string Creator::TopologyName() const {
   std::string topname;
-  if (top_dim_ == -1)
-    topname = add_path_prefix(top_file_);
-  else
-    topname = add_path_prefix(Dims_[top_dim_]->TopName( 0 ));
+  if (Dims_.HasDim(ReplicaDimension::TOPOLOGY)) {
+    TopologyDim const& topdim = static_cast<TopologyDim const&>( Dims_.Dim(ReplicaDimension::TOPOLOGY) );
+    topname = add_path_prefix( topdim.TopName( 0 ) );
+  } else
+    topname = add_path_prefix( top_file_ );
   // Topology must always exist
   if (!fileExists( topname )) {
     ErrorMsg("Topology '%s' not found. Must specify absolute path"
@@ -60,10 +52,11 @@ std::string Creator::TopologyName() const {
 /** \return Topology at specified index in topology dimension, or MD topology file if no dim. */
 std::string Creator::TopologyName(RepIndexArray const& Indices) const {
   std::string topname;
-  if (top_dim_ == -1)
-    topname = add_path_prefix(top_file_);
-  else
-    topname = add_path_prefix(Dims_[top_dim_]->TopName( Indices[top_dim_] ));
+  if (!Indices.Empty() && Dims_.HasDim(ReplicaDimension::TOPOLOGY)) {
+    TopologyDim const& topdim = static_cast<TopologyDim const&>( Dims_.Dim(ReplicaDimension::TOPOLOGY) );
+    topname = add_path_prefix( topdim.TopName( Indices[Dims_.DimIdx(ReplicaDimension::TOPOLOGY)] ) );
+  } else
+    topname = add_path_prefix( top_file_ );
   // Topology must always exist
   if (!fileExists( topname )) {
     ErrorMsg("Topology '%s' not found. Must specify absolute path"
@@ -75,8 +68,11 @@ std::string Creator::TopologyName(RepIndexArray const& Indices) const {
 
 /** \return Temperature at specified index in temperature dim, or MD temperature if no dim. */
 double Creator::Temperature(RepIndexArray const& Indices) const {
-  if (temp0_dim_ == -1) return mdopts_.Temperature0().Val();
-  return Dims_[temp0_dim_]->Temp0( Indices[temp0_dim_] );
+  if (!Indices.Empty() && Dims_.HasDim(ReplicaDimension::TEMP)) {
+    TemperatureDim const& tempdim = static_cast<TemperatureDim const&>( Dims_.Dim(ReplicaDimension::TEMP) );
+    return tempdim.Temp0( Indices[Dims_.DimIdx(ReplicaDimension::TEMP)] );
+  }
+  return mdopts_.Temperature0().Val();
 }
 
 /** \return File numerical prefix/extension.
@@ -390,29 +386,11 @@ int Creator::SetMdOptions(MdOptions const& opts) {
 
 // Creator::LoadDimension()
 int Creator::LoadDimension(std::string const& dfile) {
-  TextFile infile;
-  // File existence already checked.
-  if (infile.OpenRead(dfile)) return 1;
-  // Determine dimension type from first line.
-  std::string firstLine = infile.GetString();
-  if (firstLine.empty()) {
-    ErrorMsg("Could not read first line of dimension file '%s'\n", dfile.c_str());
+  if (Dims_.LoadDimension(dfile)) {
+    ErrorMsg("Could not load dimension from '%s'\n", dfile.c_str());
     return 1;
   }
-  infile.Close(); 
-  // Allocate proper dimension type and load.
-  ReplicaDimension* dim = ReplicaAllocator::Allocate( firstLine );
-  if (dim == 0) {
-    ErrorMsg("Unrecognized dimension type: %s\n", firstLine.c_str());
-    return 2;
-  }
-  // Push it here so it will be deallocated if there is an error
-  Dims_.push_back( dim ); 
-  if (dim->LoadDim( dfile )) {
-    ErrorMsg("Loading info from dimension file '%s'\n", dfile.c_str());
-    return 1;
-  }
-  Msg("    Dim %u: %s (%u)\n", Dims_.size(), dim->description(), dim->Size());
+
   return 0;
 }
 
@@ -431,7 +409,7 @@ int Creator::setupCreator() {
     crd_dir_ = tildeExpansion(crd_dir_);
   // Figure out what type of run this is.
   runDescription_.clear();
-  if (Dims_.empty()) {
+  if (Dims_.Empty()) {
     Msg("  No dimensions defined: assuming MD run.\n");
     runType_ = MD;
     runDescription_.assign("MD");
@@ -443,15 +421,15 @@ int Creator::setupCreator() {
       return 1;
     }
   } else {
-    if (Dims_.size() == 1) {
-      if (Dims_[0]->Type() == ReplicaDimension::TEMP ||
-          Dims_[0]->Type() == ReplicaDimension::SGLD)
+    if (Dims_.Ndims() == 1) {
+      if (Dims_.FirstDim().Type() == ReplicaDimension::TEMP ||
+          Dims_.FirstDim().Type() == ReplicaDimension::SGLD)
         runType_ = TREMD;
-      else if (Dims_[0]->Type() == ReplicaDimension::PH)
+      else if (Dims_.FirstDim().Type() == ReplicaDimension::PH)
         runType_ = PHREMD;
       else
         runType_ = HREMD;
-      runDescription_.assign( Dims_[0]->name() );
+      runDescription_.assign( Dims_.FirstDim().name() );
     } else {
       runType_ = MREMD;
       //DimArray::const_iterator dim = Dims_.begin();
@@ -459,52 +437,27 @@ int Creator::setupCreator() {
     }
     // Count total # of replicas, Do some error checking.
     totalReplicas_ = 1;
-    temp0_dim_ = -1;
-    top_dim_ = -1;
-    ph_dim_ = -1;
-    int providesTemp0 = 0;
-    int providesPh = 0;
-    int providesTopFiles = 0;
-    for (DimArray::const_iterator dim = Dims_.begin(); dim != Dims_.end(); ++dim)
+    for (unsigned int idim = 0; idim != Dims_.Ndims(); idim++)
     {
-      totalReplicas_ *= (*dim)->Size();
-      if ((*dim)->ProvidesTemp0()) {
-        temp0_dim_ = (int)(dim - Dims_.begin());
-        providesTemp0++;
-      }
-      if ((*dim)->ProvidesPh()) {
-        ph_dim_ = (int)(dim - Dims_.begin());
-        providesPh++;
-      }
-      if ((*dim)->ProvidesTopFiles()) {
-        top_dim_ = (int)(dim - Dims_.begin());
-        providesTopFiles++;
-      }
+      totalReplicas_ *= Dims_[idim].Size();
     }
-    if (providesTemp0 > 1) {
-      ErrorMsg("At most one dimension that provides temperatures should be specified.\n");
-      return 1;
-    } else if (providesTemp0 == 0 && !mdopts_.Temperature0().IsSet()) {
+    if (!Dims_.HasDim(ReplicaDimension::TEMP) && !mdopts_.Temperature0().IsSet()) {
       Msg("Warning: No dimension provides temperature and TEMPERATURE not specified.\n");
       Msg("Warning:   Using default temperature: %g\n", mdopts_.Temperature0().Val());
     }
-    if (providesPh > 1) {
-      ErrorMsg("At most one dimension that provides pH should be specified.\n");
-      return 1;
-    } else if (providesPh == 1 && cpin_file_.empty()) {
+    if (Dims_.HasDim(ReplicaDimension::PH) && cpin_file_.empty()) { // FIXME amber-specific
       ErrorMsg("CPIN_FILE must be specified if pH dimension is present.\n");
       return 1;
     }
-    if (providesTopFiles > 1) {
-      ErrorMsg("At most one dimension that provides topology files should be specified.\n");
-      return 1;
-    } else if (providesTopFiles == 0 && top_file_.empty()) {
+    if (!Dims_.HasDim(ReplicaDimension::TOPOLOGY) && top_file_.empty()) {
       ErrorMsg("No dimension provides topology files and TOPOLOGY not specified.\n");
       return 1;
     }
     if (debug_ > 0)
       Msg("    Topology dimension: %i\n    Temp0 dimension: %i    pH dimension: %i\n",
-          top_dim_, temp0_dim_, ph_dim_);
+          Dims_.DimIdx(ReplicaDimension::TOPOLOGY),
+          Dims_.DimIdx(ReplicaDimension::TEMP),
+          Dims_.DimIdx(ReplicaDimension::PH));
   }
   if (!mdopts_.TrajWriteFreq().IsSet())
     Msg("Warning: Trajectory write frequency is not set.\n");
@@ -540,7 +493,7 @@ int Creator::setupCreator() {
 // Creator::Info()
 void Creator::Info() const {
   //Msg(    "  MDIN_FILE           : %s\n", mdin_file_.c_str());
-  mdopts_.PrintOpts( (runType_ == MD), temp0_dim_, ph_dim_);
+  mdopts_.PrintOpts( (runType_ == MD), Dims_.DimIdx(ReplicaDimension::TEMP), Dims_.DimIdx(ReplicaDimension::PH));
   if (runType_ == MD) {
     // Regular MD
     Msg(  "  CRD                   : %s\n", crd_dir_.c_str());
@@ -557,7 +510,9 @@ void Creator::Info() const {
       Msg("  REF_PREFIX            : %s\n", ref_file_.c_str());
     else if (!ref_dir_.empty())
       Msg("  REF_DIR               : %s\n", ref_dir_.c_str());
-    Msg(  "  %u dimensions, %u total replicas.\n", Dims_.size(), totalReplicas_);
+    Msg(  "  %u dimensions, %u total replicas.\n", Dims_.Ndims(), totalReplicas_);
+    for (unsigned int idim = 0; idim != Dims_.Ndims(); idim++)
+      Msg("    %u : %s\n", idim, Dims_[idim].description());
   }
 }
 
@@ -812,8 +767,7 @@ const
   // Create input
   currentMdOpts = mdopts_;
   currentMdOpts.Set_Temperature0().SetVal( Temperature( Indices ) );
-  if (ph_dim_ != -1)
-    currentMdOpts.Set_pH().SetVal( Dims_[ph_dim_]->SolvPH( Indices[ph_dim_] ));
+  
   if (mdopts_.RstFilename().IsSet()) {
     // Restraints
     std::string rf_name = add_path_prefix(mdopts_.RstFilename().Val() + EXT);
@@ -834,20 +788,23 @@ const
     }
   }
   // Dimension-specific options
-  for (unsigned int id = 0; id != Dims_.size(); id++) {
-    if (Dims_[id]->Type() == ReplicaDimension::AMD_DIHEDRAL) { // TODO check for multiple amd dims?
+  for (unsigned int id = 0; id != Dims_.Ndims(); id++) {
+    if (Dims_[id].Type() == ReplicaDimension::AMD_DIHEDRAL) {
       currentMdOpts.Set_AmdBoost().SetVal( MdOptions::AMD_TORSIONS );
-      AmdDihedralDim const& amd = static_cast<AmdDihedralDim const&>( *(Dims_[id]) );
-      currentMdOpts.Set_AmdEthresh().SetVal( amd.Ethresh()[ Indices[id] ] );
-      currentMdOpts.Set_AmdAlpha().SetVal( amd.Alpha()[ Indices[id] ] );
-    } else if (Dims_[id]->Type() == ReplicaDimension::ReplicaDimension::SGLD) { // TODO check for multiple sgld dims?
+      AmdDihedralDim const& amd = static_cast<AmdDihedralDim const&>( Dims_[id] );
+      currentMdOpts.Set_AmdEthresh().SetVal( amd.Ethresh( Indices[id] ) );
+      currentMdOpts.Set_AmdAlpha().SetVal( amd.Alpha( Indices[id] ) );
+    } else if (Dims_[id].Type() == ReplicaDimension::SGLD) {
       currentMdOpts.Set_Sgld().SetVal( MdOptions::SGLD );
-      SgldDim const& sgld = static_cast<SgldDim const&>( *(Dims_[id]) );
-      currentMdOpts.Set_SgldTemp().SetVal( sgld.SgTemps()[ Indices[id] ] );
+      SgldDim const& sgld = static_cast<SgldDim const&>( Dims_[id] );
+      currentMdOpts.Set_SgldTemp().SetVal( sgld.SgTemp( Indices[id] ) );
       // FIXME put in sgld dim
       double sgldAvgTime = 0.2;
       Msg("Warning: Using default SGLD avg time of %f\n", sgldAvgTime);
       currentMdOpts.Set_SgldAvgTime().SetVal( sgldAvgTime );
+    } else if (Dims_[id].Type() == ReplicaDimension::PH) {
+      PhDim const& phdim = static_cast<PhDim const&>( Dims_[id] );
+      currentMdOpts.Set_pH().SetVal( phdim.SolvPH( Indices[id] ) );
     }
   }
 
