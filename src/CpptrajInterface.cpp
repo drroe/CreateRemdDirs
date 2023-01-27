@@ -15,7 +15,7 @@ static bool CpptrajInterface_needs_setup_= true;
   */
 std::string CpptrajInterface::shellCmd(std::string const& cmdIn) const {
   std::string cmd( "/bin/bash -c \"" + cmdIn + " 2>&1\"" );
-  Msg("DEBUG: Command '%s'\n", cmd.c_str());
+  //Msg("DEBUG: Command '%s'\n", cmd.c_str());
   return cmd;
 }
 
