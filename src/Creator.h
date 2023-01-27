@@ -86,7 +86,7 @@ class Creator {
     static const std::string remddimName_;
 
     /// \return Array of input coords for multiple MD.
-    Sarray inputCrds_multiple_md(std::string const&, std::string const&) const;
+    Sarray inputCrds_multiple_md(std::string const&, std::string const&, unsigned int) const;
     /// \return Array containing single input coords for MD run.
     Sarray inputCrds_single_md(std::string const&, std::string const&) const;
     /// Perform internal setup, called by ReadOptions

@@ -86,11 +86,13 @@ std::string Creator::NumericalExt(int num, int max) const {
 
 /** \return Array of input coords for multiple MD. */
 Creator::Sarray Creator::inputCrds_multiple_md(std::string const& specified,
-                                               std::string const& def)
+                                               std::string const& def,
+                                               unsigned int nfiles)
 const
 {
   Msg("DEBUG: inputCrds_multiple_md spec='%s'  def='%s'\n", specified.c_str(), def.c_str());
   Sarray crd_files;
+  crd_files.reserve( nfiles );
   std::string crdDirName;
   if (!specified.empty())
     crdDirName = specified;
@@ -100,10 +102,12 @@ const
     ErrorMsg("No coordinates directory specified.\n");
     return Sarray();
   }
-  for (int grp=1; grp <= n_md_runs_; grp++)
-    crd_files.push_back(crdDirName + "/" + NumericalExt(grp, n_md_runs_) + "." + crd_ext_);
+  for (int grp=1; grp <= nfiles; grp++) {
+    crd_files.push_back(crdDirName + "/" + NumericalExt(grp, nfiles) + "." + crd_ext_);
+    Msg("DEBUG: crd %i '%s'\n", grp, crd_files.back().c_str());
     //crd_files.push_back(tildeExpansion(crdDirName + "/" +
-    //                                   NumericalExt(grp, n_md_runs_) + "." + crd_ext_));
+    //                                   NumericalExt(grp, nfiles) + "." + crd_ext_));
+  }
 
   return crd_files;
 }
@@ -142,7 +146,7 @@ Creator::Sarray Creator::RefCoordsNames() const
           crd_files.push_back( add_path_prefix(ref_file_) );
       } else if (!ref_dir_.empty()) {
         // Dir containing files XXX.<ext>
-        crd_files = inputCrds_multiple_md(std::string(""), add_path_prefix(ref_dir_));
+        crd_files = inputCrds_multiple_md(std::string(""), add_path_prefix(ref_dir_), n_md_runs_);
       }
     } else {
       // Single MD
@@ -180,7 +184,7 @@ Creator::Sarray Creator::InputCoordsNames(int startRunNum, int runNum, std::stri
       if (n_md_runs_ > 1) {
         // Multiple input coords, one for each MD group. Expect files named
         // <DIR>/XXX.<ext>
-        crd_files = inputCrds_multiple_md( add_path_prefix(specified_crd_), add_path_prefix(crd_dir_) );
+        crd_files = inputCrds_multiple_md( add_path_prefix(specified_crd_), add_path_prefix(crd_dir_), n_md_runs_ );
       } else {
         // Single input coords for MD.
         crd_files = inputCrds_single_md( add_path_prefix(specified_crd_), add_path_prefix(crd_dir_) );
@@ -191,8 +195,7 @@ Creator::Sarray Creator::InputCoordsNames(int startRunNum, int runNum, std::stri
                runType_ == MREMD)
     {
       // REMD run
-      crd_files = inputCrds_multiple_md( add_path_prefix(specified_crd_), add_path_prefix(crd_dir_) );
-      return Sarray();
+      crd_files = inputCrds_multiple_md( add_path_prefix(specified_crd_), add_path_prefix(crd_dir_), totalReplicas_ );
     } else {
       ErrorMsg("Unhandled run type in InputCoordsNames()\n");
       return Sarray();
@@ -207,7 +210,7 @@ Creator::Sarray Creator::InputCoordsNames(int startRunNum, int runNum, std::stri
     if (runType_ == MD) {
       // MD run
       if (n_md_runs_ > 1) {
-        crd_files = inputCrds_multiple_md( add_path_prefix(specified), add_path_prefix(prevDir) );
+        crd_files = inputCrds_multiple_md( add_path_prefix(specified), add_path_prefix(prevDir), n_md_runs_ );
       } else {
         std::string prev_name = prevDir + "/mdrst.rst7";
         crd_files = inputCrds_single_md( add_path_prefix(specified), add_path_prefix(prev_name) );
@@ -219,8 +222,7 @@ Creator::Sarray Creator::InputCoordsNames(int startRunNum, int runNum, std::stri
     {
       // REMD run
       std::string prev_dir = prevDir + "/RST";
-      crd_files = inputCrds_multiple_md( add_path_prefix(specified), add_path_prefix(prev_dir) );
-      return Sarray();
+      crd_files = inputCrds_multiple_md( add_path_prefix(specified), add_path_prefix(prev_dir), totalReplicas_ );
     } else {
       ErrorMsg("Unhandled run type in InputCoordsNames()\n");
       return Sarray();
