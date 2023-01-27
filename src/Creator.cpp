@@ -253,10 +253,9 @@ void Creator::OptHelp() {
   Msg("Creation input file variables:\n"
       "  CRD_FILE <dir>     : Starting coordinates location (run 0 only).\n"
       "                       Expect name '<CRD_FILE>/XXX.rst7' for REMD.\n"
-      "  REF_FILE <dir>     : Reference coordinates (optional).\n"
+      "  REF_FILE <dir>     : Reference coordinates directory (optional).\n"
       "                       Expect name '<REF_FILE>/XXX.rst7' for REMD.\n"
-      "  REFERENCE <prefix> : Reference coordinates (optional, groupfile only).\n"
-      "                       Expect name '<REFERENCE>.XXX'.\n"
+      "  REFERENCE <file>   : Single reference coordinates (optional).\n"
       "  DIMENSION <file>   : File containing replica dimension information, 1 per dimension\n"
       "    Headers:");
   for (ReplicaAllocator::Token const* ptr = ReplicaAllocator::AllocArray;
@@ -508,216 +507,7 @@ void Creator::Info() const {
   }
 }
 
-// Creator::CreateAnalyzeArchive()
-/*
-int Creator::CreateAnalyzeArchive(std::string const& TopDir, StrArray const& RunDirs,
-                                   int start, int stop, bool overwrite, bool check,
-                                   bool analyzeEnabled, bool archiveEnabled)
-{
-  // Find trajectory files
-  ChangeDir( TopDir + "/" + RunDirs.front() );
-  StrArray TrajFiles;
-  std::string traj_prefix;
-  if (runType_ == MD)
-    TrajFiles = ExpandToFilenames("md.nc.*");
-  else
-    TrajFiles = ExpandToFilenames("TRAJ/rem.crd.*");
-  if (TrajFiles.empty()) {
-    if (check) {
-      ErrorMsg("No trajectory files found.\n");
-      return 1;
-    }
-    if (runType_ == MD)
-      traj_prefix.assign("/md.nc.001");
-    else 
-      traj_prefix.assign("/TRAJ/rem.crd.001");
-    Msg("Warning: Check disabled. Assuming first traj is '%s'\n", traj_prefix.c_str());
-  } else
-    traj_prefix.assign("/" + TrajFiles.front());
-
-  // Ensure traj 1 for all runs between start and stop exist.
-  ChangeDir( TopDir );
-  if (check) {
-    for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
-    {
-      std::string TRAJ1(*rdir + traj_prefix);
-      if (CheckExists("Trajectory", TRAJ1)) return 1;
-    }
-  }
-
-  // Set up input for analysis -------------------
-  if (analyzeEnabled) {
-    ChangeDir( TopDir );
-    Msg("Creating input for analysis.\n");
-    std::string CPPDIR = "Analyze." + integerToString(start) + "." +
-                                      integerToString(stop);
-    if ( fileExists(CPPDIR) ) {
-      if (!overwrite) {
-        ErrorMsg("Directory '%s' exists and '-O' not specified.\n", CPPDIR.c_str());
-        return 1;
-      }
-    } else
-      Mkdir( CPPDIR );
-    // Analysis input
-    std::string inputName("batch.cpptraj.in"); // TODO check exists? Make option?
-    TextFile CPPIN;
-    if (CPPIN.OpenWrite( CPPDIR + "/" + inputName )) return 1;
-    // If HREMD, need nosort keyword
-    std::string TRAJINARGS;
-    if (runType_ == MD || runType_ == HREMD)
-      TRAJINARGS.assign("nosort");
-    CPPIN.Printf("parm %s\n", Topology().c_str());
-    for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
-      CPPIN.Printf("ensemble ../%s%s %s\n",
-                   rdir->c_str(), traj_prefix.c_str(), TRAJINARGS.c_str());
-    CPPIN.Printf("strip :WAT\nautoimage\n"
-                 "trajout run%i-%i.nowat.nc netcdf remdtraj %s\n",
-                 start, stop, trajoutargs_.c_str());
-    CPPIN.Close();
-    // Create run script
-    std::string scriptName(CPPDIR + "/RunAnalysis.sh");
-    if (!overwrite && fileExists(scriptName)) {
-      ErrorMsg("Not overwriting existing analysis script: %s\n", scriptName.c_str());
-      return 1;
-    }
-    TextFile runScript;
-    if (runScript.OpenWrite( scriptName )) return 1;
-    runScript.Printf("#!/bin/bash\n\n# Run executable\nTIME0=`date +%%s`\n"
-                     "$MPIRUN $EXEPATH -i %s\n"
-                     "if [[ $? -ne 0 ]] ; then\n  echo \"CPPTRAJ error.\"\n  exit 1\nfi\n"
-                     "TIME1=`date +%%s`\n((TOTAL = $TIME1 - $TIME0))\n"
-                     "echo \"$TOTAL seconds.\"\nexit 0\n", inputName.c_str());
-    runScript.Close();
-    ChangePermissions( scriptName ); 
-  }
-  // Set up input for archiving ------------------
-  if (archiveEnabled) {
-    ChangeDir( TopDir );
-    Msg("Creating input for archiving.\n");
-    // Set up input for archiving. This will be done in 2 separate runs. 
-    // The first sorts and saves fully solvated trajectories of interest
-    // (FULLARCHIVE). The second saves all stripped trajs.
-    if (fullarchive_.empty()) {
-      ErrorMsg("FULLARCHIVE must contain a comma-separated list of ensemble members to"
-               " save full coordinates, or NONE to skip this step.\n");
-      return 1;
-    }
-    std::string ARDIR="Archive." + integerToString(start) + "." +
-                                   integerToString(stop);
-    if ( ileExists(ARDIR) ) {
-      if (!overwrite) {
-        ErrorMsg("Directory '%s' exists and '-O' not specified.\n", ARDIR.c_str());
-        return 1;
-      }
-    } else
-      Mkdir( ARDIR );
-    // If HREMD, need nosort keyword
-    std::string TRAJINARGS;
-    if (runType_ == MD || runType_ == HREMD)
-      TRAJINARGS.assign("nosort");
-    std::string TOP = Topology();
-    // Create input for archiving each run.
-    int run = start;
-    for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir, ++run)
-    {
-      // Check if traj archive already exists for this run.
-      std::string TARFILE( ARDIR + "/traj." + *rdir + ".tgz" );
-      if (!overwrite && fileExists(TARFILE)) {
-        ErrorMsg("Trajectory archive %s already exists.\n", TARFILE.c_str());
-        return 1;
-      }
-      // Check if non-traj archive exists for this run
-      TARFILE.assign( *rdir + ".tgz" );
-      if (!overwrite && fileExists(TARFILE)) {
-        ErrorMsg("Run archive %s already exists.\n", TARFILE.c_str());
-        return 1;
-      }
-      // Create cpptraj input
-      TextFile ARIN;
-      if ( fullarchive_ != "NONE") {
-        // Create input for full archiving of selected members of this run
-        std::string AR1("ar1." + integerToString(run) + ".cpptraj.in");
-        if (ARIN.OpenWrite(ARDIR + "/" + AR1)) return 1;
-        ARIN.Printf("parm %s\nensemble ../%s%s %s\n"
-                    "trajout ../%s/TRAJ/wat.nc netcdf remdtraj onlymembers %s\n",
-                    TOP.c_str(), rdir->c_str(), traj_prefix.c_str(), TRAJINARGS.c_str(),
-                    rdir->c_str(), fullarchive_.c_str());
-        ARIN.Close();
-      }
-      // Create input for archiving stripped trajectories
-      std::string AR2("ar2." + integerToString(run) + ".cpptraj.in");
-      if (ARIN.OpenWrite(ARDIR + "/" + AR2)) return 1;
-      ARIN.Printf("parm %s\nensemble ../%s%s %s\n"
-                  "strip :WAT\nautoimage\ntrajout ../%s/TRAJ/nowat.nc netcdf remdtraj\n",
-                  TOP.c_str(), rdir->c_str(), traj_prefix.c_str(), TRAJINARGS.c_str(),
-                  rdir->c_str());
-      ARIN.Close();
-    }
-
-    // Create run script.
-    const char* CPPTRAJERR =
-      "  if [[ $? -ne 0 ]] ; then\n    echo \"CPPTRAJ error.\"\n    exit 1\n  fi";
-    std::string scriptName("RunArchive." + integerToString(start) + "."
-                           + integerToString(stop) + ".sh");
-    if (!overwrite && fileExists(scriptName)) {
-      ErrorMsg("Not overwriting existing archive script: %s\n", scriptName.c_str());
-      return 1;
-    }
-    TextFile runScript;
-    if (runScript.OpenWrite( scriptName )) return 1;
-    runScript.Printf("#!/bin/bash\n\nTOTALTIME0=`date +%%s`\nRUN=%i\nfor DIR in", start);
-    for (StrArray::const_iterator rdir = RunDirs.begin(); rdir != RunDirs.end(); ++rdir)
-      runScript.Printf(" %s", rdir->c_str());
-    const char* tprefix;
-    if (runType_ == MD)
-      tprefix = "md.nc";
-    else
-      tprefix = "TRAJ";
-    runScript.Printf(" ; do\n  TIME0=`date +%%s`\n"
-                     "  # Put everything but trajectories into a separate archive.\n"
-                     "  TARFILE=$DIR.tgz\n"
-                     "  FILELIST=""\n  for FILE in `find $DIR -name \"*\"` ; do\n"
-                     "    if [[ ! -d $FILE ]] ; then\n"
-                     "      if [[ `echo \"$FILE\" | awk '{print index($0,\"%s\");}'` -eq 0 ]] ; then\n"
-                     "        # Not a TRAJ directory file\n"
-                     "        FILELIST=$FILELIST\" $FILE\"\n      fi\n    fi\n"
-                     "  done\n  echo \"tar -czvf $TARFILE\"\n  tar -czvf $TARFILE $FILELIST\n", tprefix);
-    if ( fullarchive_ != "NONE") {
-      // Add command to script for full archive of this run
-      runScript.Printf(
-        "  # Sort and save the unbiased fully-solvated trajs\n"
-        "  cd %s\n  $MPIRUN $EXEPATH -i ar1.$RUN.cpptraj.in\n%s\n"
-        "  cd ..\n  FILELIST=`ls $DIR/TRAJ/wat.nc.*`\n"
-        "  if [[ -z $FILELIST ]] ; then\n"
-        "    echo \"Error: Sorted solvated trajectories not found.\" >> /dev/stderr\n"
-        "    exit 1\n  fi\n", ARDIR.c_str(), CPPTRAJERR); 
-    }
-    // Add command to script for stripped archive of this run
-    runScript.Printf(
-        "  # Save all of the stripped trajs.\n"
-        "  cd %s\n  $MPIRUN $EXEPATH -i ar2.$RUN.cpptraj.in\n%s\n" 
-        "  cd ..\n"
-        "  for OUTTRAJ in `ls $DIR/TRAJ/nowat.nc.*` ; do\n"
-        "    FILELIST=$FILELIST\" $OUTTRAJ\"\n"
-        "  done\n  TARFILE=%s/traj.$DIR.tgz\n"
-        "  echo \"tar -czvf $TARFILE\"\n"
-        "  tar -czvf $TARFILE $FILELIST\n"
-        "  TIME1=`date +%%s`\n  ((TOTAL = $TIME1 - $TIME0))\n"
-        "  echo \"$DIR took $TOTAL seconds to archive.\"\n"
-        "  echo \"$TARFILE\" >> TrajArchives.txt\n"
-        "  echo \"--------------------------------------------------------------\"\n"
-        "  ((RUN++))\n"
-        "done\nTOTALTIME1=`date +%%s`\n((TOTAL = $TOTALTIME1 - $TOTALTIME0))\n"
-        "echo \"$TOTAL seconds total.\"\nexit 0\n",
-        ARDIR.c_str(), CPPTRAJERR, ARDIR.c_str());
-    runScript.Close();
-    ChangePermissions( scriptName );
-  } // END archive input
-
-  return 0;
-}
-*/
-// =============================================================================
+/** Write run script. */
 int Creator::WriteRunMD(std::string const& cmd_opts) const {
   TextFile RunMD;
   if (RunMD.OpenWrite("RunMD.sh")) return 1;
@@ -730,23 +520,10 @@ int Creator::WriteRunMD(std::string const& cmd_opts) const {
   return 0;
 }
 
-// TODO deprecate
-std::string Creator::RefFileName(std::string const& EXT) const {
-  std::string repRef;
-  if (!ref_file_.empty())
-    repRef.assign(ref_file_ + "." + EXT);
-  else if (!ref_dir_.empty())
-    repRef.assign(ref_dir_ + "/" + EXT + ".rst7");
-  return repRef;
-}
-
-// =============================================================================
-/** Create input file for MD.
-  * \param fname Name of MDIN file.
-  * \param run_num Run number.
+/** Create input options for MD/REMD.
+  * \param currentMdOpts options to set.
   * \param EXT Numerical extension (group #) corresponding to this MDIN when multiple MDINs needed.
   * \param Indices Array of replica indices if REMD
-  * \param rep Overall replica index if REMD
   */
 int Creator::MakeMdinForMD(MdOptions& currentMdOpts,
                            std::string const& EXT, 
@@ -802,9 +579,8 @@ const
   return 0;
 }
 
-/** Create input file for MD.
-  * \param fname Name of MDIN file.
-  * \param run_num Run number, for setting irest/ntx.
+/** Create input options for MD.
+  * \param currentMdOpts Options to set. 
   * \param EXT Extension for restraint/dumpave files when umbrella sampling.
   */
 int Creator::MakeMdinForMD(MdOptions& currentMdOpts, std::string const& EXT)
