@@ -60,6 +60,8 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
         Msg("Project *%i: %s\n", pidx, project->name());
       else
         Msg("Project  %i: %s\n", pidx, project->name());
+      // Just in case we need to update the project
+      Project& modProject = manager.Set_Project(pidx);
       int sidx = 0;
       for (Project::SystemArray::const_iterator system = project->Systems().begin();
                                                 system != project->Systems().end();
@@ -68,6 +70,9 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
         unsigned int total_frames = 0;
         //Msg("DEBUG: sidx=%i activeSystemIdx= %i\n", sidx, project->ActiveSystemIdx());
         if (tgtSystemIdx == SHOW_ALL || tgtSystemIdx == sidx) {
+          // Ensure system is up to date
+          System& modSystem = modProject.Set_System(sidx);
+          modSystem.RefreshCurrentRuns();
           if (project->ActiveSystemIdx() == sidx)
             Msg("  System *%i: ", sidx);
           else

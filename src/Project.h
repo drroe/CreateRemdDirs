@@ -25,6 +25,8 @@ class Project {
     System& ActiveSystem() { return systems_[activeSystemIdx_]; }
     /// Set active system index
     void SetActiveSystem(int idx) { activeSystemIdx_ = idx; }
+    /// \return Modifiable system corresponding to given index
+    System& Set_System(int idx) { return systems_[idx]; }
   private:
     SystemArray systems_; ///< Hold all systems pertaining to this Project
     std::string pname_;   ///< Project name

@@ -27,6 +27,8 @@ class Manager {
     Project& ActiveProject() { return projects_[activeProjectIdx_]; }
     /// \return the active system of active project
     System& ActiveProjectSystem() { return projects_[activeProjectIdx_].ActiveSystem(); }
+    /// Modifiable project
+    Project& Set_Project(int idx) { return projects_[idx]; }
 
     /// Set global debug level
     void SetDebug(int);
