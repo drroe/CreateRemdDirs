@@ -34,6 +34,8 @@ int Run::SetupExisting(std::string const& runDir, MdPackage* mdpackage)
     for (StrArray::const_iterator it = all_files.begin(); it != all_files.end(); ++it)
       Msg("\t%s\n", it->c_str());
     runStat_ = mdpackage->RunCurrentStatus( all_files );
+    // DEBUG
+    //runStat_.Opts().PrintOpts(false, -1, -1);
   }
 
   // FIXME add detection

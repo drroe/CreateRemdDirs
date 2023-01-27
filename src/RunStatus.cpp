@@ -30,10 +30,13 @@ const char* RunStatus::StatStr_[] = {
 void RunStatus::PrintStatus() const {
   if (stat_ == EMPTY || stat_ == PENDING)
     Msg("%10s", StatStr_[stat_]);
-  else
+  else {
+    // DEBUG
+    //runOpts_.PrintOpts(false, -1, -1);
     Msg("%10s Time=%12.4g Frames=%10i Expected=%10i",
         StatStr_[stat_],
         runOpts_.Total_Time(),
         current_traj_frames_,
         runOpts_.Expected_Frames());
+  }
 }

@@ -669,6 +669,9 @@ const
   else
     currentStat.Set_Status( RunStatus::INCOMPLETE );
 
+  // DEBUG
+  //currentStat.Opts().PrintOpts(false, -1, -1);
+
   return 0;
 }
 
@@ -714,8 +717,12 @@ RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& file
     } else if (*fname == "OUTPUT") {
       // See if any output exists
       FileRoutines::StrArray remd_outfiles = FileRoutines::ExpandToFilenames("OUTPUT/*", false);
-      if (!remd_outfiles.empty())
+      if (!remd_outfiles.empty()) {
         has_output = true;
+        if (read_mdout( currentStat, remd_outfiles.front(), topname )) {
+          ErrorMsg("Could not read '%s'\n", remd_outfiles.front().c_str());
+        }
+      }
     }
   }
   if (!topname.empty() && !trajname.empty()) {
@@ -727,5 +734,7 @@ RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& file
     if (has_runscript && !has_output)
       currentStat.Set_Status(RunStatus::PENDING);
   }
+  //DEBUG
+  //currentStat.Opts().PrintOpts(false, -1, -1);
   return currentStat;
 }

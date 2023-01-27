@@ -19,6 +19,8 @@ class RunStatus {
 
     /// Used to set MD options
     MdOptions& Set_Opts() { return runOpts_; }
+    /// \return MD options
+    MdOptions const& Opts() const { return runOpts_; }
     /// Set status
     void Set_Status(StatusType s) { stat_ = s; }
     /// Set current # frames
