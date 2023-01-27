@@ -19,7 +19,7 @@ MdPackage_Amber.o : MdPackage_Amber.cpp CpptrajInterface.h Creator.h FileRoutine
 MdinFile.o : MdinFile.cpp Cols.h MdinFile.h Messages.h StringRoutines.h TextFile.h
 Messages.o : Messages.cpp Messages.h
 QueueOpts.o : QueueOpts.cpp FileRoutines.h Messages.h QueueOpts.h StringRoutines.h TextFile.h
-RepIndexArray.o : RepIndexArray.cpp RepIndexArray.h ReplicaDimension.h StringRoutines.h
+RepIndexArray.o : RepIndexArray.cpp RepIndexArray.h ReplicaDimArray.h ReplicaDimension.h StringRoutines.h
 ReplicaDimArray.o : ReplicaDimArray.cpp Messages.h ReplicaDimArray.h ReplicaDimension.h TextFile.h
 ReplicaDimension.o : ReplicaDimension.cpp FileRoutines.h Messages.h ReplicaDimension.h TextFile.h
 Run.o : Run.cpp FileRoutines.h MdOptions.h MdPackage.h Messages.h Option.h Run.h RunStatus.h StringRoutines.h

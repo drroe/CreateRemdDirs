@@ -21,6 +21,8 @@ class RunStatus {
     MdOptions& Set_Opts() { return runOpts_; }
     /// \return MD options
     MdOptions const& Opts() const { return runOpts_; }
+    /// \return Current # traj frames
+    unsigned int CurrentTrajFrames() const;
     /// Set status
     void Set_Status(StatusType s) { stat_ = s; }
     /// Set current # frames

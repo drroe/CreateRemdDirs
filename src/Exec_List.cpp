@@ -65,6 +65,7 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
                                                 system != project->Systems().end();
                                               ++system, ++sidx)
       {
+        unsigned int total_frames = 0;
         //Msg("DEBUG: sidx=%i activeSystemIdx= %i\n", sidx, project->ActiveSystemIdx());
         if (tgtSystemIdx == SHOW_ALL || tgtSystemIdx == sidx) {
           if (project->ActiveSystemIdx() == sidx)
@@ -81,7 +82,9 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
               Msg("    %i: ", run->RunIndex());
               run->RunInfo();
             }
+            total_frames += run->Stat().CurrentTrajFrames();
           }
+          Msg("    Total frames= %u\n", total_frames);
         } // END loop over systems
       }
     }
