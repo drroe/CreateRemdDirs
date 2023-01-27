@@ -5,12 +5,16 @@
 
 /** CONSTRUCTOR */
 ReplicaDimArray::ReplicaDimArray() :
-  temp0_dim_(-1)
+  temp0_dim_(-1),
+  ph_dim_(-1),
+  top_dim_(-1)
 {}
 
 /** Copy constructor */
 ReplicaDimArray::ReplicaDimArray( ReplicaDimArray const& rhs):
-  temp0_dim_(rhs.temp0_dim_)
+  temp0_dim_(rhs.temp0_dim_),
+  ph_dim_(rhs.ph_dim_),
+  top_dim_(rhs.top_dim_)
 {
   for (DimArray::const_iterator it = rhs.Dims_.begin(); it != rhs.Dims_.end(); ++it)
     Dims_.push_back( (*it)->Copy() );
@@ -21,6 +25,8 @@ void ReplicaDimArray::ClearDims() {
   for (DimArray::const_iterator it = Dims_.begin(); it != Dims_.end(); ++it)
     delete *it;
   temp0_dim_ = -1;
+  ph_dim_ = -1;
+  top_dim_ = -1;
 }
 
 /** Assignment */
@@ -28,6 +34,8 @@ ReplicaDimArray& ReplicaDimArray::operator=(ReplicaDimArray const& rhs) {
   if (&rhs == this) return *this;
   ClearDims();
   temp0_dim_ = rhs.temp0_dim_;
+  ph_dim_ = rhs.ph_dim_;
+  top_dim_ = rhs.top_dim_;
   for (DimArray::const_iterator it = rhs.Dims_.begin(); it != rhs.Dims_.end(); ++it)
     Dims_.push_back( (*it)->Copy() );
   return *this;
@@ -71,7 +79,18 @@ int ReplicaDimArray::LoadDimension(std::string const& dfile) {
       return 1;
     }
     temp0_dim_ = (int)(Dims_.size() - 1);
+  } else if (dim->ProvidesPh()) {
+    if (ph_dim_ != -1) {
+      ErrorMsg("At most one dimension that provides pH should be specified.\n");
+      return 1;
+    }
+    ph_dim_ = (int)(Dims_.size() - 1);
+  } else if (dim->ProvidesTopFiles()) {
+    if (top_dim_ != -1) {
+      ErrorMsg("At most one dimension that provides topology files should be specified.\n");
+      return 1;
+    }
+    top_dim_ = (int)(Dims_.size() - 1);
   }
   return 0;
 }
-

@@ -26,5 +26,7 @@ class ReplicaDimArray {
     typedef std::vector<ReplicaDimension*> DimArray;
     DimArray Dims_;
     int temp0_dim_; ///< Index of the temperature dimension
+    int ph_dim_;    ///< Index of the pH dimension
+    int top_dim_;   ///< Index of the topology dimension
 };
 #endif
