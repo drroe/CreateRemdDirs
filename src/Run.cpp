@@ -38,7 +38,6 @@ int Run::SetupExisting(std::string const& runDir, MdPackage* mdpackage)
     //runStat_.Opts().PrintOpts(false, -1, -1);
   }
 
-  // FIXME add detection
   return 0;
 }
 
