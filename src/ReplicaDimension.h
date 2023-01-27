@@ -7,9 +7,10 @@ class ReplicaDimension {
   public:
     typedef std::vector<std::string> Sarray;
     typedef std::vector<double> Darray;
-    enum DimType { NO_TYPE=0, TEMP, TOPOLOGY, AMD_DIHEDRAL, SGLD, PH };
-    enum ExchType { NO_EXCH=0, TREMD, HREMD, PHREMD };
-    ReplicaDimension() : type_(NO_TYPE), etype_(NO_EXCH) {}
+    enum DimType { TEMP=0, TOPOLOGY, AMD_DIHEDRAL, SGLD, PH, NDIMTYPES };
+    /// Should correspond to exchString_
+    enum ExchType { TREMD=0, HREMD, PHREMD, NEXCHTYPES };
+    ReplicaDimension() : type_(NDIMTYPES), etype_(NEXCHTYPES) {}
     ReplicaDimension(DimType t, ExchType e) : type_(t), etype_(e) {}
     virtual ~ReplicaDimension() {}
     // ---------------------------------
