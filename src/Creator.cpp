@@ -157,7 +157,14 @@ Creator::Sarray Creator::RefCoordsNames() const
         Msg("Warning: Not using ref dir '%s' for single MD run.\n", ref_dir_.c_str());
     }
   } else {
-    ErrorMsg("RefCoordsNames not set up for REMD yet.\n");
+    if (!ref_file_.empty()) {
+      // Single reference for all replicas
+      for (unsigned int rep = 0; rep != totalReplicas_; rep++)
+        crd_files.push_back( add_path_prefix(ref_file_) );
+    } else if (!ref_dir_.empty()) {
+      // Dir containing files XXX.<ext>
+      crd_files = inputCrds_multiple_md(std::string(""), add_path_prefix(ref_dir_), totalReplicas_);
+    }
   }
   // Ensure ref files exist
   for (Sarray::const_iterator it = crd_files.begin(); it != crd_files.end(); ++it) {
