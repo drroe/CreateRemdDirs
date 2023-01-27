@@ -28,27 +28,23 @@ class Creator {
     std::string const& MdinFileName() const { return mdin_file_; }
     /// \return Run description
     std::string const& RunDescription() const { return runDescription_; }
-    //int CreateAnalyzeArchive(std::string const&, FileRoutines::StrArray const&, int, int, bool, bool, bool, bool);
     /// Set debug level
     void SetDebug(int d) { debug_ = d; }
     /// Set alternate coordinates location
     void SetSpecifiedCoords(std::string const& c) { specified_crd_ = c; }
-    /// Set MD options
+    /// Set MD options; only overwrite current options if not set.
     int SetMdOptions(MdOptions const&);
-
-    /// \return Debug level
-    int Debug() const { return debug_; }
-
-    /// \return Numerical prefix/extension based on number and expected max
-    std::string NumericalExt(int, int) const;
-
-    /// \return Replica dimension array
-    ReplicaDimArray const& Dims() const { return Dims_; }
-
     /// \return Package-specific options
     TextFile::OptArray const& PackageOpts() const { return package_opts_; }
 
-    /// Create MDIN file for REMD
+    /// \return Debug level
+    int Debug() const { return debug_; }
+    /// \return Numerical prefix/extension based on number and expected max
+    std::string NumericalExt(int, int) const;
+    /// \return Replica dimension array
+    ReplicaDimArray const& Dims() const { return Dims_; }
+
+    /// Create MDIN file for MD/REMD
     int MakeMdinForMD(MdOptions&, std::string const&, RepIndexArray const&) const;
     /// Create MDIN file for MD
     int MakeMdinForMD(MdOptions&, std::string const&) const;
