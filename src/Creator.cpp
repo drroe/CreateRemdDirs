@@ -66,15 +66,6 @@ std::string Creator::TopologyName(RepIndexArray const& Indices) const {
   return topname;
 }
 
-/** \return Temperature at specified index in temperature dim, or MD temperature if no dim. */
-double Creator::Temperature(RepIndexArray const& Indices) const {
-  if (!Indices.Empty() && Dims_.HasDim(ReplicaDimension::TEMP)) {
-    TemperatureDim const& tempdim = static_cast<TemperatureDim const&>( Dims_.Dim(ReplicaDimension::TEMP) );
-    return tempdim.Temp0( Indices[Dims_.DimIdx(ReplicaDimension::TEMP)] );
-  }
-  return mdopts_.Temperature0().Val();
-}
-
 /** \return File numerical prefix/extension.
   * Determines a numerical prefix/extension based on max number of expected
   * files and the current default width.
@@ -757,7 +748,6 @@ const
 {
   // Create input
   currentMdOpts = mdopts_;
-  currentMdOpts.Set_Temperature0().SetVal( Temperature( Indices ) );
   
   if (mdopts_.RstFilename().IsSet()) {
     // Restraints
@@ -796,6 +786,9 @@ const
     } else if (Dims_[id].Type() == ReplicaDimension::PH) {
       PhDim const& phdim = static_cast<PhDim const&>( Dims_[id] );
       currentMdOpts.Set_pH().SetVal( phdim.SolvPH( Indices[id] ) );
+    } else if (Dims_[id].Type() == ReplicaDimension::TEMP) {
+      TemperatureDim const& tempdim = static_cast<TemperatureDim const&>( Dims_[id] );
+      currentMdOpts.Set_Temperature0().SetVal( tempdim.Temp0( Indices[id] ) );
     }
   }
 

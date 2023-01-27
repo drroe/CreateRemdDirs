@@ -505,13 +505,6 @@ const
       ErrorMsg("Could not get topology name.\n");
       return 1;
     }
-    // Get temperature for this replica
-    double currentTemp0 = creator.Temperature( Indices );
-    // Info for this replica.
-    if (Debug() > 1) {
-      Msg("\tReplica %u: top=%s  temp0=%f", rep+1, currentTop.c_str(), currentTemp0);
-      Msg("  { %s }\n", Indices.IndicesStr(0).c_str());
-    }
     // Save group info
     if (setupGroups)
       groups_.AddReplica( Indices.Indices(), rep+1 );
@@ -521,6 +514,11 @@ const
     if (creator.MakeMdinForMD(currentMdOpts, EXT, Indices)) {
       ErrorMsg("Making input options for rep %u failed.\n", rep+1);
       return 1;
+    }
+    // Info for this replica.
+    if (Debug() > 1) {
+      Msg("\tReplica %u: top=%s  temp0=%f", rep+1, currentTop.c_str(), currentMdOpts.Temperature0().Val());
+      Msg("  { %s }\n", Indices.IndicesStr(0).c_str());
     }
     if (writeMdInputFile(creator.RunDescription(), currentMdOpts,
                          mdin_name, run_num, Indices, rep))
