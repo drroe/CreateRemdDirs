@@ -27,7 +27,8 @@ MdPackage_Amber::MdPackage_Amber(MdPackage_Amber const& rhs) :
   override_irest_(rhs.override_irest_),
   override_ntx_(rhs.override_ntx_),
   mdinFile_(rhs.mdinFile_),
-  uselog_(rhs.uselog_)
+  uselog_(rhs.uselog_),
+  cpin_file_(rhs.cpin_file_)
 {}
 
 /** ASSIGMENT */
@@ -39,14 +40,14 @@ MdPackage_Amber& MdPackage_Amber::operator=(MdPackage_Amber const& rhs) {
   override_irest_ = rhs.override_irest_;
   mdinFile_ = rhs.mdinFile_;
   uselog_ = rhs.uselog_;
+  cpin_file_ = rhs.cpin_file_;
 
   return *this;
 }
 
 /** Parse amber-specific creator option. */
 int MdPackage_Amber::ParseCreatorOption(std::string const& OPT, std::string const& VAR) {
-  if (OPT == "USELOG")
-  {
+  if (OPT == "USELOG") {
     if (VAR == "yes")
       uselog_ = true;
     else if (VAR == "no")
@@ -56,6 +57,19 @@ int MdPackage_Amber::ParseCreatorOption(std::string const& OPT, std::string cons
       //OptHelp(); FIXME
       return 1;
     }
+  } else if (OPT == "CPIN_FILE") {
+    cpin_file_ = VAR;
+    if (FileRoutines::fileExists(cpin_file_))
+      cpin_file_ = FileRoutines::tildeExpansion( cpin_file_ );
+  }
+  return 0;
+}
+
+/** Check amber-specific creator options. */
+int MdPackage_Amber::CheckCreatorOptions(Creator const& creator) const {
+  if (creator.Dims().HasDim(ReplicaDimension::PH) && cpin_file_.empty()) {
+    ErrorMsg("CPIN_FILE must be specified if pH dimension is present.\n");
+    return 1;
   }
   return 0;
 }
