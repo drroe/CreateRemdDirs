@@ -7,10 +7,11 @@ class ReplicaDimension {
   public:
     typedef std::vector<std::string> Sarray;
     typedef std::vector<double> Darray;
+    /// Should correspond to typeString_
     enum DimType { TEMP=0, TOPOLOGY, AMD_DIHEDRAL, SGLD, PH, NDIMTYPES };
     /// Should correspond to exchString_
     enum ExchType { TREMD=0, HREMD, PHREMD, NEXCHTYPES };
-    ReplicaDimension() : type_(NDIMTYPES), etype_(NEXCHTYPES) {}
+    /// CONSTRUCTOR - take dimension type and exchange type
     ReplicaDimension(DimType t, ExchType e) : type_(t), etype_(e) {}
     virtual ~ReplicaDimension() {}
     // ---------------------------------
@@ -50,9 +51,9 @@ class ReplicaDimension {
     static const std::string emptystring_;
     static const char* exchString_[]; ///< Strings corresponding to ExchType
     static const char* typeString_[]; ///< Strings corresponding to DimType
-    DimType type_; ///< Replica dimension type.
-    std::string description_; ///< Replica dimension description.
-    ExchType etype_; ///< Replica exchange type
+    DimType type_;                    ///< Replica dimension type.
+    std::string description_;         ///< Replica dimension description.
+    ExchType etype_;                  ///< Replica exchange type
 };
 // -----------------------------------------------
 /// Temperature dimension
