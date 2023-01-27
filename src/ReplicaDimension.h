@@ -13,6 +13,7 @@ class ReplicaDimension {
     enum ExchType { TREMD=0, HREMD, PHREMD, NEXCHTYPES };
     /// CONSTRUCTOR - take dimension type and exchange type
     ReplicaDimension(DimType t, ExchType e) : type_(t), etype_(e) {}
+    /// DESTRUCTOR - virtual since inherited
     virtual ~ReplicaDimension() {}
     // ---------------------------------
     /// \return Copy of this replica dimension
@@ -21,29 +22,17 @@ class ReplicaDimension {
     virtual unsigned int Size() const = 0;
     /// Read dimension file
     virtual int LoadDim(std::string const&) = 0;
-    /// \return true if dimension provides bath temperatures (temp0).
-    virtual bool ProvidesTemp0() const = 0;
-    /// \return true if dimension provides ph TODO pure virtual
-    virtual bool ProvidesPh() const { return false; }
-    /// \return true if dimension provides topology files.
-    virtual bool ProvidesTopFiles() const = 0;
     /// \return Dimension name.
     virtual const char* name() const = 0;
-    /// \return Topology name
-    virtual std::string const& TopName(int) const { return emptystring_; }
-    /// \return Temperature
-    virtual double Temp0(int)  const { return -1.0; }
-    /// \return pH
-    virtual double SolvPH(int) const { return -1.0; }
     // ---------------------------------
     /// \return Replica dimension type.
-    DimType Type() const { return type_;     }
+    DimType Type()            const { return type_;     }
     /// \return Replica description.
     const char* description() const { return description_.c_str(); }
     /// \return Dimension type description
-    const char* type_str() const { return typeString_[type_]; }
+    const char* type_str()    const { return typeString_[type_]; }
     /// \return Exchange type description.
-    const char* exch_type() const { return exchString_[etype_]; } 
+    const char* exch_type()   const { return exchString_[etype_]; } 
   protected:
     // Set dimension description
     void SetDescription(std::string const& s) { description_ = s; }
@@ -62,8 +51,6 @@ class TemperatureDim : public ReplicaDimension {
     TemperatureDim() : ReplicaDimension(TEMP, TREMD) {}
     static ReplicaDimension* Alloc() { return (ReplicaDimension*)new TemperatureDim(); }
     unsigned int Size()     const { return temps_.size(); }
-    bool ProvidesTemp0()    const { return true; }
-    bool ProvidesTopFiles() const { return false; }
     double Temp0(int i)     const { return temps_[i]; }
     const char* name()      const { return "TREMD"; }
     int LoadDim(std::string const&);
@@ -79,9 +66,6 @@ class PhDim : public ReplicaDimension {
     PhDim() : ReplicaDimension(PH, PHREMD) {}
     static ReplicaDimension* Alloc() { return (ReplicaDimension*)new PhDim(); }
     unsigned int Size()     const { return phs_.size(); }
-    bool ProvidesTemp0()    const { return false; }
-    bool ProvidesPh()       const { return true;  }
-    bool ProvidesTopFiles() const { return false; }
     double SolvPH(int i)    const { return phs_[i]; }
     const char* name()      const { return "PHREMD"; }
     int LoadDim(std::string const&);
@@ -97,8 +81,6 @@ class TopologyDim : public ReplicaDimension {
     TopologyDim() : ReplicaDimension(TOPOLOGY, HREMD) {}
     static ReplicaDimension* Alloc() { return (ReplicaDimension*)new TopologyDim(); }
     unsigned int Size()               const { return tops_.size(); }
-    bool ProvidesTemp0()              const { return !temps_.empty(); }
-    bool ProvidesTopFiles()           const { return true; }
     std::string const& TopName(int i) const { return tops_[i]; }
     double Temp0(int i)               const { return temps_[i]; }
     const char* name()                const { return "HREMD"; }
@@ -116,8 +98,6 @@ class AmdDihedralDim : public ReplicaDimension {
     AmdDihedralDim() : ReplicaDimension(AMD_DIHEDRAL, HREMD) {}
     static ReplicaDimension* Alloc() { return (ReplicaDimension*)new AmdDihedralDim(); }
     unsigned int Size()     const { return d_alpha_.size(); }
-    bool ProvidesTemp0()    const { return false; }
-    bool ProvidesTopFiles() const { return false; }
     const char* name()      const { return "AMDHREMD"; }
     int LoadDim(std::string const&);
     ReplicaDimension* Copy() const { return (ReplicaDimension*)new AmdDihedralDim(*this); }
@@ -138,8 +118,6 @@ class SgldDim : public ReplicaDimension {
     SgldDim() : ReplicaDimension(SGLD, TREMD) {}
     static ReplicaDimension* Alloc() { return (ReplicaDimension*)new SgldDim(); }
     unsigned int Size()     const { return sgtemps_.size(); }
-    bool ProvidesTemp0()    const { return false; }
-    bool ProvidesTopFiles() const { return false; }
     const char* name()      const { return "RXSGLD"; }
     int LoadDim(std::string const&);
     ReplicaDimension* Copy() const { return (ReplicaDimension*)new SgldDim(*this); }
