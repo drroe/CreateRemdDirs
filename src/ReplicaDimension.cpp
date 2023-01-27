@@ -9,8 +9,11 @@ using namespace Messages;
 
 const std::string ReplicaDimension::emptystring_ = "";
 
-// Should correspong to ExchType
+/** Should correspond to ExchType */
 const char* ReplicaDimension::exchString_[] = { "TEMPERATURE", "HAMILTONIAN", "PH", "NONE" };
+
+/// Should correspond to DimType */
+const char* ReplicaDimension::typeString_[] = { "temperatures", "topologies", "AMD dihedrals", "self-guided Langevin temperatures", "pH", "NONE" };
 
 int TemperatureDim::LoadDim(std::string const& fname) {
   TextFile infile;

@@ -43,6 +43,8 @@ class ReplicaDimension {
     DimType Type() const { return type_;     }
     /// \return Replica description.
     const char* description() const { return description_.c_str(); }
+    /// \return Dimension type description
+    const char* type_str() const { return typeString_[type_]; }
     /// \return Exchange type description.
     const char* exch_type() const { return exchString_[etype_]; } 
   protected:
@@ -50,7 +52,8 @@ class ReplicaDimension {
     void SetDescription(std::string const& s) { description_ = s; }
   private:
     static const std::string emptystring_;
-    static const char* exchString_[];
+    static const char* exchString_[]; ///< Strings corresponding to ExchType
+    static const char* typeString_[]; ///< Strings corresponding to DimType
     DimType type_; ///< Replica dimension type.
     std::string description_; ///< Replica dimension description.
     ExchType etype_; ///< Replica exchange type
