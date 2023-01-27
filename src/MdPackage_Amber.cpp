@@ -473,11 +473,10 @@ const
     return 1;
   }*/
   // If constant pH, ensure CPIN file exists
-  if (creator.TypeOfRun() == Creator::PHREMD &&
-      !fileExists(creator.CPIN_Name()))
+  if (creator.TypeOfRun() == Creator::PHREMD && !fileExists(cpin_file_))
   {
     ErrorMsg("CPIN file '%s' not found. Must specify absolute path"
-             " or path relative to '%s'\n", creator.CPIN_Name().c_str(), run_dir.c_str());
+             " or path relative to '%s'\n", cpin_file_.c_str(), run_dir.c_str());
     return 1;
   }
   // Do we need to setup groups for MREMD?
@@ -548,7 +547,7 @@ const
       GROUPFILE_LINE.append(" -l LOG/logfile." + EXT);
     if (creator.TypeOfRun() == Creator::PHREMD) {
       if (run_num == 0)
-        GROUPFILE_LINE.append(" -cpin " + creator.CPIN_Name());
+        GROUPFILE_LINE.append(" -cpin " + cpin_file_);
       else {
         // Use CPrestart from previous run
         std::string prevCP("../" + prevDir + "/CPH/cprestrt." + EXT);

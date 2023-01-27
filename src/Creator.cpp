@@ -350,12 +350,6 @@ int Creator::ReadOptions(std::string const& input_file) {
         if (fileExists( VAR ))
           mdopts_.Set_RstFilename().SetVal( tildeExpansion( VAR ) );
       }
-      else if (OPT == "CPIN_FILE")
-      {
-        cpin_file_ = VAR;
-        if (fileExists(cpin_file_))
-          cpin_file_ = tildeExpansion( cpin_file_ );
-      }
       else
       {
         // Potentially package-specific
@@ -456,10 +450,6 @@ int Creator::setupCreator() {
     if (!Dims_.HasDim(ReplicaDimension::TEMP) && !mdopts_.Temperature0().IsSet()) {
       Msg("Warning: No dimension provides temperature and TEMPERATURE not specified.\n");
       Msg("Warning:   Using default temperature: %g\n", mdopts_.Temperature0().Val());
-    }
-    if (Dims_.HasDim(ReplicaDimension::PH) && cpin_file_.empty()) { // FIXME amber-specific
-      ErrorMsg("CPIN_FILE must be specified if pH dimension is present.\n");
-      return 1;
     }
     if (!Dims_.HasDim(ReplicaDimension::TOPOLOGY) && top_file_.empty()) {
       ErrorMsg("No dimension provides topology files and TOPOLOGY not specified.\n");

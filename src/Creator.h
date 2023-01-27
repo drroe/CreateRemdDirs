@@ -76,8 +76,6 @@ class Creator {
     Sarray RefCoordsNames() const;
     /// \return Group file name
     std::string const& GroupfileName() const { return groupfileName_; }
-    /// \return CPIN file name
-    std::string const& CPIN_Name() const { return cpin_file_; }
     /// \return REMD dimension name file
     std::string const& RemdDimName() const { return remddimName_; }
   private:
@@ -112,7 +110,6 @@ class Creator {
     std::string crd_dir_;         ///< Directory where input coordinates are/MD input coords (from options file).
     std::string specified_crd_;   ///< Input coords setet in Setup(); overrides crd_dir_.
     std::string crd_ext_;         ///< Input coords file name extension
-    std::string cpin_file_;       ///< CPIN file for constant pH
     std::string ref_file_;        ///< Reference file (MD) or path prefix (REMD)
     std::string ref_dir_;         ///< Directory where reference coords are (like crd_dir_)
     std::string mdin_file_;       ///< Md package-specific input file
