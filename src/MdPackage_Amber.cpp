@@ -479,7 +479,7 @@ const
   for (unsigned int rep = 0; rep != creator.TotalReplicas(); rep++)
   {
     // Get replica extension
-    std::string EXT = creator.NumericalExt(rep, creator.TotalReplicas());
+    std::string EXT = creator.NumericalExt(rep+1, creator.TotalReplicas());
     // Get topology for this replica
     std::string currentTop = creator.TopologyName( Indices );
     if (currentTop.empty()) {
@@ -500,13 +500,13 @@ const
     std::string mdin_name = input_dir + "/in." + EXT;
     MdOptions currentMdOpts;
     if (creator.MakeMdinForMD(currentMdOpts, EXT, Indices)) {
-      ErrorMsg("Making input options for rep %u failed.\n", rep);
+      ErrorMsg("Making input options for rep %u failed.\n", rep+1);
       return 1;
     }
     if (writeMdInputFile(creator.RunDescription(), currentMdOpts,
                          mdin_name, run_num, Indices, rep))
     {
-      ErrorMsg("Create input failed for rep %u\n", rep);
+      ErrorMsg("Create input failed for rep %u\n", rep+1);
       return 1;
     }
 
