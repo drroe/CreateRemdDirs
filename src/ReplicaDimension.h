@@ -75,7 +75,7 @@ class PhDim : public ReplicaDimension {
 };
 
 // -----------------------------------------------
-/// Topology dimension
+/// Topology dimension // FIXME need to rework temps into diagonal somehow
 class TopologyDim : public ReplicaDimension {
   public:
     TopologyDim() : ReplicaDimension(TOPOLOGY, HREMD) {}
