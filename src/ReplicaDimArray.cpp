@@ -4,10 +4,14 @@
 #include "Messages.h"
 
 /** CONSTRUCTOR */
-ReplicaDimArray::ReplicaDimArray() {}
+ReplicaDimArray::ReplicaDimArray() :
+  temp0_dim_(-1)
+{}
 
 /** Copy constructor */
-ReplicaDimArray::ReplicaDimArray( ReplicaDimArray const& rhs) {
+ReplicaDimArray::ReplicaDimArray( ReplicaDimArray const& rhs):
+  temp0_dim_(rhs.temp0_dim_)
+{
   for (DimArray::const_iterator it = rhs.Dims_.begin(); it != rhs.Dims_.end(); ++it)
     Dims_.push_back( (*it)->Copy() );
 }
@@ -16,12 +20,14 @@ ReplicaDimArray::ReplicaDimArray( ReplicaDimArray const& rhs) {
 void ReplicaDimArray::ClearDims() {
   for (DimArray::const_iterator it = Dims_.begin(); it != Dims_.end(); ++it)
     delete *it;
+  temp0_dim_ = -1;
 }
 
 /** Assignment */
 ReplicaDimArray& ReplicaDimArray::operator=(ReplicaDimArray const& rhs) {
   if (&rhs == this) return *this;
   ClearDims();
+  temp0_dim_ = rhs.temp0_dim_;
   for (DimArray::const_iterator it = rhs.Dims_.begin(); it != rhs.Dims_.end(); ++it)
     Dims_.push_back( (*it)->Copy() );
   return *this;
@@ -58,6 +64,14 @@ int ReplicaDimArray::LoadDimension(std::string const& dfile) {
     return 1;
   }
   Msg("    Dim %u: %s (%u)\n", Dims_.size(), dim->description(), dim->Size());
+  // Do some checking
+  if (dim->ProvidesTemp0()) {
+    if (temp0_dim_ != -1) {
+      ErrorMsg("At most one dimension that provides temperatures should be specified.\n");
+      return 1;
+    }
+    temp0_dim_ = (int)(Dims_.size() - 1);
+  }
   return 0;
 }
 

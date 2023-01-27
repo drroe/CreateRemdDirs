@@ -25,5 +25,6 @@ class ReplicaDimArray {
   private:
     typedef std::vector<ReplicaDimension*> DimArray;
     DimArray Dims_;
+    int temp0_dim_; ///< Index of the temperature dimension
 };
 #endif
