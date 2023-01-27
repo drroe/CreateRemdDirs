@@ -17,6 +17,8 @@ int MdOptions::Total_Steps() const {
   int numexchg;
   if (!nexchanges_.IsSet() || nexchanges_.Val() < 1)
     numexchg = 1;
+  else
+    numexchg = nexchanges_.Val();
   return (nsteps_.Val() * numexchg);
 }
 
