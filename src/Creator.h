@@ -18,7 +18,6 @@ class Creator {
     static void OptHelp();
     /// Read creation options from a file
     int ReadOptions(std::string const&);
-    //int Setup(std::string const&, bool);
     /// \return True if the Creator is set up to make regular MD runs
     bool IsSetupForMD() const { return (runType_ == MD); }
     /// Print info to stdout
@@ -59,9 +58,7 @@ class Creator {
     // ----- Run Options -------------------------
     /// \return Number of MD runs to be performed in a single run directory.
     int N_MD_Runs() const { return n_md_runs_; }
-    /// \return Umbrella write frequency; 0 means no umbrella
-    //int UmbrellaWriteFreq() const { return umbrella_; }
-    /// \retrurn Total number of replicas
+    /// \return Total number of replicas
     unsigned int TotalReplicas() const { return totalReplicas_; }
     // ----- File names --------------------------
     /// \return Name of first topology file from the top_dim_ dimension or MD top file.

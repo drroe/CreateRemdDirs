@@ -401,15 +401,7 @@ int Creator::LoadDimension(std::string const& dfile) {
 }
 
 // Creator::Setup()
-//int Creator::Setup(std::string const& crdDirIn, bool needsMdin) {
 int Creator::setupCreator() {
-  //bool needsMdin = true; // TODO does this need to be an option?
-  // Command line input coordinates override any in options file.
-//  if (!crdDirIn.empty()) {
-//    crdDirSpecified_ = true;
-//    crd_dir_.assign(crdDirIn);
-//  } else
-//    crdDirSpecified_ = false;
   // Perform tilde expansion on coords if necessary.
   if (!crd_dir_.empty() && crd_dir_[0] == '~')
     crd_dir_ = tildeExpansion(crd_dir_);
