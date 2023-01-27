@@ -16,7 +16,8 @@ using namespace Messages;
 /** CONSTRUCTOR */
 MdPackage_Amber::MdPackage_Amber() :
   override_irest_(false),
-  override_ntx_(false)
+  override_ntx_(false),
+  uselog_(false)
 {}
 
 /** COPY CONSTRUCTOR */
@@ -25,7 +26,8 @@ MdPackage_Amber::MdPackage_Amber(MdPackage_Amber const& rhs) :
   additionalInput_(rhs.additionalInput_),
   override_irest_(rhs.override_irest_),
   override_ntx_(rhs.override_ntx_),
-  mdinFile_(rhs.mdinFile_)
+  mdinFile_(rhs.mdinFile_),
+  uselog_(rhs.uselog_)
 {}
 
 /** ASSIGMENT */
@@ -36,6 +38,7 @@ MdPackage_Amber& MdPackage_Amber::operator=(MdPackage_Amber const& rhs) {
   override_ntx_ = rhs.override_ntx_;
   override_irest_ = rhs.override_irest_;
   mdinFile_ = rhs.mdinFile_;
+  uselog_ = rhs.uselog_;
 
   return *this;
 }
@@ -582,7 +585,8 @@ const
   if (Mkdir( "TRAJ"   )) return 1;
   if (Mkdir( "RST"    )) return 1;
   if (Mkdir( "INFO"   )) return 1;
-  if (Mkdir( "LOG"    )) return 1;
+  if (uselog_)
+    if (Mkdir( "LOG"    )) return 1;
   if (creator.TypeOfRun() == Creator::PHREMD) {
     if (Mkdir( "CPH" )) return 1;
   }
@@ -692,21 +696,36 @@ RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& file
   RunStatus currentStat;
   std::string topname;
   std::string trajname;
+  bool has_output = false;
+  bool has_runscript = false;
   for (std::vector<std::string>::const_iterator fname = files.begin();
                                                 fname != files.end(); ++fname)
   {
-    if (*fname == "md.out") {
+    if (*fname == "RunMD.sh") {
+      has_runscript = true;
+    } else if (*fname == "md.out") {
+      has_output = true;
       if (read_mdout( currentStat, *fname, topname )) {
         ErrorMsg("Could not read '%s'\n", fname->c_str());
       }
     } else if (*fname == "mdcrd.nc") {
+       has_output = true;
        trajname = *fname;
+    } else if (*fname == "OUTPUT") {
+      // See if any output exists
+      FileRoutines::StrArray remd_outfiles = FileRoutines::ExpandToFilenames("OUTPUT/*", false);
+      if (!remd_outfiles.empty())
+        has_output = true;
     }
   }
   if (!topname.empty() && !trajname.empty()) {
     if (read_traj_nframes( currentStat, topname, trajname )) {
       ErrorMsg("Could not read # frames from '%s'\n", trajname.c_str());
     }
-  } 
+  }
+  if (currentStat.CurrentStat() == RunStatus::UNKNOWN) {
+    if (has_runscript && !has_output)
+      currentStat.Set_Status(RunStatus::PENDING);
+  }
   return currentStat;
 }
