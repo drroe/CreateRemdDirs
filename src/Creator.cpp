@@ -740,9 +740,6 @@ int Creator::WriteRunMD(std::string const& cmd_opts) const {
   return 0;
 }
 
-const std::string Creator::groupfileName_( "groupfile" ); // TODO make these options
-const std::string Creator::remddimName_("remd.dim");
-
 // TODO deprecate
 std::string Creator::RefFileName(std::string const& EXT) const {
   std::string repRef;

@@ -26,6 +26,9 @@ class MdPackage_Amber : public MdPackage {
     /// \return Information on an existing run from output files
     RunStatus RunCurrentStatus(std::vector<std::string> const&) const;
   private:
+    static const std::string groupfileName_; ///< REMD group file name TODO option
+    static const std::string remddimName_;   ///< REMD remd.dim file name TODO option
+
     /// Write given namelist to specified file
     void writeNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
     /// Write Amber MDIN file

@@ -13,6 +13,9 @@
 
 using namespace Messages;
 
+const std::string MdPackage_Amber::groupfileName_( "groupfile" ); // TODO make these options
+const std::string MdPackage_Amber::remddimName_("remd.dim");
+
 /** CONSTRUCTOR */
 MdPackage_Amber::MdPackage_Amber() :
   override_irest_(false),
@@ -326,7 +329,7 @@ const
   std::string cmd_opts;
   TextFile GROUP;
 
-  if (GROUP.OpenWrite(creator.GroupfileName())) return 1;
+  if (GROUP.OpenWrite(groupfileName_)) return 1;
   for (int grp = 1; grp <= creator.N_MD_Runs(); grp++) {
     std::string EXT = creator.NumericalExt(grp, creator.N_MD_Runs());//integerToString(grp, width);
     std::string mdin_name("md.in");
@@ -362,7 +365,7 @@ const
     GROUP.Printf("\n");
   } 
   GROUP.Close();
-  cmd_opts.assign("-ng " + StringRoutines::integerToString(creator.N_MD_Runs()) + " -groupfile " + creator.GroupfileName());
+  cmd_opts.assign("-ng " + StringRoutines::integerToString(creator.N_MD_Runs()) + " -groupfile " + groupfileName_);
   creator.WriteRunMD( cmd_opts );
   // Info for this run.
   if (Debug() >= 0) // 1 
@@ -489,7 +492,7 @@ const
   if (Mkdir(input_dir)) return 1;
   // Open GROUPFILE
   TextFile GROUPFILE;
-  if (GROUPFILE.OpenWrite(creator.GroupfileName())) return 1; 
+  if (GROUPFILE.OpenWrite(groupfileName_)) return 1; 
   // Hold current indices in each dimension.
   RepIndexArray Indices( creator.Dims().Ndims() );
   for (unsigned int rep = 0; rep != creator.TotalReplicas(); rep++)
@@ -576,7 +579,7 @@ const
   // Create remd.dim if necessary.
   if (creator.Dims().Ndims() > 1) {
     TextFile REMDDIM;
-    if (REMDDIM.OpenWrite(creator.RemdDimName())) return 1;
+    if (REMDDIM.OpenWrite(remddimName_)) return 1;
     for (unsigned int id = 0; id != creator.Dims().Ndims(); id++)
       groups_.WriteRemdDim(REMDDIM, id, creator.Dims()[id].exch_type(), creator.Dims()[id].description());
     REMDDIM.Close();
@@ -585,13 +588,13 @@ const
   std::string cmd_opts;
   std::string NG = integerToString( creator.TotalReplicas() );
   if (creator.TypeOfRun() == Creator::MREMD)
-    cmd_opts.assign("-ng " + NG + " -groupfile " + creator.GroupfileName() + " -remd-file " + creator.RemdDimName());
+    cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -remd-file " + remddimName_);
   else if (creator.TypeOfRun() == Creator::HREMD)
-    cmd_opts.assign("-ng " + NG + " -groupfile " + creator.GroupfileName() + " -rem 3");
+    cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 3");
   else if (creator.TypeOfRun() == Creator::PHREMD)
-    cmd_opts.assign("-ng " + NG + " -groupfile " + creator.GroupfileName() + " -rem 4");
+    cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 4");
   else
-    cmd_opts.assign("-ng " + NG + " -groupfile " + creator.GroupfileName() + " -rem 1");
+    cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 1");
   if (creator.WriteRunMD( cmd_opts )) return 1;
   // Create output directories
   if (Mkdir( "OUTPUT" )) return 1;

@@ -74,15 +74,7 @@ class Creator {
     Sarray InputCoordsNames(int, int, std::string const&) const;
     /// \return Array of reference coordinate files
     Sarray RefCoordsNames() const;
-    /// \return Group file name
-    std::string const& GroupfileName() const { return groupfileName_; }
-    /// \return REMD dimension name file
-    std::string const& RemdDimName() const { return remddimName_; }
   private:
-
-    static const std::string groupfileName_;
-    static const std::string remddimName_;
-
     /// \return Array of input coords for multiple MD.
     Sarray inputCrds_multiple_md(std::string const&, std::string const&, unsigned int) const;
     /// \return Array containing single input coords for MD run.
