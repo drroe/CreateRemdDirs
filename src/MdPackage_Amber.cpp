@@ -723,6 +723,13 @@ RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& file
           ErrorMsg("Could not read '%s'\n", remd_outfiles.front().c_str());
         }
       }
+    } else if (*fname == "TRAJ") {
+      // See if any trajectories exist
+      FileRoutines::StrArray remd_trajfiles = FileRoutines::ExpandToFilenames("TRAJ/*", false);
+      if (!remd_trajfiles.empty()) {
+        has_output = true;
+        trajname = remd_trajfiles.front();
+      }
     }
   }
   if (!topname.empty() && !trajname.empty()) {
