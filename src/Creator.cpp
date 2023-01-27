@@ -102,11 +102,21 @@ const
     ErrorMsg("No coordinates directory specified.\n");
     return Sarray();
   }
-  for (int grp=1; grp <= nfiles; grp++) {
-    crd_files.push_back(crdDirName + "/" + NumericalExt(grp, nfiles) + "." + crd_ext_);
-    Msg("DEBUG: crd %i '%s'\n", grp, crd_files.back().c_str());
-    //crd_files.push_back(tildeExpansion(crdDirName + "/" +
-    //                                   NumericalExt(grp, nfiles) + "." + crd_ext_));
+  if (IsDirectory( crdDirName )) {
+    // Expect <crdDirName>/XXX.<crd_ext_>
+    for (int grp=1; grp <= nfiles; grp++) {
+      crd_files.push_back(crdDirName + "/" + NumericalExt(grp, nfiles) + "." + crd_ext_);
+      Msg("DEBUG: crd %i '%s'\n", grp, crd_files.back().c_str());
+      //crd_files.push_back(tildeExpansion(crdDirName + "/" +
+      //                                   NumericalExt(grp, nfiles) + "." + crd_ext_));
+    }
+  } else {
+    // Using same file for everything
+    Msg("Warning: Using single input coords for multiple replicas/groups.\n");
+    for (int grp = 1; grp <= nfiles; grp++) {
+      crd_files.push_back(crdDirName);
+      Msg("DEBUG: crd %i '%s'\n", grp, crd_files.back().c_str());
+    }
   }
 
   return crd_files;
