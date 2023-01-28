@@ -49,7 +49,7 @@ int Run::Refresh(MdPackage* mdpackage) {
   StrArray all_files = FileRoutines::ExpandToFilenames("*", false);
   // Set status
   if (all_files.empty()) {
-    Msg("Warning: Run directory '%s' is empty.\n", rundir_.c_str());
+    //Msg("Warning: Run directory '%s' is empty.\n", rundir_.c_str());
     runStat_ = RunStatus(RunStatus::EMPTY);
   } else {
     runStat_ = mdpackage->RunCurrentStatus( all_files );
