@@ -146,7 +146,7 @@ int System::FindRuns() {
 }
 
 /** Refresh current runs. */
-int System::RefreshCurrentRuns() {
+int System::RefreshCurrentRuns(bool verbose) {
   using namespace FileRoutines;
   if (ChangeToSystemDir()) {
     ErrorMsg("Could not change to system directory %s/%s\n", topDir_.c_str(), dirname_.c_str());
@@ -154,12 +154,14 @@ int System::RefreshCurrentRuns() {
   }
   for (RunArray::iterator run = Runs_.begin(); run != Runs_.end(); ++run)
   {
-    Msg("  Refreshing directory '%s'\n", run->RunDirName().c_str());
+    if (verbose)
+      Msg("  Refreshing directory '%s'\n", run->RunDirName().c_str());
     if (run->Refresh( mdInterface_.Package() )) {
       ErrorMsg("Refreshing existing run '%s'\n", run->RunDirName().c_str());
       return 1;
     }
-    run->RunInfo();
+    if (verbose)
+      run->RunInfo();
     // Change directory back
     if (ChangeToSystemDir()) return 1;
   }

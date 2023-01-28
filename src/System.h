@@ -21,8 +21,8 @@ class System {
 
     /// Find runs in dirname_
     int FindRuns();
-    /// Refresh current runs
-    int RefreshCurrentRuns();
+    /// Refresh current runs (true = verbose)
+    int RefreshCurrentRuns(bool);
     /// Set debug level
     void SetDebug(int);
 

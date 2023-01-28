@@ -646,7 +646,7 @@ const
       else {
         if (mdout.Token(1) == "PARM:") {
           topname = mdout.Token(2);
-          Msg("Top: %s\n", topname.c_str());
+          //Msg("DEBUG: Top: %s\n", topname.c_str());
         }
       }
     } else if (readInput == 1 && ncols > 1) {

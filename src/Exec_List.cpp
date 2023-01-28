@@ -70,9 +70,9 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
         unsigned int total_frames = 0;
         //Msg("DEBUG: sidx=%i activeSystemIdx= %i\n", sidx, project->ActiveSystemIdx());
         if (tgtSystemIdx == SHOW_ALL || tgtSystemIdx == sidx) {
-          // Ensure system is up to date
+          // Ensure system is up to date (false = silent)
           System& modSystem = modProject.Set_System(sidx);
-          modSystem.RefreshCurrentRuns();
+          modSystem.RefreshCurrentRuns(false);
           if (project->ActiveSystemIdx() == sidx)
             Msg("  System *%i: ", sidx);
           else
