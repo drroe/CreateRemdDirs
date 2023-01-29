@@ -27,6 +27,8 @@ class Manager {
     Project& ActiveProject() { return projects_[activeProjectIdx_]; }
     /// \return the active system of active project
     System& ActiveProjectSystem() { return projects_[activeProjectIdx_].ActiveSystem(); }
+    /// \return True if there is an active system
+    bool HasActiveSystem() const;
     /// Modifiable project
     Project& Set_Project(int idx) { return projects_[idx]; }
 
