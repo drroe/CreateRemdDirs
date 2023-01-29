@@ -1,12 +1,11 @@
 #ifndef INC_TEXTFILE_H
 #define INC_TEXTFILE_H
 #include <string>
-#include <vector>
+#include "OptArray.h"
 /// Simple wrapper for text file.
 class TextFile {
   public:
-    typedef std::pair<std::string, std::string> Spair;
-    typedef std::vector<Spair> OptArray;
+    /// CONSTRUCTOR
     TextFile() : file_(0), isPipe_(false) {}
     ~TextFile();
     int OpenRead(std::string const&);
@@ -17,7 +16,7 @@ class TextFile {
     const char* Gets();
     /// \return next line as string, no newline.
     std::string GetString();
-    /// \return Number of columns in next line; text stored in tokens_.
+    /// \return Number of columns in next line; text stored in tokens_. // FIXME deprecate for Cols?
     int GetColumns(const char*);
     /// \return text in specified column
     std::string const& Token(int i) const { return tokens_[i]; }

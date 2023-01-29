@@ -14,11 +14,13 @@ class OptArray {
     /// Add option value pair
     void AddOpt( OptPair const& sp ) { options_.push_back( sp ); }
     /// Iterator
-    OptPairArray::const_iterator const_iterator;
+    typedef OptPairArray::const_iterator const_iterator;
     /// Iterator to beginning
     const_iterator begin() const { return options_.begin(); }
     /// Iterator to end
     const_iterator end() const { return options_.end(); }
+    /// Clear options
+    void clear() { options_.clear(); }
   private:
     OptPairArray options_;
 };

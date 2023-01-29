@@ -102,7 +102,7 @@ int TextFile::Printf(const char *format, ...) {
   return 0;
 }
 
-TextFile::OptArray TextFile::GetOptionsArray(std::string const& fname, int debug) {
+OptArray TextFile::GetOptionsArray(std::string const& fname, int debug) {
   OptArray options;
   if (OpenRead( fname )) return options;
   const char* SEP = " \t\n";
@@ -120,7 +120,7 @@ TextFile::OptArray TextFile::GetOptionsArray(std::string const& fname, int debug
         VAR += (" " + tokens_[i]);
       if (debug > 0)
         Msg("    File '%s': Option: %s  Variable: %s\n", fname.c_str(), OPT.c_str(), VAR.c_str());
-      options.push_back( Spair(OPT, VAR) );
+      options.AddOpt( OptArray::OptPair(OPT, VAR) );
     }
     ncols = GetColumns( SEP );
   }
