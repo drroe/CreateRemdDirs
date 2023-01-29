@@ -284,7 +284,7 @@ Msg("\n  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--
   * \return 0 if option was not parsed.
   * \return -1 if an error occurred.
   */
-int Creator::ParseOption( OptArray::OptPair const& opair ) {
+int Creator::parseFileOption( OptArray::OptPair const& opair ) {
   std::string const& OPT = opair.first;
   std::string const& VAR = opair.second;
   if (debug_ > 0)
@@ -349,6 +349,15 @@ int Creator::ReadOptions(std::string const& input_file) {
   if (Options.empty()) return 1;
   for (OptArray::const_iterator opair = Options.begin(); opair != Options.end(); ++opair)
   {
+    int ret = parseFileOption( *opair );
+    if (ret == -1) {
+      ErrorMsg("Could not parse option '%s' = '%s'\n", opair->first.c_str(), opair->second.c_str());
+      return 1;
+    } else if (ret == 0) {
+      // Potentially package-specific
+      package_opts_.AddOpt( *opair );
+    }
+/*
     std::string const& OPT = opair->first;
     std::string const& VAR = opair->second;
       if (debug_ > 0)
@@ -413,8 +422,8 @@ int Creator::ReadOptions(std::string const& input_file) {
         //ErrorMsg("Unrecognized option '%s' in input file.\n", OPT.c_str());
         //OptHelp();
         //return 1;
-      }
-  }
+      }*/
+  } // END loop over options from file
 
   if (setupCreator()) {
     ErrorMsg("Invalid or missing options in file '%s'\n", input_file.c_str());

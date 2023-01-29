@@ -16,8 +16,7 @@ class Creator {
     typedef std::vector<std::string> Sarray;
 
     static void OptHelp();
-    /// Parse a single option
-    int ParseOption(OptArray::OptPair const&);
+    
     /// Read creation options from a file
     int ReadOptions(std::string const&);
     /// \return True if the Creator is set up to make regular MD runs
@@ -72,6 +71,8 @@ class Creator {
     Sarray inputCrds_multiple_md(std::string const&, std::string const&, unsigned int) const;
     /// \return Array containing single input coords for MD run.
     Sarray inputCrds_single_md(std::string const&, std::string const&) const;
+    /// Parse a single option from input file
+    int parseFileOption(OptArray::OptPair const&);
     /// Perform internal setup, called by ReadOptions
     int setupCreator();
 
