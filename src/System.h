@@ -28,6 +28,8 @@ class System {
 
     /// Create runs
     int CreateRunDirectories(std::string const&, int, int, bool);
+    /// Parse a single option
+    int ParseOption(std::string const&, std::string const&);
 
     /// Print system info
     void PrintInfo() const;

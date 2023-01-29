@@ -147,6 +147,18 @@ int System::FindRuns() {
   return 0;
 }
 
+/** Parse a single option.
+  * \return 1 if processed, 0 if ignored, -1 if error.
+  */
+int System::ParseOption(std::string const& OPT, std::string const& VAR) {
+  OptArray::OptPair opair(OPT, VAR);
+  int ret = creator_.ParseFileOption( opair );
+  if (ret == 0) {
+    ret = mdInterface_.Package()->ParseCreatorOption( OPT, VAR );
+  }
+  return ret;
+}
+
 /** Refresh current runs. */
 int System::RefreshCurrentRuns(bool verbose) {
   using namespace FileRoutines;
