@@ -3,6 +3,7 @@
 #include <cstring>
 #include "TextFile.h"
 #include "Messages.h"
+#include "OptArray.h"
 
 using namespace Messages;
 

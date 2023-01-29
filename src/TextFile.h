@@ -1,7 +1,8 @@
 #ifndef INC_TEXTFILE_H
 #define INC_TEXTFILE_H
 #include <string>
-#include "OptArray.h"
+#include <vector>
+class OptArray;
 /// Simple wrapper for text file.
 class TextFile {
   public:
