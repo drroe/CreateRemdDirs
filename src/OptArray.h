@@ -6,20 +6,20 @@
 /// Hold array of options of style <OPTION> = <VALUE>
 class OptArray {
   public:
-    typedef std::pair<std::string, std::string> Spair;
-    typedef std::vector<Spair> SpairArray;
+    typedef std::pair<std::string, std::string> OptPair;
+    typedef std::vector<OptPair> OptPairArray;
 
     /// CONSTRUCTOR
     OptArray() {}
     /// Add option value pair
-    void AddOpt( Spair const& sp ) { options_.push_back( sp ); }
+    void AddOpt( OptPair const& sp ) { options_.push_back( sp ); }
     /// Iterator
-    SpairArray::const_iterator const_iterator;
+    OptPairArray::const_iterator const_iterator;
     /// Iterator to beginning
     const_iterator begin() const { return options_.begin(); }
     /// Iterator to end
     const_iterator end() const { return options_.end(); }
   private:
-    SpairArray options_;
+    OptPairArray options_;
 };
 #endif
