@@ -31,7 +31,9 @@ class Creator {
     std::string const& RunDescription() const { return runDescription_; }
     /// Set debug level
     void SetDebug(int d) { debug_ = d; }
-    /// Set alternate coordinates location
+    /// Parse a single option from input file
+    int ParseFileOption(OptArray::OptPair const&);
+    /// Set alternate coordinates location TODO deprecate
     void SetSpecifiedCoords(std::string const& c) { specified_crd_ = c; }
     /// Set MD options; only overwrite current options if not set.
     int SetMdOptions(MdOptions const&);
@@ -71,8 +73,6 @@ class Creator {
     Sarray inputCrds_multiple_md(std::string const&, std::string const&, unsigned int) const;
     /// \return Array containing single input coords for MD run.
     Sarray inputCrds_single_md(std::string const&, std::string const&) const;
-    /// Parse a single option from input file
-    int parseFileOption(OptArray::OptPair const&);
     /// Perform internal setup, called by ReadOptions
     int setupCreator();
 

@@ -279,12 +279,12 @@ Msg("\n  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--
       "  UMBRELLA <#>       : Indicates MD umbrella sampling with write frequency <#>.\n\n");
 }
 
-/** Parse a creator option.
+/** Parse a creator option from file.
   * \return 1 if option was parsed.
   * \return 0 if option was not parsed.
   * \return -1 if an error occurred.
   */
-int Creator::parseFileOption( OptArray::OptPair const& opair ) {
+int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
   std::string const& OPT = opair.first;
   std::string const& VAR = opair.second;
   if (debug_ > 0)
@@ -349,7 +349,7 @@ int Creator::ReadOptions(std::string const& input_file) {
   if (Options.empty()) return 1;
   for (OptArray::const_iterator opair = Options.begin(); opair != Options.end(); ++opair)
   {
-    int ret = parseFileOption( *opair );
+    int ret = ParseFileOption( *opair );
     if (ret == -1) {
       ErrorMsg("Could not parse option '%s' = '%s'\n", opair->first.c_str(), opair->second.c_str());
       return 1;
