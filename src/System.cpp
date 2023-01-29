@@ -85,7 +85,7 @@ int System::FindRuns() {
     return 1;
   }
   // FIXME check for unparsed options
-  for (TextFile::OptArray::const_iterator opair = creator_.PackageOpts().begin();
+  for (OptArray::const_iterator opair = creator_.PackageOpts().begin();
                                           opair != creator_.PackageOpts().end(); ++opair)
   {
     std::string const& OPT = opair->first;

@@ -4,6 +4,7 @@
 #include "QueueOpts.h"
 #include "StringRoutines.h"
 #include "TextFile.h"
+#include "OptArray.h"
 
 using namespace Messages;
 using namespace FileRoutines;
@@ -267,9 +268,9 @@ int Submitter::ReadOptions(std::string const& fnameIn, QueueOpts& Qopt) {
   std::string fname = tildeExpansion( fnameIn );
   if (CheckExists( "Queue options", fname )) return 1;
   TextFile infile;
-  TextFile::OptArray Options = infile.GetOptionsArray(fname, debug_);
+  OptArray Options = infile.GetOptionsArray(fname, debug_);
   if (Options.empty()) return 1;
-  for (TextFile::OptArray::const_iterator opair = Options.begin(); opair != Options.end(); ++opair)
+  for (OptArray::const_iterator opair = Options.begin(); opair != Options.end(); ++opair)
   {
     std::string const& line = opair->first;
     std::string const& Args = opair->second;

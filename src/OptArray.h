@@ -19,6 +19,8 @@ class OptArray {
     const_iterator begin() const { return options_.begin(); }
     /// Iterator to end
     const_iterator end() const { return options_.end(); }
+    /// \return True if no options
+    bool empty() const { return options_.empty(); }
     /// Clear options
     void clear() { options_.clear(); }
   private:

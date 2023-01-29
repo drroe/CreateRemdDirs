@@ -8,6 +8,7 @@
 #include "FileRoutines.h" // CheckExists, fileExists
 #include "RepIndexArray.h"
 #include "MdPackage.h"
+#include "TextFile.h"
 
 using namespace Messages;
 using namespace StringRoutines;
@@ -95,18 +96,18 @@ const
   }
   if (IsDirectory( crdDirName )) {
     // Expect <crdDirName>/XXX.<crd_ext_>
-    for (int grp=1; grp <= nfiles; grp++) {
+    for (unsigned int grp=1; grp <= nfiles; grp++) {
       crd_files.push_back(crdDirName + "/" + NumericalExt(grp, nfiles) + "." + crd_ext_);
-      Msg("DEBUG: crd %i '%s'\n", grp, crd_files.back().c_str());
+      Msg("DEBUG: crd %u '%s'\n", grp, crd_files.back().c_str());
       //crd_files.push_back(tildeExpansion(crdDirName + "/" +
       //                                   NumericalExt(grp, nfiles) + "." + crd_ext_));
     }
   } else {
     // Using same file for everything
     Msg("Warning: Using single input coords for multiple replicas/groups.\n");
-    for (int grp = 1; grp <= nfiles; grp++) {
+    for (unsigned int grp = 1; grp <= nfiles; grp++) {
       crd_files.push_back(crdDirName);
-      Msg("DEBUG: crd %i '%s'\n", grp, crd_files.back().c_str());
+      Msg("DEBUG: crd %u '%s'\n", grp, crd_files.back().c_str());
     }
   }
 
@@ -278,6 +279,64 @@ Msg("\n  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--
       "  UMBRELLA <#>       : Indicates MD umbrella sampling with write frequency <#>.\n\n");
 }
 
+/** Parse a creator option.
+  * \return 1 if option was parsed.
+  * \return 0 if option was not parsed.
+  * \return -1 if an error occurred.
+  */
+int Creator::ParseOption( OptArray::OptPair const& opair ) {
+  std::string const& OPT = opair.first;
+  std::string const& VAR = opair.second;
+  if (debug_ > 0)
+    Msg("    Option: %s  Variable: %s\n", OPT.c_str(), VAR.c_str());
+  if      (OPT == "CRD_FILE") {
+    crd_dir_ = VAR;
+  } else if (OPT == "DIMENSION") {
+    if (CheckExists("Dimension file", VAR)) { return -1; }
+    if (LoadDimension( tildeExpansion(VAR) )) { return -1; }
+  } else if (OPT == "MDRUNS")
+    n_md_runs_ = atoi( VAR.c_str() );
+  else if (OPT == "NSTLIM")
+    mdopts_.Set_N_Steps().SetVal( atoi( VAR.c_str() ) );
+  else if (OPT == "DT")
+    mdopts_.Set_TimeStep().SetVal( atof( VAR.c_str() ) );
+  else if (OPT == "IG")
+    mdopts_.Set_RandomSeed().SetVal( atoi( VAR.c_str() ) );
+  else if (OPT == "NUMEXCHG")
+    mdopts_.Set_N_Exchanges().SetVal( atoi( VAR.c_str() ) );
+  else if (OPT == "UMBRELLA")
+    mdopts_.Set_RstWriteFreq().SetVal( atoi( VAR.c_str() ) );
+  else if (OPT == "TOPOLOGY") {
+    top_file_ = VAR;
+    // If the TOPOLOGY exists at this point assume it is an absolute path
+    // and perform tildeExpansion.
+    if (fileExists(top_file_))
+      top_file_ = tildeExpansion( top_file_ );
+  } else if (OPT == "REFERENCE") // Format: <ref_file_>.EXT
+    ref_file_ = VAR;
+  else if (OPT == "REF_FILE")  // Format: <ref_dir>/EXT.rst7
+    ref_dir_ = VAR;
+  else if (OPT == "TEMPERATURE")
+    mdopts_.Set_Temperature0().SetVal( atof( VAR.c_str() ) );
+  else if (OPT == "NTWX")
+    mdopts_.Set_TrajWriteFreq().SetVal( atoi( VAR.c_str() ) );
+  else if (OPT == "TRAJOUTARGS")
+    trajoutargs_ = VAR;
+  else if (OPT == "FULLARCHIVE")
+    fullarchive_ = VAR;
+  else if (OPT == "MDIN_FILE") {
+    if (CheckExists("MDIN file", VAR)) { return -1; }
+    mdin_file_ = tildeExpansion( VAR );
+  } else if (OPT == "RST_FILE") {
+    if (fileExists( VAR ))
+      mdopts_.Set_RstFilename().SetVal( tildeExpansion( VAR ) );
+  } else {
+    // Not recognized.
+    return 0;
+  }
+  return 1;
+}
+
 // Creator::ReadOptions()
 int Creator::ReadOptions(std::string const& input_file) {
   package_opts_.clear();
@@ -286,9 +345,9 @@ int Creator::ReadOptions(std::string const& input_file) {
   std::string fname = tildeExpansion( input_file );
   Msg("Reading input from file: %s\n", fname.c_str());
   TextFile infile;
-  TextFile::OptArray Options = infile.GetOptionsArray(fname, debug_);
+  OptArray Options = infile.GetOptionsArray(fname, debug_);
   if (Options.empty()) return 1;
-  for (TextFile::OptArray::const_iterator opair = Options.begin(); opair != Options.end(); ++opair)
+  for (OptArray::const_iterator opair = Options.begin(); opair != Options.end(); ++opair)
   {
     std::string const& OPT = opair->first;
     std::string const& VAR = opair->second;
@@ -350,7 +409,7 @@ int Creator::ReadOptions(std::string const& input_file) {
       else
       {
         // Potentially package-specific
-        package_opts_.push_back( *opair );
+        package_opts_.AddOpt( *opair );
         //ErrorMsg("Unrecognized option '%s' in input file.\n", OPT.c_str());
         //OptHelp();
         //return 1;

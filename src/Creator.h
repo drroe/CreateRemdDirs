@@ -2,8 +2,8 @@
 #define INC_CREATOR_H
 #include <vector>
 #include "MdOptions.h"
-#include "TextFile.h"
 #include "ReplicaDimArray.h"
+#include "OptArray.h"
 class RepIndexArray;
 /// Class responsible for creating run input and script
 class Creator {
@@ -16,6 +16,8 @@ class Creator {
     typedef std::vector<std::string> Sarray;
 
     static void OptHelp();
+    /// Parse a single option
+    int ParseOption(OptArray::OptPair const&);
     /// Read creation options from a file
     int ReadOptions(std::string const&);
     /// \return True if the Creator is set up to make regular MD runs
@@ -35,7 +37,7 @@ class Creator {
     /// Set MD options; only overwrite current options if not set.
     int SetMdOptions(MdOptions const&);
     /// \return Package-specific options
-    TextFile::OptArray const& PackageOpts() const { return package_opts_; }
+    OptArray const& PackageOpts() const { return package_opts_; }
 
     /// \return Debug level
     int Debug() const { return debug_; }
@@ -96,6 +98,6 @@ class Creator {
     std::string ref_file_;        ///< Reference file (MD) or path prefix (REMD)
     std::string ref_dir_;         ///< Directory where reference coords are (like crd_dir_)
     std::string mdin_file_;       ///< Md package-specific input file
-    TextFile::OptArray package_opts_; ///< Hold any potential package-specific options
+    OptArray package_opts_;       ///< Hold any potential package-specific options
 };
 #endif
