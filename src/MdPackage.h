@@ -25,6 +25,7 @@ class MdPackage {
     /// \return a Copy of the class
     virtual MdPackage* Copy() const = 0;
     /// Read package-specific creator options from a file
+    /** \return 1 if parsed, 0 if not, -1 if error. */
     virtual int ParseCreatorOption(std::string const&, std::string const&) = 0;
     /// Check creator options
     virtual int CheckCreatorOptions(Creator const&) const = 0;

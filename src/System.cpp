@@ -84,15 +84,17 @@ int System::FindRuns() {
     ErrorMsg("MD package allocate failed.\n");
     return 1;
   }
-  // FIXME check for unparsed options
   for (OptArray::const_iterator opair = creator_.PackageOpts().begin();
                                           opair != creator_.PackageOpts().end(); ++opair)
   {
     std::string const& OPT = opair->first;
     std::string const& VAR = opair->second;
-    if (mdInterface_.Package()->ParseCreatorOption(OPT, VAR)) {
+    int ret = mdInterface_.Package()->ParseCreatorOption(OPT, VAR);
+    if (ret == -1) {
       ErrorMsg("Could not parse package-specific option '%s' = '%s'\n", OPT.c_str(), VAR.c_str());
       return 1;
+    } else if (ret == 0) {
+      Msg("Warning: Ignoring unrecognized option '%s' = '%s'\n", OPT.c_str(), VAR.c_str());
     }
   }
   if (!creator_.MdinFileName().empty()) {

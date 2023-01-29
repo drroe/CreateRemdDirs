@@ -48,7 +48,9 @@ MdPackage_Amber& MdPackage_Amber::operator=(MdPackage_Amber const& rhs) {
   return *this;
 }
 
-/** Parse amber-specific creator option. */
+/** Parse amber-specific creator option.
+  * \return 1 if option was parsed, -1 if error, 0 otherwise.
+  */ 
 int MdPackage_Amber::ParseCreatorOption(std::string const& OPT, std::string const& VAR) {
   if (OPT == "USELOG") {
     if (VAR == "yes")
@@ -58,14 +60,15 @@ int MdPackage_Amber::ParseCreatorOption(std::string const& OPT, std::string cons
     else {
       ErrorMsg("Expected either 'yes' or 'no' for USELOG.\n");
       //OptHelp(); FIXME
-      return 1;
+      return -1;
     }
   } else if (OPT == "CPIN_FILE") {
     cpin_file_ = VAR;
     if (FileRoutines::fileExists(cpin_file_))
       cpin_file_ = FileRoutines::tildeExpansion( cpin_file_ );
-  }
-  return 0;
+  } else
+    return 0;
+  return 1;
 }
 
 /** Check amber-specific creator options. */
