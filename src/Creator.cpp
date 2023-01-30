@@ -370,7 +370,14 @@ int Creator::WriteOptions(std::string const& output_file) const {
     outfile.Printf("NSTLIM %i\n", mdopts_.N_Steps().Val());
   if (mdopts_.TrajWriteFreq().IsSet())
     outfile.Printf("NTWX %i\n", mdopts_.TrajWriteFreq().Val());
-
+  if (mdopts_.TimeStep().IsSet())
+    outfile.Printf("DT %f\n", mdopts_.TimeStep().Val());
+  if (mdopts_.RandomSeed().IsSet())
+    outfile.Printf("IG %i\n", mdopts_.RandomSeed().Val());
+  if (mdopts_.N_Exchanges().IsSet())
+    outfile.Printf("NUMEXCHG %i\n", mdopts_.N_Exchanges().Val());
+  if (mdopts_.Temperature0().IsSet())
+    outfile.Printf("TEMPERATURE %f\n", mdopts_.Temperature0().Val());
   // Package options
 
   return 0;
