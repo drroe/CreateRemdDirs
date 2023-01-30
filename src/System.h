@@ -31,8 +31,10 @@ class System {
     /// Parse a single option
     int ParseOption(std::string const&, std::string const&);
 
-    /// Print system info
+    /// Print system summary
     void PrintSummary() const;
+    /// Print system info
+    void PrintInfo() const;
     /// \return Run Array
     RunArray const& Runs() const { return Runs_; }
     /// Change to system directory

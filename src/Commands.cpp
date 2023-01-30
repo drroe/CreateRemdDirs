@@ -19,6 +19,7 @@
 #include "Exec_Create.h"
 #include "Exec_Active.h"
 #include "Exec_SetOpt.h"
+#include "Exec_Info.h"
 
 using namespace Messages;
 
@@ -109,6 +110,7 @@ void Commands::InitCommands() {
   AddCmd( new Exec_Create(), 1, "create");
   AddCmd( new Exec_Active(), 1, "active");
   AddCmd( new Exec_SetOpt(), 1, "setopt");
+  AddCmd( new Exec_Info(), 1, "info");
   // Add null ptr to indicate end of command key addresses for readline 
   names_.push_back( 0 );
 }

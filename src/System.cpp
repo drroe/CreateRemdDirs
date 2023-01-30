@@ -188,11 +188,16 @@ void System::SetDebug(int debugIn) {
   submitter_.SetDebug( debugIn );
 }
 
-/** Print system information. */
+/** Print system summary. */
 void System::PrintSummary() const {
   Msg("%s : %s (%zu runs)\n", dirname_.c_str(), description_.c_str(), Runs_.size());
   // DEBUG
   //Msg("DEBUG\tTop dir: %s\n", topDir_.c_str());
+}
+
+/** Print system info. */
+void System::PrintInfo() const {
+  creator_.Info();
 }
 
 /** Change to system directory. */
