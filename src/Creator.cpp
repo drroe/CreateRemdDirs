@@ -365,6 +365,8 @@ int Creator::WriteOptions(std::string const& output_file) const {
     outfile.Printf("REF_FILE %s\n", ref_dir_.c_str());
   if (!ref_file_.empty())
     outfile.Printf("REFERENCE %s\n", ref_file_.c_str());
+  if (!mdin_file_.empty())
+    outfile.Printf("MDIN_FILE %s\n", mdin_file_.c_str());
   if (!dim_files_.empty()) {
     for (Sarray::const_iterator it = dim_files_.begin(); it != dim_files_.end(); it++)
       outfile.Printf("DIMENSION %s\n", it->c_str());
