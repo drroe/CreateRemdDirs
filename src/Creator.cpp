@@ -267,13 +267,10 @@ void Creator::OptHelp() {
   for (ReplicaAllocator::Token const* ptr = ReplicaAllocator::AllocArray;
                                       ptr->Key != 0; ++ptr)
     Msg(" %s", ptr->Key);
-Msg("\n  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--analyze).\n"
-      "  FULLARCHIVE <arg>  : Comma-separated list of members to fully archive or NONE.\n"
+Msg("\n"
       "  TOPOLOGY <file>    : Topology for 1D TREMD run.\n"
       "  MDIN_FILE <file>   : File containing extra MDIN input.\n"
       "  RST_FILE <file>    : File containing NMR restraints (MD only).\n"
-      "  CPIN_FILE <file>   : CPIN file (constant pH only).\n"
-      "  USELOG {yes|no}    : yes (default): use logfile (pmemd), otherwise do not (sander).\n"
       "  TEMPERATURE <T>    : Temperature for 1D HREMD run.\n"
       "  NSTLIM <nstlim>    : Input file; steps per exchange. Required.\n"
       "  DT <step>          : Input file; time step. Required.\n"
@@ -281,7 +278,12 @@ Msg("\n  TRAJOUTARGS <args> : Additional trajectory output args for analysis (--
       "  NUMEXCHG <#>       : Input file; number of exchanges. Required for REMD.\n"
       "  NTWX <#>           : Input file; trajectory write frequency in steps.\n"
       "  MDRUNS <#>         : Number of MD runs when not REMD (default 1).\n"
-      "  UMBRELLA <#>       : Indicates MD umbrella sampling with write frequency <#>.\n\n");
+      "  UMBRELLA <#>       : Indicates MD umbrella sampling with write frequency <#>.\n"
+      "Amber-specific:\n"
+      "  CPIN_FILE <file>   : CPIN file (constant pH only).\n"
+      "  USELOG {yes|no}    : yes (default): use logfile (pmemd), otherwise do not (sander).\n"
+      "\n"
+ 
 }
 
 /** Parse a creator option from file.
