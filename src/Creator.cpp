@@ -366,6 +366,11 @@ int Creator::WriteOptions(std::string const& output_file) const {
       outfile.Printf("DIMENSION %s\n", it->c_str());
   }
   // Md Options
+  if (mdopts_.N_Steps().IsSet())
+    outfile.Printf("NSTLIM %i\n", mdopts_.N_Steps().Val());
+  if (mdopts_.TrajWriteFreq().IsSet())
+    outfile.Printf("NTWX %i\n", mdopts_.TrajWriteFreq().Val());
+
   // Package options
 
   return 0;
@@ -391,72 +396,6 @@ int Creator::ReadOptions(std::string const& input_file) {
       // Potentially package-specific
       package_opts_.AddOpt( *opair );
     }
-/*
-    std::string const& OPT = opair->first;
-    std::string const& VAR = opair->second;
-      if (debug_ > 0)
-        Msg("    Option: %s  Variable: %s\n", OPT.c_str(), VAR.c_str());
-      if      (OPT == "CRD_FILE") {
-        //if (start != 0) // FIXME implement this as a warning somewhere else
-        //  Msg("Warning: CRD_FILE only used if start run is 0. Skipping.\n");
-        //else
-          crd_dir_ = VAR;
-      }
-      else if (OPT == "DIMENSION")
-      {
-        if (CheckExists("Dimension file", VAR)) { return 1; }
-        if (LoadDimension( tildeExpansion(VAR) )) { return 1; }
-      }
-      else if (OPT == "MDRUNS")
-        n_md_runs_ = atoi( VAR.c_str() );
-      else if (OPT == "NSTLIM")
-        mdopts_.Set_N_Steps().SetVal( atoi( VAR.c_str() ) );
-      else if (OPT == "DT")
-        mdopts_.Set_TimeStep().SetVal( atof( VAR.c_str() ) );
-      else if (OPT == "IG")
-        mdopts_.Set_RandomSeed().SetVal( atoi( VAR.c_str() ) );
-      else if (OPT == "NUMEXCHG")
-        mdopts_.Set_N_Exchanges().SetVal( atoi( VAR.c_str() ) );
-      else if (OPT == "UMBRELLA")
-        mdopts_.Set_RstWriteFreq().SetVal( atoi( VAR.c_str() ) );
-      else if (OPT == "TOPOLOGY")
-      {
-        top_file_ = VAR;
-        // If the TOPOLOGY exists at this point assume it is an absolute path
-        // and perform tildeExpansion.
-        if (fileExists(top_file_))
-          top_file_ = tildeExpansion( top_file_ );
-      }
-      else if (OPT == "REFERENCE") // Format: <ref_file_>.EXT
-        ref_file_ = VAR;
-      else if (OPT == "REF_FILE")  // Format: <ref_dir>/EXT.rst7
-        ref_dir_ = VAR;
-      else if (OPT == "TEMPERATURE")
-        mdopts_.Set_Temperature0().SetVal( atof( VAR.c_str() ) );
-      else if (OPT == "NTWX")
-        mdopts_.Set_TrajWriteFreq().SetVal( atoi( VAR.c_str() ) );
-      else if (OPT == "TRAJOUTARGS")
-        trajoutargs_ = VAR;
-      else if (OPT == "FULLARCHIVE")
-        fullarchive_ = VAR;
-      else if (OPT == "MDIN_FILE")
-      {
-        if (CheckExists("MDIN file", VAR)) { return 1; }
-        mdin_file_ = tildeExpansion( VAR );
-      }
-      else if (OPT == "RST_FILE")
-      {
-        if (fileExists( VAR ))
-          mdopts_.Set_RstFilename().SetVal( tildeExpansion( VAR ) );
-      }
-      else
-      {
-        // Potentially package-specific
-        package_opts_.AddOpt( *opair );
-        //ErrorMsg("Unrecognized option '%s' in input file.\n", OPT.c_str());
-        //OptHelp();
-        //return 1;
-      }*/
   } // END loop over options from file
 
   if (setupCreator()) {
