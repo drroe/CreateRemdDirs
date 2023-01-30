@@ -77,16 +77,16 @@ class Creator {
     Sarray inputCrds_single_md(std::string const&, std::string const&) const;
     /// Perform internal setup, called by ReadOptions
     int setupCreator();
-
+    /// Load a REMD dimension from file
     int LoadDimension(std::string const&);
-    std::string RefFileName(std::string const&) const; // TODO deprecate
+    //std::string RefFileName(std::string const&) const; // TODO deprecate
 
     static const char* RUNTYPESTR_[]; ///< KEEP IN SYNC WITH RUNTYPE
 
     // File and MDIN variables
     std::string top_file_;
-    std::string trajoutargs_;
-    std::string fullarchive_;
+    //std::string trajoutargs_;
+    //std::string fullarchive_;
     MdOptions mdopts_;            ///< Hold MD options
 
     ReplicaDimArray Dims_;        ///< Hold any replica dimensions
@@ -96,7 +96,7 @@ class Creator {
     int fileExtWidth_;            ///< Filename extension width
     RUNTYPE runType_;             ///< Type of run from options file.
     std::string runDescription_;  ///< Run description
-    std::string additionalInput_; ///< Hold any additional MDIN input.
+//    std::string additionalInput_; ///< Hold any additional MDIN input.
     std::string crd_dir_;         ///< Directory where input coordinates are/MD input coords (from options file).
     std::string specified_crd_;   ///< Input coords setet in Setup(); overrides crd_dir_.
     std::string crd_ext_;         ///< Input coords file name extension

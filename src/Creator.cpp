@@ -325,10 +325,10 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
     mdopts_.Set_Temperature0().SetVal( atof( VAR.c_str() ) );
   else if (OPT == "NTWX")
     mdopts_.Set_TrajWriteFreq().SetVal( atoi( VAR.c_str() ) );
-  else if (OPT == "TRAJOUTARGS")
-    trajoutargs_ = VAR;
-  else if (OPT == "FULLARCHIVE")
-    fullarchive_ = VAR;
+//  else if (OPT == "TRAJOUTARGS")
+//    trajoutargs_ = VAR;
+//  else if (OPT == "FULLARCHIVE")
+//    fullarchive_ = VAR;
   else if (OPT == "MDIN_FILE") {
     if (CheckExists("MDIN file", VAR)) { return -1; }
     mdin_file_ = tildeExpansion( VAR );
