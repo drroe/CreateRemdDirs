@@ -478,6 +478,7 @@ int Creator::setupCreator() {
   // Figure out what type of run this is.
   runDescription_.clear();
   if (Dims_.Empty()) {
+    totalReplicas_ = 0;
     Msg("  No dimensions defined: assuming MD run.\n");
     runType_ = MD;
     runDescription_.assign("MD");
