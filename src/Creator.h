@@ -33,6 +33,8 @@ class Creator {
     void SetDebug(int d) { debug_ = d; }
     /// Parse a single option from input file
     int ParseFileOption(OptArray::OptPair const&);
+    /// Refresh creator based on current options
+    int RefreshCreator();
     /// Set alternate coordinates location TODO deprecate
     void SetSpecifiedCoords(std::string const& c) { specified_crd_ = c; }
     /// Set MD options; only overwrite current options if not set.

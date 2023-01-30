@@ -153,7 +153,10 @@ int System::FindRuns() {
 int System::ParseOption(std::string const& OPT, std::string const& VAR) {
   OptArray::OptPair opair(OPT, VAR);
   int ret = creator_.ParseFileOption( opair );
-  if (ret == 0) {
+  if (ret == 1) {
+    // Ensure creator is refreshed after parsing the option
+    creator_.RefreshCreator();
+  } else if (ret == 0) {
     ret = mdInterface_.Package()->ParseCreatorOption( OPT, VAR );
   }
   return ret;

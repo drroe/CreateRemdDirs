@@ -555,6 +555,11 @@ int Creator::setupCreator() {
   return 0;
 }
 
+/** Refresh creator based on current options. */
+int Creator::RefreshCreator() {
+  return setupCreator();
+}
+
 // Creator::Info()
 void Creator::Info() const {
   //Msg(    "  MDIN_FILE           : %s\n", mdin_file_.c_str());
@@ -562,13 +567,12 @@ void Creator::Info() const {
   mdopts_.PrintOpts( (runType_ == MD), Dims_.DimIdx(ReplicaDimension::TEMP), Dims_.DimIdx(ReplicaDimension::PH));
   if (runType_ == MD) {
     // Regular MD
+    Msg(  "  TOP                   : %s\n", top_file_.c_str());
     Msg(  "  CRD                   : %s\n", crd_dir_.c_str());
     if (!ref_file_.empty())
       Msg("  REF                   : %s\n", ref_file_.c_str());
     if (!ref_dir_.empty())
       Msg("  REF                   : %s\n", ref_dir_.c_str());
-    if (!top_file_.empty())
-      Msg("  TOP                   : %s\n", top_file_.c_str());
   } else {
     // Some type of replica exchange run
     Msg(  "  CRD_DIR               : %s\n", crd_dir_.c_str());
