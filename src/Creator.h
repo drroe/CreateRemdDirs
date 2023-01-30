@@ -8,7 +8,7 @@ class RepIndexArray;
 /// Class responsible for creating run input and script
 class Creator {
   public:
-    /// Specific type of run the Creator will make (set in Setup)
+    /// Specific type of run the Creator will make (set in Setup); SYNC WITH RUNTYPESTR_
     enum RUNTYPE { MD=0, TREMD, HREMD, PHREMD, MREMD };
     /// CONSTRUCTOR
     Creator();
@@ -78,6 +78,8 @@ class Creator {
 
     int LoadDimension(std::string const&);
     std::string RefFileName(std::string const&) const; // TODO deprecate
+
+    static const char* RUNTYPESTR_[]; ///< KEEP IN SYNC WITH RUNTYPE
 
     // File and MDIN variables
     std::string top_file_;

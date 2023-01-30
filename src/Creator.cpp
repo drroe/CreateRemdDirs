@@ -23,6 +23,11 @@ Creator::Creator() :
   crd_ext_("rst7") //FIXME this is Amber-specific
 {}
 
+/** KEEP IN SYNC WITH RUNTYPE */
+const char* Creator::RUNTYPESTR_[] = {
+  "MD", "T-REMD", "H-REMD", "pH-REMD", "M-REMD"
+};
+
 /** If given path is a relative path, add a '../' prefix. */ // FIXME move to FileRoutines
 static inline std::string add_path_prefix(std::string const& path) {
   if (path.empty() || path[0] == '/')
@@ -552,6 +557,7 @@ int Creator::setupCreator() {
 // Creator::Info()
 void Creator::Info() const {
   //Msg(    "  MDIN_FILE           : %s\n", mdin_file_.c_str());
+  Msg("  Run type: %s\n", RUNTYPESTR_[runType_]);
   mdopts_.PrintOpts( (runType_ == MD), Dims_.DimIdx(ReplicaDimension::TEMP), Dims_.DimIdx(ReplicaDimension::PH));
   if (runType_ == MD) {
     // Regular MD
