@@ -10,6 +10,7 @@ Exec_Create.cpp \
 Exec_Debug.cpp \
 Exec_List.cpp \
 Exec_Quit.cpp \
+Exec_SetOpt.cpp \
 FileRoutines.cpp \
 Groups.cpp \
 main.cpp \

@@ -86,6 +86,7 @@ int Cols::GetKeyInteger(int& ival, std::string const& key, int defaultVal) {
   return 0;
 }
 
+/** \return Next unmarked string. */
 std::string Cols::NextColumn() {
   for (unsigned int idx = 0; idx != columns_.size(); idx++) {
     if (!marked_[idx]) {

@@ -9,6 +9,7 @@ Exec_Create.o : Exec_Create.cpp Cols.h Creator.h Exec.h Exec_Create.h FileRoutin
 Exec_Debug.o : Exec_Debug.cpp Cols.h Creator.h Exec.h Exec_Debug.h FileRoutines.h Manager.h MdInterface.h MdOptions.h Messages.h OptArray.h Option.h Project.h ReplicaDimArray.h ReplicaDimension.h Run.h RunStatus.h StringRoutines.h Submitter.h System.h
 Exec_List.o : Exec_List.cpp Cols.h Creator.h Exec.h Exec_List.h FileRoutines.h Manager.h MdInterface.h MdOptions.h Messages.h OptArray.h Option.h Project.h ReplicaDimArray.h ReplicaDimension.h Run.h RunStatus.h Submitter.h System.h
 Exec_Quit.o : Exec_Quit.cpp Exec.h Exec_Quit.h Messages.h
+Exec_SetOpt.o : Exec_SetOpt.cpp Cols.h Creator.h Exec.h Exec_SetOpt.h FileRoutines.h Manager.h MdInterface.h MdOptions.h Messages.h OptArray.h Option.h Project.h ReplicaDimArray.h ReplicaDimension.h Run.h RunStatus.h Submitter.h System.h
 FileRoutines.o : FileRoutines.cpp FileRoutines.h Messages.h
 Groups.o : Groups.cpp Groups.h Messages.h TextFile.h
 main.o : main.cpp Commands.h Creator.h Exec.h FileRoutines.h Manager.h MdInterface.h MdOptions.h Messages.h OptArray.h Option.h Project.h ReplicaDimArray.h ReplicaDimension.h Run.h RunStatus.h StringRoutines.h Submitter.h System.h
