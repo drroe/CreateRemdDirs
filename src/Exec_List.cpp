@@ -67,7 +67,6 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
                                                 system != project->Systems().end();
                                               ++system, ++sidx)
       {
-        unsigned int total_frames = 0;
         //Msg("DEBUG: sidx=%i activeSystemIdx= %i\n", sidx, project->ActiveSystemIdx());
         if (tgtSystemIdx == SHOW_ALL || tgtSystemIdx == sidx) {
           // Ensure system is up to date (false = silent)
@@ -77,19 +76,28 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
             Msg("  System *%i: ", sidx);
           else
             Msg("  System  %i: ", sidx);
+          // Count # frames
+          unsigned int total_frames = 0;
+          for (System::RunArray::const_iterator run = system->Runs().begin();
+                                                run != system->Runs().end();
+                                              ++run)
+          {
+            //Msg("DEBUG0 %u\n", run->Stat().CurrentTrajFrames());
+            total_frames += run->Stat().CurrentTrajFrames();
+          }
+          Msg(" (%u frames) ", total_frames);
           system->PrintInfo();
           int ridx = 0;
           for (System::RunArray::const_iterator run = system->Runs().begin();
                                                 run != system->Runs().end();
                                               ++run, ++ridx)
           {
+            //Msg("DEBUG1 %u\n", run->Stat().CurrentTrajFrames());
             if (tgtRunIdx == SHOW_ALL || tgtRunIdx == ridx) {
               Msg("    %i: ", run->RunIndex());
               run->RunInfo();
             }
-            total_frames += run->Stat().CurrentTrajFrames();
           }
-          Msg("    Total frames= %u\n", total_frames);
         } // END loop over systems
       }
     }
