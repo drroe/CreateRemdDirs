@@ -14,7 +14,7 @@ class Run {
     /// \return Run index
     int RunIndex() const { return idx_; }
     /// Print run info to stdout
-    void RunInfo() const;
+    void RunSummary() const;
     /// \return Run status object
     RunStatus const& Stat() const { return runStat_; }
     /// \return run dir name

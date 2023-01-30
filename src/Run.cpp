@@ -82,7 +82,7 @@ int Run::CreateNew(std::string const& runDir, Creator const& creator, MdPackage*
 }
 
 /** Print run info to stdout. */
-void Run::RunInfo() const {
+void Run::RunSummary() const {
   Msg("%-8s : ", rundir_.c_str());
   runStat_.PrintStatus();
   Msg("\n");

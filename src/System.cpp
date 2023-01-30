@@ -175,7 +175,7 @@ int System::RefreshCurrentRuns(bool verbose) {
       return 1;
     }
     if (verbose)
-      run->RunInfo();
+      run->RunSummary();
     // Change directory back
     if (ChangeToSystemDir()) return 1;
   }
@@ -259,7 +259,7 @@ int System::CreateRunDirectories(std::string const& crd_dir,
       else if (Runs_[existingRunIdx].Stat().CurrentStat() == RunStatus::EMPTY)
         Msg("Run directory is empty. Creating run.\n");
       else {
-        Runs_[existingRunIdx].RunInfo();
+        Runs_[existingRunIdx].RunSummary();
         prevDir = Runs_[existingRunIdx].RunDirName();
         continue;
       }

@@ -95,7 +95,7 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
             //Msg("DEBUG1 %u\n", run->Stat().CurrentTrajFrames());
             if (tgtRunIdx == SHOW_ALL || tgtRunIdx == ridx) {
               Msg("    %i: ", run->RunIndex());
-              run->RunInfo();
+              run->RunSummary();
             }
           }
         } // END loop over systems
