@@ -345,11 +345,12 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
 
 /** Write current options to a file. */
 int Creator::WriteOptions(std::string const& output_file) const {
-  if (CheckExists("Output file", output_file)) {
+  if (fileExists(output_file)) {
     Msg("Warning: '%s' exists.\n", output_file.c_str());
     bool overwrite = YesNoPrompt("Overwrite?");
     if (!overwrite) return 0;
   }
+  Msg("Writing create options to '%s'\n", output_file.c_str());
   TextFile outfile;
   if (outfile.OpenWrite( output_file )) {
     ErrorMsg("Opening '%s' for write failed.\n");

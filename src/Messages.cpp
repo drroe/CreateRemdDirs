@@ -22,7 +22,7 @@ bool Messages::YesNoPrompt(const char* msg) {
   char buffer[128];
   int selection = 0;
   while (selection == 0) {
-    Msg("%s [y|n]> ");
+    Msg("%s [y|n]> ", msg);
     char* ptr = fgets( buffer, 127, stdin );
     if (ptr != 0) {
       if (buffer[0] == 'y') {
