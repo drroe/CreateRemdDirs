@@ -31,6 +31,8 @@ class System {
     /// Parse a single option
     int ParseOption(std::string const&, std::string const&);
 
+    /// Write current options to files
+    int WriteSystemOptions() const;
     /// Print system summary
     void PrintSummary() const;
     /// Print system info

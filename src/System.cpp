@@ -64,6 +64,21 @@ void System::clearRuns() {
   Runs_.clear(); 
 }
 
+/** Write options to files. */
+int System::WriteSystemOptions() const {
+  using namespace FileRoutines;
+  if (ChangeToSystemDir()) {
+    ErrorMsg("Could not change to system directory %s/%s\n", topDir_.c_str(), dirname_.c_str());
+    return 1;
+  }
+  if (creator_.WriteOptions( createOptsFilename_ )) {
+    ErrorMsg("Writing creation options to file '%s' in dir '%s' failed.\n", createOptsFilename_, dirname_.c_str());
+    return 1;
+  }
+
+  return 0;
+}
+
 /** Search for run directories in dirname_ */
 int System::FindRuns() {
   using namespace FileRoutines;

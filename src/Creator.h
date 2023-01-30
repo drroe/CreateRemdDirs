@@ -16,7 +16,9 @@ class Creator {
     typedef std::vector<std::string> Sarray;
 
     static void OptHelp();
-    
+   
+    /// Write creation options to a file
+    int WriteOptions(std::string const&) const; 
     /// Read creation options from a file
     int ReadOptions(std::string const&);
     /// \return True if the Creator is set up to make regular MD runs
@@ -103,6 +105,7 @@ class Creator {
     std::string ref_file_;        ///< Reference file (MD) or path prefix (REMD)
     std::string ref_dir_;         ///< Directory where reference coords are (like crd_dir_)
     std::string mdin_file_;       ///< Md package-specific input file
+    Sarray dim_files_;            ///< REMD dimension files
     OptArray package_opts_;       ///< Hold any potential package-specific options
 };
 #endif

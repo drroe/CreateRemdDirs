@@ -282,8 +282,7 @@ Msg("\n"
       "Amber-specific:\n"
       "  CPIN_FILE <file>   : CPIN file (constant pH only).\n"
       "  USELOG {yes|no}    : yes (default): use logfile (pmemd), otherwise do not (sander).\n"
-      "\n"
- 
+      "\n");
 }
 
 /** Parse a creator option from file.
@@ -342,6 +341,32 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
     return 0;
   }
   return 1;
+}
+
+/** Write current options to a file. */
+int Creator::WriteOptions(std::string const& output_file) const {
+  if (CheckExists("Output file", output_file)) {
+    // FIXME implement overwrite check
+    Msg("Warning: '%s' exists.\n", output_file.c_str());
+  }
+  TextFile outfile;
+  if (outfile.OpenWrite( output_file )) {
+    ErrorMsg("Opening '%s' for write failed.\n");
+    return 1;
+  }
+  // Files
+  if (!top_file_.empty())
+    outfile.Printf("TOPOLOGY %s\n", top_file_.c_str());
+  if (!crd_dir_.empty())
+    outfile.Printf("CRD_FILE %s\n", crd_dir_.c_str());
+  if (!dim_files_.empty()) {
+    for (Sarray::const_iterator it = dim_files_.begin(); it != dim_files_.end(); it++)
+      outfile.Printf("DIMENSION %s\n", it->c_str());
+  }
+  // Md Options
+  // Package options
+
+  return 0;
 }
 
 // Creator::ReadOptions()
@@ -468,6 +493,7 @@ int Creator::LoadDimension(std::string const& dfile) {
     ErrorMsg("Could not load dimension from '%s'\n", dfile.c_str());
     return 1;
   }
+  dim_files_.push_back( dfile );
 
   return 0;
 }
