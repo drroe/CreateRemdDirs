@@ -21,6 +21,7 @@
 #include "Exec_SetOpt.h"
 #include "Exec_Info.h"
 #include "Exec_System.h"
+#include "Exec_Save.h"
 
 using namespace Messages;
 
@@ -113,6 +114,7 @@ void Commands::InitCommands() {
   AddCmd( new Exec_SetOpt(), 1, "setopt");
   AddCmd( new Exec_Info(), 1, "info");
   AddCmd( new Exec_System(), 2, "ls", "pwd");
+  AddCmd( new Exec_Save(), 1, "save" );
   // Add null ptr to indicate end of command key addresses for readline 
   names_.push_back( 0 );
 }
