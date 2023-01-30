@@ -75,16 +75,7 @@ int Manager::InitManager(std::string const& CurrentDir, std::string const& input
   }
   input.Close();
   // Change to the active systems directory
-  if (!projects_.empty()) {
-    Project& activeProject = ActiveProject();
-    if (activeProject.ActiveSystemIdx() > -1) {
-      System& activeSystem = activeProject.ActiveSystem();
-      if (activeSystem.ChangeToSystemDir()) {
-        ErrorMsg("Change to active system directory failed.\n");
-        return 1;
-      }
-    }
-  }
+  if (ChangeToActiveSystemDir()) return 1;
 
   return 0;
 }

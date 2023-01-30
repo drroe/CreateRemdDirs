@@ -170,6 +170,9 @@ Exec::RetType Commands::ProcessCommand(std::string const& inp, Manager& manager)
 
   // Execute command
   Exec::RetType retVal = cmd.CmdExec()->Execute( manager, line );
+  // Change back to the active system directory
+  if (manager.ChangeToActiveSystemDir()) return Exec::ERR;
+
   return retVal;
 }
 
