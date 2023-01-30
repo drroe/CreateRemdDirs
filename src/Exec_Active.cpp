@@ -27,6 +27,10 @@ Exec::RetType Exec_Active::Execute(Manager& manager, Cols& args) const {
   Msg("Project %i system %i is active.\n", tgtProjectIdx, tgtSystemIdx);
   System const& activeSystem = manager.ActiveProjectSystem();
   activeSystem.PrintSummary();
+  if (activeSystem.ChangeToSystemDir()) {
+    ErrorMsg("Could not change to system directory.\n");
+    return ERR;
+  }
 
   return OK;
 }
