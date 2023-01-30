@@ -346,8 +346,9 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
 /** Write current options to a file. */
 int Creator::WriteOptions(std::string const& output_file) const {
   if (CheckExists("Output file", output_file)) {
-    // FIXME implement overwrite check
     Msg("Warning: '%s' exists.\n", output_file.c_str());
+    bool overwrite = YesNoPrompt("Overwrite?");
+    if (!overwrite) return 0;
   }
   TextFile outfile;
   if (outfile.OpenWrite( output_file )) {
