@@ -15,15 +15,9 @@ void Exec_SetOpt::Help() const {
 
 /** <Command description goes here.> */
 Exec::RetType Exec_SetOpt::Execute(Manager& manager, Cols& args) const {
-  // Ensure there is a project
-  if (manager.ActiveProjectIdx() < 0) {
-    ErrorMsg("No projects present.\n");
-    return ERR;
-  }
-  // Ensure project has a system
-  Project& activeProject = manager.ActiveProject();
-  if (activeProject.ActiveSystemIdx() < 0) {
-    ErrorMsg("No systems present.\n");
+  // Ensure there is an active system
+  if (!manager.HasActiveProjectSystem()) {
+    ErrorMsg("No active system present.\n");
     return ERR;
   }
   // Get active system

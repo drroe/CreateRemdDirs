@@ -117,3 +117,13 @@ int Manager::SetActiveProjectSystem(int tgtProjectIdx, int tgtSystemIdx) {
 
   return 0;
 }
+
+/** \return True if there is an active system to return. */
+bool Manager::HasActiveProjectSystem() const {
+  if (!projects_.empty()) {
+    Project const& activeProject = projects_[activeProjectIdx_];
+    if (activeProject.ActiveSystemIdx() > -1)
+      return true;
+  }
+  return false;
+}

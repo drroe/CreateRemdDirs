@@ -15,7 +15,11 @@ void Exec_Create::Help() const {
 Exec::RetType Exec_Create::Execute(Manager& manager, Cols& args) const {
   // Get the active system
   if (manager.NoProjects()) {
-    Msg("Warning: No projects or systems, cannot create runs.\n");
+    ErrorMsg("No projects or systems, cannot create runs.\n");
+    return ERR;
+  }
+  if (!manager.HasActiveProjectSystem()) {
+    ErrorMsg("No active system, cannot create runs.\n");
     return ERR;
   }
   System& activeSystem = manager.ActiveProjectSystem();

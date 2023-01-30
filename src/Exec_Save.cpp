@@ -1,18 +1,18 @@
-#include "Exec_Info.h"
+#include "Exec_Save.h"
 #include "Messages.h"
 #include "Manager.h"
 
 using namespace Messages;
 
 /** CONSTRUCTOR */
-Exec_Info::Exec_Info() {}
+Exec_Save::Exec_Save() {}
 
 /** Help text */
-void Exec_Info::Help() const {
+void Exec_Save::Help() const {
 }
 
 /** <Command description goes here.> */
-Exec::RetType Exec_Info::Execute(Manager& manager, Cols& args) const {
+Exec::RetType Exec_Save::Execute(Manager& manager, Cols& args) const {
   // Ensure there is an active system
   if (!manager.HasActiveProjectSystem()) {
     ErrorMsg("No active system present.\n");
@@ -21,6 +21,7 @@ Exec::RetType Exec_Info::Execute(Manager& manager, Cols& args) const {
   // Get active system
   System& activeSystem = manager.ActiveProjectSystem();
 
-  activeSystem.PrintInfo();
+  if (activeSystem.WriteSystemOptions()) return ERR;
+
   return OK;
 }
