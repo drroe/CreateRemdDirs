@@ -89,6 +89,21 @@ int Manager::InitManager(std::string const& CurrentDir, std::string const& input
   return 0;
 }
 
+/** Change to active systems directory. */
+int Manager::ChangeToActiveSystemDir() const {
+  if (!projects_.empty()) {
+    Project const& activeProject = projects_[activeProjectIdx_];
+    if (activeProject.ActiveSystemIdx() > -1) {
+      System const& activeSystem = activeProject.Systems()[activeProject.ActiveSystemIdx()];
+      if (activeSystem.ChangeToSystemDir()) {
+        ErrorMsg("Change to active system directory failed.\n");
+        return 1;
+      }
+    }
+  }
+  return 0;
+}
+
 /** Set active project and system. */
 int Manager::SetActiveProjectSystem(int tgtProjectIdx, int tgtSystemIdx) {
   if (tgtProjectIdx < 0 || tgtSystemIdx < 0) {

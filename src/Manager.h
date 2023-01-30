@@ -23,12 +23,13 @@ class Manager {
     int Debug() const { return debug_; }
     /// \return index of the active project
     int ActiveProjectIdx() const { return activeProjectIdx_; }
+    /// Change to active system directory
+    int ChangeToActiveSystemDir() const;
+
     /// \return the active project
     Project& ActiveProject() { return projects_[activeProjectIdx_]; }
     /// \return the active system of active project
     System& ActiveProjectSystem() { return projects_[activeProjectIdx_].ActiveSystem(); }
-    /// \return True if there is an active system
-    bool HasActiveSystem() const;
     /// Modifiable project
     Project& Set_Project(int idx) { return projects_[idx]; }
 
