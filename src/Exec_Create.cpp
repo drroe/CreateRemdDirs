@@ -19,7 +19,7 @@ Exec::RetType Exec_Create::Execute(Manager& manager, Cols& args) const {
   }
   System& activeSystem = manager.ActiveProjectSystem();
   activeSystem.SetDebug( manager.Debug() );
-  activeSystem.PrintInfo();
+  activeSystem.PrintSummary();
 
   // Get keywords
   int start_run, stop_run;

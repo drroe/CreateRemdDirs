@@ -32,7 +32,7 @@ class System {
     int ParseOption(std::string const&, std::string const&);
 
     /// Print system info
-    void PrintInfo() const;
+    void PrintSummary() const;
     /// \return Run Array
     RunArray const& Runs() const { return Runs_; }
     /// Change to system directory

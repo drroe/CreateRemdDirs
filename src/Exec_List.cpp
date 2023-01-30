@@ -86,7 +86,7 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
             total_frames += run->Stat().CurrentTrajFrames();
           }
           Msg(" (%u frames) ", total_frames);
-          system->PrintInfo();
+          system->PrintSummary();
           int ridx = 0;
           for (System::RunArray::const_iterator run = system->Runs().begin();
                                                 run != system->Runs().end();

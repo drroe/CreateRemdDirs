@@ -189,7 +189,7 @@ void System::SetDebug(int debugIn) {
 }
 
 /** Print system information. */
-void System::PrintInfo() const {
+void System::PrintSummary() const {
   Msg("%s : %s (%zu runs)\n", dirname_.c_str(), description_.c_str(), Runs_.size());
   // DEBUG
   //Msg("DEBUG\tTop dir: %s\n", topDir_.c_str());
