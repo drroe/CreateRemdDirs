@@ -563,6 +563,8 @@ void Creator::Info() const {
       Msg("  REF                   : %s\n", ref_dir_.c_str());
   } else {
     // Some type of replica exchange run
+    if (!Dims_.HasDim(ReplicaDimension::TOPOLOGY))
+      Msg("  TOP                   : %s\n", top_file_.c_str());
     Msg(  "  CRD_DIR               : %s\n", crd_dir_.c_str());
     if (!ref_file_.empty())
       Msg("  REF_PREFIX            : %s\n", ref_file_.c_str());
