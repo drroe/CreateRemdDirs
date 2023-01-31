@@ -76,6 +76,12 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
             Msg("  System *%i: ", sidx);
           else
             Msg("  System  %i: ", sidx);
+          // If this is the target system index, show all runs
+          bool is_active_system = false;
+          if (tgtRunIdx == HIDE_ALL && 
+              pidx == manager.ActiveProjectIdx() &&
+              sidx == project->ActiveSystemIdx())
+            is_active_system = true;
           // Count # frames
           unsigned int total_frames = 0;
           for (System::RunArray::const_iterator run = system->Runs().begin();
@@ -93,7 +99,7 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
                                               ++run, ++ridx)
           {
             //Msg("DEBUG1 %u\n", run->Stat().CurrentTrajFrames());
-            if (tgtRunIdx == SHOW_ALL || tgtRunIdx == ridx) {
+            if (tgtRunIdx == SHOW_ALL || tgtRunIdx == ridx || is_active_system) {
               Msg("    %i: ", run->RunIndex());
               run->RunSummary();
             }
