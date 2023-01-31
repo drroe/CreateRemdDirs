@@ -129,6 +129,9 @@ int System::FindRuns() {
       return 1;
     }
   }
+  if (mdInterface_.Package()->CheckCreatorOptions(creator_)) {
+    Msg("Warning: Invalid package-specific options.\n");
+  }
   creator_.Info();
   // See if submission options exist
   // FIXME re-enable this when the time comes
