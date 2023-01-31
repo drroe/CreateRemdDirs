@@ -35,7 +35,7 @@ class Creator {
     int ParseFileOption(OptArray::OptPair const&);
     /// Refresh creator based on current options
     int RefreshCreator();
-    /// Set alternate coordinates location
+    /// Set alternate coordinates location TODO deprecate?
     void SetSpecifiedCoords(std::string const& c) { specified_crd_ = c; }
     /// Set MD options; only overwrite current options if not set.
     int SetMdOptions(MdOptions const&);
@@ -103,7 +103,7 @@ class Creator {
     RUNTYPE runType_;             ///< Type of run from options file.
     std::string runDescription_;  ///< Run description
     std::string crd_dir_;         ///< Directory where input coordinates are/MD input coords (from options file).
-    std::string specified_crd_;   ///< Input coords set in SetSpecifiedCoords(); overrides crd_dir_.
+    std::string specified_crd_;   ///< Input coords set in SetSpecifiedCoords(); overrides crd_dir_. TODO deprecate?
     std::string crd_ext_;         ///< Input coords file name extension
     std::string ref_file_;        ///< Reference file (MD) or path prefix (REMD)
     std::string ref_dir_;         ///< Directory where reference coords are (like crd_dir_)
