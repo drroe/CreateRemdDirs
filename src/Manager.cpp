@@ -127,3 +127,22 @@ bool Manager::HasActiveProjectSystem() const {
   }
   return false;
 }
+
+/** \return True if any systems need to be saved. */
+bool Manager::SystemsNeedSave() const {
+  int n_needs_save = 0;
+  for (ProjectArray::const_iterator project = projects_.begin();
+                                    project != projects_.end(); ++project)
+  {
+    for (Project::SystemArray::const_iterator system = project->Systems().begin();
+                                              system != project->Systems().end(); ++system)
+    {
+      if (system->NeedsSave()) {
+        Msg("Needs save: ");
+        system->PrintSummary();
+        n_needs_save++;
+      }
+    }
+  }
+  return (n_needs_save > 0);
+}

@@ -220,9 +220,14 @@ int Commands::Prompt(Manager& manager) {
       add_history( inp.c_str() );
       ret = ProcessCommand( inp, manager );
       free(line);
-      if (ret == Exec::QUIT) 
-        getInput = false;
-      else if (ret == Exec::ERR)
+      if (ret == Exec::QUIT) {
+        // Check if any systems need saving
+        if (manager.SystemsNeedSave()) {
+          if (YesNoPrompt("System(s) need to be saved. Really quit?"))
+            getInput = false;
+        } else
+          getInput = false;
+      }else if (ret == Exec::ERR)
         nerr++;
     }
   }

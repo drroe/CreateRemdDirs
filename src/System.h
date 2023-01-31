@@ -30,9 +30,9 @@ class System {
     int CreateRunDirectories(std::string const&, int, int, bool);
     /// Parse a single option
     int ParseOption(std::string const&, std::string const&);
-
     /// Write current options to files
-    int WriteSystemOptions() const;
+    int WriteSystemOptions();
+
     /// Print system summary
     void PrintSummary() const;
     /// Print system info
@@ -41,6 +41,8 @@ class System {
     RunArray const& Runs() const { return Runs_; }
     /// Change to system directory
     int ChangeToSystemDir() const;
+    /// \return true if System options need to be written
+    bool NeedsSave() const { return needs_save_; }
     /// \return System dir name
     //std::string const& SystemDirName() const { return dirname_; }
   private:
@@ -50,10 +52,10 @@ class System {
     /// Find existing run index if present
     int findRunIdx(int) const;
 
-    RunArray Runs_;           ///< Array of runs for the system
-    std::string topDir_;      ///< Top level directory
-    std::string dirname_;     ///< Directory containing runs for the system
-    std::string description_; ///< Description of the system
+    RunArray Runs_;                  ///< Array of runs for the system
+    std::string topDir_;             ///< Top level directory
+    std::string dirname_;            ///< Directory containing runs for the system
+    std::string description_;        ///< Description of the system
     std::string createOptsFilename_; ///< File name for creator options
     std::string submitOptsFilename_; ///< File name for submitter options
     std::string runDirPrefix_;       ///< Run directory prefix
@@ -61,5 +63,6 @@ class System {
     Creator creator_;                ///< For creating runs
     Submitter submitter_;            ///< For submitting runs
     MdInterface mdInterface_;        ///< Use to interface with different MD packages
+    bool needs_save_;                ///< True if any options have changed and System needs save
 };
 #endif

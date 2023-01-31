@@ -12,7 +12,8 @@ System::System() :
   createOptsFilename_("remd.opts"),
   submitOptsFilename_("qsub.opts"),
   runDirPrefix_("run"),
-  runDirExtWidth_(3)
+  runDirExtWidth_(3),
+  needs_save_(false)
 {}
 
 /** CONSTRUCTOR - toplevel dir, dirname, description */
@@ -23,7 +24,8 @@ System::System(std::string const& top, std::string const& dirname, std::string c
   createOptsFilename_("remd.opts"),
   submitOptsFilename_("qsub.opts"),
   runDirPrefix_("run"),
-  runDirExtWidth_(3)
+  runDirExtWidth_(3),
+  needs_save_(false)
 {}
 
 /** COPY CONSTRUCTOR */
@@ -38,7 +40,8 @@ System::System(System const& rhs) :
   runDirExtWidth_(rhs.runDirExtWidth_),
   creator_(rhs.creator_),
   submitter_(rhs.submitter_),
-  mdInterface_(rhs.mdInterface_)
+  mdInterface_(rhs.mdInterface_),
+  needs_save_(rhs.needs_save_)
 {}
 
 /** Assignment */
@@ -55,6 +58,7 @@ System& System::operator=(System const& rhs) {
   creator_ = rhs.creator_;
   submitter_ = rhs.submitter_;
   mdInterface_ = rhs.mdInterface_;
+  needs_save_ = rhs.needs_save_;
 
   return *this;
 }
@@ -65,7 +69,7 @@ void System::clearRuns() {
 }
 
 /** Write options to files. */
-int System::WriteSystemOptions() const {
+int System::WriteSystemOptions() {
   using namespace FileRoutines;
   if (ChangeToSystemDir()) {
     ErrorMsg("Could not change to system directory %s/%s\n", topDir_.c_str(), dirname_.c_str());
@@ -75,6 +79,7 @@ int System::WriteSystemOptions() const {
     ErrorMsg("Writing creation options to file '%s' in dir '%s' failed.\n", createOptsFilename_, dirname_.c_str());
     return 1;
   }
+  needs_save_ = false;
 
   return 0;
 }
@@ -174,6 +179,7 @@ int System::ParseOption(std::string const& OPT, std::string const& VAR) {
   } else if (ret == 0) {
     ret = mdInterface_.Package()->ParseCreatorOption( OPT, VAR );
   }
+  if (ret == 1) needs_save_ = true;
   return ret;
 }
 

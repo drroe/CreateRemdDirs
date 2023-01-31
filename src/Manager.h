@@ -27,6 +27,8 @@ class Manager {
     int ChangeToActiveSystemDir() const;
     /// \return True if there is an active project and system
     bool HasActiveProjectSystem() const;
+    /// \return True if any systems need saving
+    bool SystemsNeedSave() const;
 
     /// \return the active project
     Project& ActiveProject() { return projects_[activeProjectIdx_]; }
