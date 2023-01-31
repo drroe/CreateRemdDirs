@@ -23,7 +23,8 @@ MdOptions.cpp \
 MdPackage_Amber.cpp \
 MdinFile.cpp \
 Messages.cpp \
-QueueOpts.cpp \
+Queue.cpp \
+QueueArray.cpp \
 RepIndexArray.cpp \
 ReplicaDimArray.cpp \
 ReplicaDimension.cpp \

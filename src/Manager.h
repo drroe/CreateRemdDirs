@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "Project.h"
+#include "QueueArray.h"
 /// Class to manage runs in Systems
 class Manager {
   public:
@@ -48,5 +49,6 @@ class Manager {
     std::string topDir_;    ///< The current (top) working directory
     int debug_;             ///< Global debug level
     int activeProjectIdx_;  ///< The index of the active project in Project array
+    QueueArray queues_;     ///< Hold all available queues
 };
 #endif

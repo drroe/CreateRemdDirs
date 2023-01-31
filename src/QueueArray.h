@@ -1,7 +1,7 @@
 #ifndef INC_QUEUEARRAY_H
 #define INC_QUEUEARRAY_H
 #include <vector>
-class Queue;
+#include "Queue.h"
 /// Hold information on all available queues
 class QueueArray {
   public:
