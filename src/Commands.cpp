@@ -113,7 +113,7 @@ void Commands::InitCommands() {
   AddCmd( new Exec_Active(), 1, "active");
   AddCmd( new Exec_SetOpt(), 1, "setopt");
   AddCmd( new Exec_Info(), 1, "info");
-  AddCmd( new Exec_System(), 2, "ls", "pwd");
+  AddCmd( new Exec_System(), 3, "ls", "pwd", "less");
   AddCmd( new Exec_Save(), 1, "save" );
   // Add null ptr to indicate end of command key addresses for readline 
   names_.push_back( 0 );
