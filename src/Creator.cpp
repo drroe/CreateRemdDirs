@@ -207,11 +207,11 @@ Creator::Sarray Creator::InputCoordsNames(int startRunNum, int runNum, std::stri
       return Sarray();
     }
   } else {
-    // Starting after run 0. If this is the first run in the series and
-    // specified_crd_ is set, use that; otherwise set up to use
-    // coordinates from previous runs.
+    // Starting after run 0. If this is the first run in the series or
+    // no previous directory is set and specified_crd_ is set, use that;
+    // otherwise set up to use coordinates from previous runs.
     std::string specified;
-    if (startRunNum == runNum)
+    if (startRunNum == runNum || prevDir.empty())
       specified = specified_crd_;
     if (runType_ == MD) {
       // MD run
