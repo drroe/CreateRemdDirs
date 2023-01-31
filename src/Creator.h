@@ -27,8 +27,6 @@ class Creator {
     void Info() const;
     /// \return Run type that this has been set for
     RUNTYPE TypeOfRun() const { return runType_; }
-    /// \return MD-specific package input file name
-    std::string const& MdinFileName() const { return mdin_file_; }
     /// \return Run description
     std::string const& RunDescription() const { return runDescription_; }
     /// Set debug level
@@ -43,6 +41,12 @@ class Creator {
     int SetMdOptions(MdOptions const&);
     /// \return Package-specific options
     OptArray const& PackageOpts() const { return package_opts_; }
+    /// \return MD-specific package input file name
+    std::string const& MdinFileName() const { return mdin_file_; }
+    /// \return True if MD-specific package input file needs to be read
+    bool MdinNeedsRead() const { return mdin_needs_read_; }
+    /// Set MD-specific package input file status to read
+    void Set_MdinAsRead() { mdin_needs_read_ = true; }
 
     /// \return Debug level
     int Debug() const { return debug_; }
@@ -96,6 +100,7 @@ class Creator {
     int debug_;
     int n_md_runs_;               ///< Number of MD runs.
     int fileExtWidth_;            ///< Filename extension width
+    bool mdin_needs_read_;        ///< If true, mdin_file_ needs to be read by MdPackage
     RUNTYPE runType_;             ///< Type of run from options file.
     std::string runDescription_;  ///< Run description
 //    std::string additionalInput_; ///< Hold any additional MDIN input.

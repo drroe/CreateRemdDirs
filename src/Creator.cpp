@@ -20,6 +20,7 @@ Creator::Creator() :
   debug_(0),
   n_md_runs_(0),
   fileExtWidth_(3),
+  mdin_needs_read_(false),
   crd_ext_("rst7") //FIXME this is Amber-specific
 {}
 
@@ -385,6 +386,7 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
   else if (OPT == "MDIN_FILE") {
     if (CheckExists("MDIN file", VAR)) { return -1; }
     mdin_file_ = tildeExpansion( VAR );
+    mdin_needs_read_ = true;
   } else if (OPT == "RST_FILE") {
     if (fileExists( VAR ))
       mdopts_.Set_RstFilename().SetVal( tildeExpansion( VAR ) );
@@ -550,7 +552,7 @@ int Creator::RefreshCreator() {
 
 // Creator::Info()
 void Creator::Info() const {
-  //Msg(    "  MDIN_FILE           : %s\n", mdin_file_.c_str());
+  Msg(    "  MDIN_FILE           : %s\n", mdin_file_.c_str());
   Msg("  Run type: %s\n", RUNTYPESTR_[runType_]);
   mdopts_.PrintOpts( (runType_ == MD), Dims_.DimIdx(ReplicaDimension::TEMP), Dims_.DimIdx(ReplicaDimension::PH));
   if (runType_ == MD) {

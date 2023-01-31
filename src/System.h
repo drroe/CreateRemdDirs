@@ -51,6 +51,8 @@ class System {
     void clearRuns();
     /// Find existing run index if present
     int findRunIdx(int) const;
+    /// Read MdPackage specific MD input options
+    int read_mdpackage_mdin();
 
     RunArray Runs_;                  ///< Array of runs for the system
     std::string topDir_;             ///< Top level directory

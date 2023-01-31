@@ -84,6 +84,35 @@ int System::WriteSystemOptions() {
   return 0;
 }
 
+/** Read MD package-specific input if needed. This is in a separate routine
+  * because it needs to be done after the initial creation options read
+  * (so that the MdPackage is actually allocated).
+  */
+int System::read_mdpackage_mdin() {
+  if (!creator_.MdinNeedsRead()) {
+    Msg("DEBUG: MDIN does not need reading. Skipping.\n");
+    return 0;
+  }
+  if (!creator_.MdinFileName().empty()) {
+    MdOptions packageOpts;
+    if (mdInterface_.Package()->ReadPackageInput( packageOpts, creator_.MdinFileName() )) {
+      ErrorMsg("Reading MD package input options from '%s' failed.\n", creator_.MdinFileName().c_str());
+      return 1;
+    }
+    // See if we want to use any of the package options
+    if (creator_.SetMdOptions( packageOpts )) {
+      ErrorMsg("Setting MD options from package options failed.\n");
+      return 1;
+    }
+  }
+  // Check the options
+  if (mdInterface_.Package()->CheckCreatorOptions(creator_)) {
+    Msg("Warning: Invalid package-specific options.\n");
+  }
+  creator_.Set_MdinAsRead();
+  return 0;
+}
+
 /** Search for run directories in dirname_ */
 int System::FindRuns() {
   using namespace FileRoutines;
@@ -99,13 +128,14 @@ int System::FindRuns() {
       return 1;
     }
   }
-  // MD-package specific stuff
+  // Allocate specific MD package
   if (mdInterface_.AllocatePackage(MdInterface::AMBER, creator_.Debug())) {
     ErrorMsg("MD package allocate failed.\n");
     return 1;
   }
+  // Process MD package-specific options
   for (OptArray::const_iterator opair = creator_.PackageOpts().begin();
-                                          opair != creator_.PackageOpts().end(); ++opair)
+                                opair != creator_.PackageOpts().end(); ++opair)
   {
     std::string const& OPT = opair->first;
     std::string const& VAR = opair->second;
@@ -117,6 +147,9 @@ int System::FindRuns() {
       Msg("Warning: Ignoring unrecognized option '%s' = '%s'\n", OPT.c_str(), VAR.c_str());
     }
   }
+  // Process MD package-specific MD input if needed
+  if (read_mdpackage_mdin()) return 1;
+/* 
   if (!creator_.MdinFileName().empty()) {
     MdOptions packageOpts;
     if (mdInterface_.Package()->ReadPackageInput( packageOpts, creator_.MdinFileName() )) {
@@ -131,7 +164,7 @@ int System::FindRuns() {
   }
   if (mdInterface_.Package()->CheckCreatorOptions(creator_)) {
     Msg("Warning: Invalid package-specific options.\n");
-  }
+  }*/
   creator_.Info();
   // See if submission options exist
   // FIXME re-enable this when the time comes
