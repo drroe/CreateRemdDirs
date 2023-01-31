@@ -285,6 +285,58 @@ Msg("\n"
       "\n");
 }
 
+/** Write current options to a file. */
+int Creator::WriteOptions(std::string const& output_file) const {
+  if (fileExists(output_file)) {
+    Msg("Warning: '%s' exists.\n", output_file.c_str());
+    bool overwrite = YesNoPrompt("Overwrite?");
+    if (!overwrite) return 0;
+  }
+  Msg("Writing create options to '%s'\n", output_file.c_str());
+  TextFile outfile;
+  if (outfile.OpenWrite( output_file )) {
+    ErrorMsg("Opening '%s' for write failed.\n");
+    return 1;
+  }
+  if (n_md_runs_ > 0) // TODO should be 1?
+    outfile.Printf("MDRUNS %i\n", n_md_runs_);
+  // Files
+  if (!top_file_.empty())
+    outfile.Printf("TOPOLOGY %s\n", top_file_.c_str());
+  if (!crd_dir_.empty())
+    outfile.Printf("CRD_FILE %s\n", crd_dir_.c_str());
+  if (!ref_dir_.empty())
+    outfile.Printf("REF_FILE %s\n", ref_dir_.c_str());
+  if (!ref_file_.empty())
+    outfile.Printf("REFERENCE %s\n", ref_file_.c_str());
+  if (!mdin_file_.empty())
+    outfile.Printf("MDIN_FILE %s\n", mdin_file_.c_str());
+  if (!dim_files_.empty()) {
+    for (Sarray::const_iterator it = dim_files_.begin(); it != dim_files_.end(); it++)
+      outfile.Printf("DIMENSION %s\n", it->c_str());
+  }
+  // Md Options
+  if (mdopts_.N_Steps().IsSet())
+    outfile.Printf("NSTLIM %i\n", mdopts_.N_Steps().Val());
+  if (mdopts_.TrajWriteFreq().IsSet())
+    outfile.Printf("NTWX %i\n", mdopts_.TrajWriteFreq().Val());
+  if (mdopts_.TimeStep().IsSet())
+    outfile.Printf("DT %f\n", mdopts_.TimeStep().Val());
+  if (mdopts_.RandomSeed().IsSet())
+    outfile.Printf("IG %i\n", mdopts_.RandomSeed().Val());
+  if (mdopts_.N_Exchanges().IsSet())
+    outfile.Printf("NUMEXCHG %i\n", mdopts_.N_Exchanges().Val());
+  if (mdopts_.Temperature0().IsSet())
+    outfile.Printf("TEMPERATURE %f\n", mdopts_.Temperature0().Val());
+  if (mdopts_.RstFilename().IsSet())
+    outfile.Printf("RST_FILE %s\n", mdopts_.RstFilename().Val().c_str());
+  if (mdopts_.RstWriteFreq().IsSet())
+    outfile.Printf("UMBRELLA %i\n", mdopts_.RstWriteFreq().Val());
+  // Package options
+
+  return 0;
+}
+
 /** Parse a creator option from file.
   * \return 1 if option was parsed.
   * \return 0 if option was not parsed.
@@ -341,58 +393,6 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
     return 0;
   }
   return 1;
-}
-
-/** Write current options to a file. */
-int Creator::WriteOptions(std::string const& output_file) const {
-  if (fileExists(output_file)) {
-    Msg("Warning: '%s' exists.\n", output_file.c_str());
-    bool overwrite = YesNoPrompt("Overwrite?");
-    if (!overwrite) return 0;
-  }
-  Msg("Writing create options to '%s'\n", output_file.c_str());
-  TextFile outfile;
-  if (outfile.OpenWrite( output_file )) {
-    ErrorMsg("Opening '%s' for write failed.\n");
-    return 1;
-  }
-  if (n_md_runs_ > 0) // TODO should be 1?
-    outfile.Printf("MDRUNS %i\n", n_md_runs_);
-  // Files
-  if (!top_file_.empty())
-    outfile.Printf("TOPOLOGY %s\n", top_file_.c_str());
-  if (!crd_dir_.empty())
-    outfile.Printf("CRD_FILE %s\n", crd_dir_.c_str());
-  if (!ref_dir_.empty())
-    outfile.Printf("REF_FILE %s\n", ref_dir_.c_str());
-  if (!ref_file_.empty())
-    outfile.Printf("REFERENCE %s\n", ref_file_.c_str());
-  if (!mdin_file_.empty())
-    outfile.Printf("MDIN_FILE %s\n", mdin_file_.c_str());
-  if (!dim_files_.empty()) {
-    for (Sarray::const_iterator it = dim_files_.begin(); it != dim_files_.end(); it++)
-      outfile.Printf("DIMENSION %s\n", it->c_str());
-  }
-  // Md Options
-  if (mdopts_.N_Steps().IsSet())
-    outfile.Printf("NSTLIM %i\n", mdopts_.N_Steps().Val());
-  if (mdopts_.TrajWriteFreq().IsSet())
-    outfile.Printf("NTWX %i\n", mdopts_.TrajWriteFreq().Val());
-  if (mdopts_.TimeStep().IsSet())
-    outfile.Printf("DT %f\n", mdopts_.TimeStep().Val());
-  if (mdopts_.RandomSeed().IsSet())
-    outfile.Printf("IG %i\n", mdopts_.RandomSeed().Val());
-  if (mdopts_.N_Exchanges().IsSet())
-    outfile.Printf("NUMEXCHG %i\n", mdopts_.N_Exchanges().Val());
-  if (mdopts_.Temperature0().IsSet())
-    outfile.Printf("TEMPERATURE %f\n", mdopts_.Temperature0().Val());
-  if (mdopts_.RstFilename().IsSet())
-    outfile.Printf("RST_FILE %s\n", mdopts_.RstFilename().Val().c_str());
-  if (mdopts_.RstWriteFreq().IsSet())
-    outfile.Printf("UMBRELLA %i\n", mdopts_.RstWriteFreq().Val());
-  // Package options
-
-  return 0;
 }
 
 // Creator::ReadOptions()
