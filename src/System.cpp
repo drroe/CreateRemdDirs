@@ -215,7 +215,11 @@ int System::ParseOption(std::string const& OPT, std::string const& VAR) {
   } else if (ret == 0) {
     ret = mdInterface_.Package()->ParseCreatorOption( OPT, VAR );
   }
-  if (ret == 1) needs_save_ = true;
+  if (ret == 1) {
+    needs_save_ = true;
+    // Process MD package-specific MD input if needed
+    if (read_mdpackage_mdin()) return -1;
+  }
   return ret;
 }
 

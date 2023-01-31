@@ -552,9 +552,9 @@ int Creator::RefreshCreator() {
 
 // Creator::Info()
 void Creator::Info() const {
-  Msg(    "  MDIN_FILE           : %s\n", mdin_file_.c_str());
   Msg("  Run type: %s\n", RUNTYPESTR_[runType_]);
   mdopts_.PrintOpts( (runType_ == MD), Dims_.DimIdx(ReplicaDimension::TEMP), Dims_.DimIdx(ReplicaDimension::PH));
+  Msg(    "  MDIN_FILE             : %s\n", mdin_file_.c_str());
   if (runType_ == MD) {
     // Regular MD
     Msg(  "  TOP                   : %s\n", top_file_.c_str());

@@ -46,7 +46,7 @@ class Creator {
     /// \return True if MD-specific package input file needs to be read
     bool MdinNeedsRead() const { return mdin_needs_read_; }
     /// Set MD-specific package input file status to read
-    void Set_MdinAsRead() { mdin_needs_read_ = true; }
+    void Set_MdinAsRead() { mdin_needs_read_ = false; }
 
     /// \return Debug level
     int Debug() const { return debug_; }
