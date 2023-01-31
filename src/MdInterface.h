@@ -20,6 +20,8 @@ class MdInterface {
     void SetDebug(int) const;
     /// \return allocated package
     MdPackage* Package() const { return package_; }
+    /// \return True if a package is allocated
+    bool HasPackage() const { return (package_ != 0); }
   private:
     MdPackage* package_;
     Type type_;
