@@ -356,6 +356,8 @@ int Creator::WriteOptions(std::string const& output_file) const {
     ErrorMsg("Opening '%s' for write failed.\n");
     return 1;
   }
+  if (n_md_runs_ > 0) // TODO should be 1?
+    outfile.Printf("MDRUNS %i\n", n_md_runs_);
   // Files
   if (!top_file_.empty())
     outfile.Printf("TOPOLOGY %s\n", top_file_.c_str());
@@ -384,6 +386,10 @@ int Creator::WriteOptions(std::string const& output_file) const {
     outfile.Printf("NUMEXCHG %i\n", mdopts_.N_Exchanges().Val());
   if (mdopts_.Temperature0().IsSet())
     outfile.Printf("TEMPERATURE %f\n", mdopts_.Temperature0().Val());
+  if (mdopts_.RstFilename().IsSet())
+    outfile.Printf("RST_FILE %s\n", mdopts_.RstFilename().Val().c_str());
+  if (mdopts_.RstWriteFreq().IsSet())
+    outfile.Printf("UMBRELLA %i\n", mdopts_.RstWriteFreq().Val());
   // Package options
 
   return 0;
