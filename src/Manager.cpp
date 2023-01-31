@@ -67,7 +67,7 @@ int Manager::InitManager(std::string const& CurrentDir, std::string const& input
           Msg("System: %s  Description: '%s'\n", input.Token(1).c_str(), description.c_str());
           projects_.back().AddSystem( System(CurrentDir, input.Token(1), description) );
           projects_.back().LastSystem().SetDebug( debug_ );
-          if (projects_.back().LastSystem().FindRuns()) return 1;
+          if (projects_.back().LastSystem().FindRuns(queues_)) return 1;
         }
       }
     }

@@ -10,7 +10,10 @@ class Submitter {
     Submitter();
     /// Read options from a file
     int ReadOptions(std::string const&);
+    /// Set debug level
+    void SetDebug(int);
   private:
+    int debug_;             ///< Debug level
     std::string job_name_;  ///< Job name
     int nodes_;             ///< Number of nodes required
     int procs_;             ///< Number of processors required

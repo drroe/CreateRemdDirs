@@ -6,6 +6,7 @@
 #include "Submitter.h"
 #include "MdInterface.h"
 #include "Run.h"
+class QueueArray;
 /// Hold information on runs for a system
 class System {
   public:
@@ -20,7 +21,7 @@ class System {
     System& operator=(System const&);
 
     /// Find runs in dirname_
-    int FindRuns();
+    int FindRuns(QueueArray&);
     /// Refresh current runs (true = verbose)
     int RefreshCurrentRuns(bool);
     /// Set debug level
