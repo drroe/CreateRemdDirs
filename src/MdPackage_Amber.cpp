@@ -51,8 +51,7 @@ MdPackage_Amber& MdPackage_Amber::operator=(MdPackage_Amber const& rhs) {
 void MdPackage_Amber::OptHelp() {
   Msg("Amber-specific:\n"
       "  CPIN_FILE <file>   : CPIN file (constant pH only).\n"
-      "  USELOG {yes|no}    : yes (default): use logfile (pmemd), otherwise do not (sander).\n"
-      "  MDIN_FILE <file>   : File containing extra Amber input options.\n");
+      "  USELOG {yes|no}    : yes (default): use logfile (pmemd), otherwise do not (sander).\n");
 }
 
 /** Parse amber-specific creator option.

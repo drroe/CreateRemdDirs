@@ -7,8 +7,9 @@
 #include "ReplicaDimension.h"
 #include "FileRoutines.h" // CheckExists, fileExists
 #include "RepIndexArray.h"
-#include "MdPackage.h"
 #include "TextFile.h"
+#include "MdPackage.h"
+#include "MdPackage_Amber.h"
 
 using namespace Messages;
 using namespace StringRoutines;
@@ -279,11 +280,9 @@ Msg("\n"
       "  NUMEXCHG <#>       : Input file; number of exchanges. Required for REMD.\n"
       "  NTWX <#>           : Input file; trajectory write frequency in steps.\n"
       "  MDRUNS <#>         : Number of MD runs when not REMD (default 1).\n"
-      "  UMBRELLA <#>       : Indicates MD umbrella sampling with write frequency <#>.\n"
-      "Amber-specific:\n"
-      "  CPIN_FILE <file>   : CPIN file (constant pH only).\n"
-      "  USELOG {yes|no}    : yes (default): use logfile (pmemd), otherwise do not (sander).\n"
-      "\n");
+      "  UMBRELLA <#>       : Indicates MD umbrella sampling with write frequency <#>.\n");
+      MdPackage_Amber::OptHelp();
+      Msg("\n");
 }
 
 /** Write current options to a file. */
