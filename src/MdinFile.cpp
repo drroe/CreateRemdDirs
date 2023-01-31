@@ -79,6 +79,7 @@ int MdinFile::AddToNamelist(std::string const& line) {
 
 /** Parse input from MDIN file. */
 int MdinFile::ParseFile(std::string const& fname) {
+  currentNamelist_.clear();
   NameLists_.clear();
   TextFile MDIN;
 
