@@ -204,6 +204,20 @@ Exec::RetType Commands::ReadInput(std::string const& fname, Manager& manager)
   return Exec::OK;
 }
 
+/** Peform any tasks before quitting.
+  * \return true if not really quitting, false if we really want to quit.
+  */ 
+static bool GetMoreInput(Manager const& manager) {
+  // Check if any systems need saving
+  if (manager.SystemsNeedSave()) {
+    if (YesNoPrompt("System(s) need to be saved. Really quit?"))
+      return false;
+    else
+      return true;
+  }
+  return false;
+}
+
 /** Command-line prompt for manager mode. */
 int Commands::Prompt(Manager& manager) {
   bool getInput = true;
@@ -211,24 +225,21 @@ int Commands::Prompt(Manager& manager) {
   int nerr = 0;
   while (getInput) {
     char* line = readline("> ");
-    if (line == 0)
+    //Msg("DEBUG: line='%s'\n", line);
+    if (line == 0) {
       // EOF
-      getInput=false;
-    else {
+      getInput = GetMoreInput(manager);
+    } else {
       std::string inp( line );
       // Add line to history TODO avoid blank lines
       add_history( inp.c_str() );
       ret = ProcessCommand( inp, manager );
       free(line);
       if (ret == Exec::QUIT) {
-        // Check if any systems need saving
-        if (manager.SystemsNeedSave()) {
-          if (YesNoPrompt("System(s) need to be saved. Really quit?"))
-            getInput = false;
-        } else
-          getInput = false;
-      }else if (ret == Exec::ERR)
+        getInput = GetMoreInput(manager);
+      } else if (ret == Exec::ERR) {
         nerr++;
+      }
     }
   }
   return nerr;
