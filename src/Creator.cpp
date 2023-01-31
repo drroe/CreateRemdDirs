@@ -418,8 +418,8 @@ int Creator::ReadOptions(std::string const& input_file) {
   } // END loop over options from file
 
   if (setupCreator()) {
-    ErrorMsg("Invalid or missing options in file '%s'\n", input_file.c_str());
-    return 1;
+    Msg("Warning: Invalid or missing options in file '%s'\n", input_file.c_str());
+    //return 1;
   }
   return 0;
 }
