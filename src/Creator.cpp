@@ -30,16 +30,6 @@ const char* Creator::RUNTYPESTR_[] = {
   "MD", "T-REMD", "H-REMD", "pH-REMD", "M-REMD"
 };
 
-/** If given path is a relative path, add a '../' prefix. */ // FIXME move to FileRoutines
-static inline std::string add_path_prefix(std::string const& path) {
-  if (path.empty() || path[0] == '/')
-    // No path or absolute path
-    return path;
-  else
-    // Not an absolute path
-    return std::string("../" + path);
-}
-
 /** \return First topology file name from the top_dim_ dimension (REMD) or MD topology file. */
 std::string Creator::TopologyName() const {
   std::string topname;

@@ -85,7 +85,6 @@ class Creator {
     int setupCreator();
     /// Load a REMD dimension from file
     int LoadDimension(std::string const&);
-    //std::string RefFileName(std::string const&) const; // TODO deprecate
 
     static const char* RUNTYPESTR_[]; ///< KEEP IN SYNC WITH RUNTYPE
 
