@@ -76,7 +76,7 @@ int System::WriteSystemOptions() {
     return 1;
   }
   if (creator_.WriteOptions( createOptsFilename_ )) {
-    ErrorMsg("Writing creation options to file '%s' in dir '%s' failed.\n", createOptsFilename_, dirname_.c_str());
+    ErrorMsg("Writing creation options to file '%s' in dir '%s' failed.\n", createOptsFilename_.c_str(), dirname_.c_str());
     return 1;
   }
   needs_save_ = false;
