@@ -136,6 +136,16 @@ int FileRoutines::Mkdir(std::string const& dname) {
   return 0;
 }
 
+/** If given path is a relative path, add a '../' prefix. */
+std::string FileRoutines::add_path_prefix(std::string const& path) {
+  if (path.empty() || path[0] == '/')
+    // No path or absolute path
+    return path;
+  else
+    // Not an absolute path
+    return std::string("../" + path);
+}
+
 std::string FileRoutines::GetWorkingDir() {
   char buffer[1024];
   if (getcwd(buffer, 1024) == 0) {

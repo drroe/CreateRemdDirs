@@ -19,6 +19,8 @@ int CheckExists(const char*, std::string const&);
 int IsDirectory(std::string const&);
 /// Create a directory with given name
 int Mkdir(std::string const&);
+/// Add '../' if given path is not an absolute path
+std::string add_path_prefix(std::string const&);
 /// \return the current directory
 std::string GetWorkingDir();
 /// Change to the specified directory
