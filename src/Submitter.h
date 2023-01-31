@@ -1,6 +1,6 @@
 #ifndef INC_SUBMITTER_H
 #define INC_SUBMITTER_H
-#include <vector>
+#include <string>
 /// Used to submit jobs for runs in a particular system
 class Submitter {
   public:

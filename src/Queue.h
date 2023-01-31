@@ -7,7 +7,7 @@ class Queue {
   public:
     typedef std::vector<std::string> Sarray;
     /// Queue system type
-    enum Type { PBS = 0, SLURM, NO_QUEUE }
+    enum Type { PBS = 0, SLURM, NO_QUEUE };
 
     Queue();
   private:
