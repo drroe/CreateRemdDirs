@@ -8,7 +8,7 @@ using namespace Messages;
 Exec_Create::Exec_Create() {}
 
 void Exec_Create::Help() const {
-  Msg("beg <#> [end <#>]\n");
+  Msg("[beg <#>] [{end <#>|nruns <#>}] [overwrite]\n");
 }
 
 Exec::RetType Exec_Create::Execute(Manager& manager, Cols& args) const {
@@ -26,22 +26,36 @@ Exec::RetType Exec_Create::Execute(Manager& manager, Cols& args) const {
   activeSystem.PrintSummary();
 
   // Get keywords
-  int start_run, stop_run;
+  int start_run, stop_run, nruns;
   if (args.GetKeyInteger(start_run, "beg", -1)) return ERR;
   if (args.GetKeyInteger(stop_run, "end", -1)) return ERR;
+  if (args.GetKeyInteger(nruns, "nruns", -1)) return ERR;
   std::string crd_dir = args.GetKey("crd");
   bool overwrite = args.HasKey("overwrite");
 
   // Set defaults if needed
-  if (start_run > -1 && stop_run == -1)
-    stop_run = start_run;
+  // Start
+  if (start_run == -1) {
+    // Start at the next available run
+    if (activeSystem.Runs().empty())
+      start_run = 0;
+    else
+      start_run = activeSystem.Runs().back().RunIndex() + 1;
+  }
+  // Stop
+  if (stop_run == -1) {
+    if (nruns > 0)
+      stop_run = start_run + nruns - 1;
+    else
+      stop_run = start_run;
+  }
   // Stop must be >= start
   if (stop_run < start_run) {
     ErrorMsg("STOP_RUN < START_RUN\n");
     return ERR;
   }
   // Determine total # runs
-  int nruns = stop_run - start_run + 1;
+  nruns = stop_run - start_run + 1;
 
   // Check options
   if (start_run < 0 ) {
