@@ -8,9 +8,21 @@ using namespace Messages;
 /** CONSTRUCTOR */
 Exec_SetOpt::Exec_SetOpt() {}
 
-/** Help text */
+/** Basic help text. */
 void Exec_SetOpt::Help() const {
   Msg("\t{create|submit} <OPTION> <VALUE>}\n");
+}
+
+/** Help text */
+void Exec_SetOpt::Help(Cols& args) const {
+  Help();
+  if (args.Ncolumns() == 2) {
+    Msg("\tType '%s %s create' or '%s %s submit' for create/submit options.\n",
+        args[0].c_str(), args[1].c_str(), args[0].c_str(), args[1].c_str());
+  } else {
+    if (args.HasKey("create"))
+      Creator::OptHelp();
+  }
 }
 
 /** <Command description goes here.> */

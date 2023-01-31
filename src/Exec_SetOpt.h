@@ -7,6 +7,7 @@ class Exec_SetOpt : public Exec {
     /// CONSTRUCTOR
     Exec_SetOpt();
     void Help() const;
+    void Help(Cols&) const;
     RetType Execute(Manager&, Cols&) const;
 };
 #endif

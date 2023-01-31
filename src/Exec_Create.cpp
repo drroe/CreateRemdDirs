@@ -8,8 +8,7 @@ using namespace Messages;
 Exec_Create::Exec_Create() {}
 
 void Exec_Create::Help() const {
-  Msg("\n");
-  Creator::OptHelp();
+  Msg("beg <#> [end <#>]\n");
 }
 
 Exec::RetType Exec_Create::Execute(Manager& manager, Cols& args) const {
