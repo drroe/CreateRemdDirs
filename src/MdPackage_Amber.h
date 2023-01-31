@@ -6,6 +6,9 @@ class TextFile;
 /// Amber-specific options
 class MdPackage_Amber : public MdPackage {
   public:
+    /// Print help text to stdout
+    static void OptHelp();
+
     /// CONSTRUCTOR
     MdPackage_Amber();
     /// COPY CONSTRUCTOR
