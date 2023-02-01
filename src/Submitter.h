@@ -6,7 +6,7 @@
 /// Used to submit jobs for runs in a particular system
 class Submitter {
   public:
-    /// Type describing how to handle dependencies
+    /// Type describing how to handle dependencies. Sync with DependTypeStr_
     enum DependType { BATCH = 0, SUBMIT, NO_DEPENDS };
     /// CONSTRUCTOR
     Submitter();
@@ -20,7 +20,13 @@ class Submitter {
     int ReadOptions(std::string const&);
     /// Set debug level
     void SetDebug(int);
+
+    /// Print info to stdout
+    void Info() const;
   private:
+    /// KEEP IN SYNC WITH DependType
+    static const char* DependTypeStr_[];
+
     int debug_;             ///< Debug level
     std::string job_name_;  ///< Job name
     int nodes_;             ///< Number of nodes required

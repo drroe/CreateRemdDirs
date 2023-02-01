@@ -16,6 +16,11 @@ Submitter::Submitter() :
   dependType_(NO_DEPENDS)
 {}
 
+/** KEEP IN SYNC WITH DependType */
+const char* Submitter::DependTypeStr_[] = {
+  "BATCH", "SUBMIT", "NONE"
+};
+
 /** Set debug level */
 void Submitter::SetDebug(int debugIn) {
   debug_ = debugIn;
@@ -123,5 +128,25 @@ int Submitter::ReadOptions(std::string const& input_file) {
       }
     }
   } // END loop over file options
+  // TODO add setupSubmitter
   return 0;
+}
+
+/** Print options to stdout. */
+void Submitter::Info() const {
+  Msg(  "  JOBNAME   : %s\n", job_name_.c_str());
+  Msg(  "  DEPEND    : %s\n", DependTypeStr_[dependType_]);
+  Msg(  "  PROGRAM   : %s\n", program_.c_str());
+  if (!mpirun_.empty())
+    Msg("  MPIRUN    : %s\n", mpirun_.empty());
+  if (nodes_ > 0)
+    Msg("  NODES     : %i\n", nodes_);
+  if (procs_ > 0)
+    Msg("  PROCS     : %i\n", procs_);
+  if (!walltime_.empty())
+    Msg("  WALLTIME  : %s\n", walltime_.c_str());
+  if (!email_.empty())
+    Msg("  EMAIL     : %s\n", email_.c_str());
+  if (!account_.empty())
+    Msg("  ACCOUNT   : %s\n", account_.c_str());
 }

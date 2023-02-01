@@ -166,6 +166,7 @@ int System::FindRuns(QueueArray& queues) {
     Msg("Warning: Invalid package-specific options.\n");
   }*/
   creator_.Info();
+
   // See if submission options exist
   if (fileExists( submitOptsFilename_ )) {
     if (submitter_.ReadOptions( submitOptsFilename_ )) {
