@@ -306,8 +306,16 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
       ErrorMsg("Cannot submit run %i, does not exist.\n", runNum);
       return 1;
     }
+    // If not overwriting, only submit if pending
+    Run const& currentRun = Runs_[existingRunIdx];
+    if (!overwrite) {
+      if (currentRun.Stat().CurrentStat() != RunStatus::PENDING) {
+        ErrorMsg("Not overwriting and run %s is not pending.\n", currentRun.RunDirName().c_str());
+        return 1;
+      }
+    }
     Msg("Submit ");
-    Runs_[existingRunIdx].RunSummary();
+    currentRun.RunSummary();
   }
 
   return 0;

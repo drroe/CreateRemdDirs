@@ -22,6 +22,7 @@
 #include "Exec_Info.h"
 #include "Exec_System.h"
 #include "Exec_Save.h"
+#include "Exec_Submit.h"
 
 using namespace Messages;
 
@@ -115,6 +116,7 @@ void Commands::InitCommands() {
   AddCmd( new Exec_Info(), 1, "info");
   AddCmd( new Exec_System(), 3, "ls", "pwd", "less");
   AddCmd( new Exec_Save(), 1, "save" );
+  AddCmd( new Exec_Submit(), 1, "submit" );
   // Add null ptr to indicate end of command key addresses for readline 
   names_.push_back( 0 );
 }

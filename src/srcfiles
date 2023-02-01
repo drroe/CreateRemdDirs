@@ -14,6 +14,7 @@ Exec_List.cpp \
 Exec_Quit.cpp \
 Exec_Save.cpp \
 Exec_SetOpt.cpp \
+Exec_Submit.cpp \
 Exec_System.cpp \
 FileRoutines.cpp \
 Groups.cpp \
