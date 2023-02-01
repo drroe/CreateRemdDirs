@@ -13,7 +13,8 @@ Queue::Queue() :
 
 /** Print help to stdout */
 void Queue::OptHelp() {
-  Msg("  PPN <#>                : Processors per node needed.\n"
+  Msg("  QUEUE <name>           : Queue/partition name.\n"
+      "  PPN <#>                : Processors per node needed.\n"
       "  QTYPE {PBS|SLURM|NONE} : Batch queue system type.\n"
       "  FLAG <flag>            : Queue-specific flag(s).\n"
       "  COMMAND <cmd>          : Additional command(s) to run before execution.\n"
@@ -25,7 +26,9 @@ void Queue::OptHelp() {
   */
 int Queue::ParseOption(std::string const& OPT, std::string const& VAR)
 {
-  if (OPT == "PPN") {
+  if (OPT == "QUEUE") {
+    name_ = VAR;
+  } else if (OPT == "PPN") {
     ppn_ = convertToInteger(VAR);
   } else if (OPT == "QSUB" || OPT == "QTYPE") {
     // QSUB for backwards compat.

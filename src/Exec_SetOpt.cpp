@@ -22,6 +22,8 @@ void Exec_SetOpt::Help(Cols& args) const {
   } else {
     if (args.HasKey("create"))
       Creator::OptHelp();
+    if (args.HasKey("submit"))
+      Submitter::OptHelp();
   }
 }
 
@@ -68,7 +70,7 @@ Exec::RetType Exec_SetOpt::Execute(Manager& manager, Cols& args) const {
 
   Msg("DEBUG: OPT=%s VAR=%s\n", OPT.c_str(), VAR.c_str());
 
-  int ret;
+  int ret = 0;
   if (create == 1)
     ret = activeSystem.ParseOption( OPT, VAR );
   else
