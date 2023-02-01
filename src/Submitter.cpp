@@ -141,12 +141,16 @@ int Submitter::setupSubmitter() {
     ErrorMsg("Invalid queue.\n");
     return 1;
   }
+  // Set user if needed
+  if (user_.empty())
+    user_ = NoTrailingWhitespace( UserName() );
   return 0;
 }
 
 /** Print options to stdout. */
 void Submitter::Info() const {
   Msg(  "  JOBNAME   : %s\n", job_name_.c_str());
+  Msg(  "  USER      : %s\n", user_.c_str());
   Msg(  "  DEPEND    : %s\n", DependTypeStr_[dependType_]);
   Msg(  "  PROGRAM   : %s\n", program_.c_str());
   if (!mpirun_.empty())

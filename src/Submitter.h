@@ -39,6 +39,7 @@ class Submitter {
     std::string walltime_;  ///< Wallclock time required
     std::string email_;     ///< User email address
     std::string account_;   ///< Account for running jobs
+    std::string user_;      ///< User name
     std::string program_;   ///< Executable name
     std::string mpirun_;    ///< MPI run command if needed
     DependType dependType_; ///< Describes how to handle job dependncies
