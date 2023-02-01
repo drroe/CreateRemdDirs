@@ -6,7 +6,7 @@
 class Queue {
   public:
     typedef std::vector<std::string> Sarray;
-    /// Queue system type
+    /// Queue system type. Keep in sync with TypeStr_
     enum Type { PBS = 0, SLURM, NO_QUEUE };
     /// CONSTRUCTOR
     Queue();
@@ -14,7 +14,14 @@ class Queue {
     static void OptHelp();
     /// Process queue-specific option
     int ParseOption(std::string const&, std::string const&);
+    /// Print info to stdout
+    void Info() const;
+    /// \return True if queue has enough info for job submission
+    bool IsValid() const;
   private:
+    /// KEEP IN SYNC with Type
+    static const char* TypeStr_[];
+
     std::string key_;           ///< String uniquely identifying this queue
     std::string name_;          ///< Queue/partition name
     int ppn_;                   ///< Processors per node

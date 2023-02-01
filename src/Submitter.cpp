@@ -128,7 +128,19 @@ int Submitter::ReadOptions(std::string const& input_file) {
       }
     }
   } // END loop over file options
-  // TODO add setupSubmitter
+
+  if (setupSubmitter()) {
+    Msg("Warning: Invalid of missing options in file '%s'\n", input_file.c_str());
+  }
+  return 0;
+}
+
+/** Check that submitter is valid. */
+int Submitter::setupSubmitter() {
+  if (!localQueue_.IsValid()) {
+    ErrorMsg("Invalid queue.\n");
+    return 1;
+  }
   return 0;
 }
 
@@ -149,4 +161,5 @@ void Submitter::Info() const {
     Msg("  EMAIL     : %s\n", email_.c_str());
   if (!account_.empty())
     Msg("  ACCOUNT   : %s\n", account_.c_str());
+  localQueue_.Info();
 }

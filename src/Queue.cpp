@@ -11,6 +11,11 @@ Queue::Queue() :
   queueType_(NO_QUEUE)
 {}
 
+/** KEEP IN SYNC WITH Type */
+const char* Queue::TypeStr_[] = {
+  "PBS", "SLURM", "NONE"
+};
+
 /** Print help to stdout */
 void Queue::OptHelp() {
   Msg("  QUEUE <name>           : Queue/partition name.\n"
@@ -50,4 +55,42 @@ int Queue::ParseOption(std::string const& OPT, std::string const& VAR)
     return 0;
   }
   return 1;
+}
+
+/** \return True if queue has enough info for job submission. */
+bool Queue::IsValid() const {
+  // No queue is automatically valid
+  if (queueType_ == NO_QUEUE) return true;
+  // Need at least name and PPN
+  if (name_.empty()) {
+    ErrorMsg("Queue is missing NAME.\n");
+    return false;
+  }
+  if (ppn_ < 1) {
+    ErrorMsg("Queue is missing PPN.\n");
+    return false;
+  }
+  return true;
+}
+
+/** Print info to stdout. */
+void Queue::Info() const {
+  if (queueType_ == NO_QUEUE) return;
+  if (!key_.empty())
+    Msg("  KEY       : %s\n", key_.c_str());
+  if (!name_.empty())
+    Msg("  NAME      : %s\n", name_.c_str());
+  if (ppn_ > 0)
+    Msg("  PPN       : %i\n", ppn_);
+  Msg(  "  TYPE      : %s\n", TypeStr_[queueType_]);
+  if (!additionalCommands_.empty()) {
+    Msg("  Additional commands:\n");
+    for (Sarray::const_iterator it = additionalCommands_.begin(); it != additionalCommands_.end(); ++it)
+      Msg("\t%s\n", it->c_str());
+  }
+  if (!Flags_.empty()) {
+    Msg("  Queue flags:\n");
+    for (Sarray::const_iterator it = Flags_.begin(); it != Flags_.end(); ++it)
+      Msg("\t%s\n", it->c_str());
+  }
 }

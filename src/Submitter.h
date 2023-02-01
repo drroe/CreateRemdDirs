@@ -27,6 +27,9 @@ class Submitter {
     /// KEEP IN SYNC WITH DependType
     static const char* DependTypeStr_[];
 
+    /// Check that the submitter is valid
+    int setupSubmitter();
+
     int debug_;             ///< Debug level
     std::string job_name_;  ///< Job name
     int nodes_;             ///< Number of nodes required

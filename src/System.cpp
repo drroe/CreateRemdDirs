@@ -178,6 +178,7 @@ int System::FindRuns(QueueArray& queues) {
       return 1;
     }*/
   }
+  submitter_.Info();
 
   // Search for runs
   StrArray runDirs = ExpandToFilenames(runDirPrefix_ + ".*");
