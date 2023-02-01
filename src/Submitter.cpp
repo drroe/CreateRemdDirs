@@ -2,9 +2,11 @@
 #include "Messages.h"
 #include "FileRoutines.h"
 #include "TextFile.h"
+#include "StringRoutines.h"
 
 using namespace Messages;
 using namespace FileRoutines;
+using namespace StringRoutines;
 
 /** CONSTRUCTOR */
 Submitter::Submitter() :
@@ -14,14 +16,22 @@ Submitter::Submitter() :
   dependType_(NO_DEPENDS)
 {}
 
-/** Print help to stdout. */
-void Submitter::OptHelp() {
-  Msg("\n");
-}
-
 /** Set debug level */
 void Submitter::SetDebug(int debugIn) {
   debug_ = debugIn;
+}
+
+/** Print help to stdout. */
+void Submitter::OptHelp() {
+  Msg("Queue job submission input file variables:\n"
+      "  INPUT_FILE <file>  : Read additional options from <file>.\n"
+      "  JOBNAME <name>     : Job name in queueing system (required).\n"
+      "  NODES <#>          : Number of nodes needed.\n"
+      "  PROCS <#>          : Number of processes needed. Calcd from NODES * PPN if not specified\n"
+      "  PROGRAM <name>     : Name of binary to run (required).\n"
+     );
+  Queue::OptHelp();
+  Msg("\n");
 }
 
 /** Parse option from a file.
@@ -34,6 +44,15 @@ int Submitter::ParseFileOption( OptArray::OptPair const& opair ) {
     Msg("    Option: %s  Variable: %s\n", OPT.c_str(), VAR.c_str());
   if (OPT == "INPUT_FILE") {
     Msg("Warning: INPUT_FILE is only processed when read from a Submit options file.\n");
+  } else if (OPT == "JOBNAME") {
+    job_name_ = VAR;
+  } else if (OPT == "NODES") {
+    nodes_ = convertToInteger( VAR );
+  } else if (OPT == "PROCS") {
+    // NOTE: Previously was threads
+    procs_ = convertToInteger( VAR );
+  } else if (OPT == "PROGRAM") {
+    program_ = VAR;
   } else {
     return 0;
   }

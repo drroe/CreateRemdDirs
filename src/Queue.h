@@ -8,8 +8,12 @@ class Queue {
     typedef std::vector<std::string> Sarray;
     /// Queue system type
     enum Type { PBS = 0, SLURM, NO_QUEUE };
-
+    /// CONSTRUCTOR
     Queue();
+    /// Print help to stdout
+    static void OptHelp();
+    /// Process queue-specific option
+    int ParseOption(std::string const&, std::string const&);
   private:
     std::string key_;           ///< String uniquely identifying this queue
     std::string name_;          ///< Queue/partition name
