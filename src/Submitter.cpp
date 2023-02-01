@@ -24,11 +24,11 @@ void Submitter::SetDebug(int debugIn) {
 /** Print help to stdout. */
 void Submitter::OptHelp() {
   Msg("Queue job submission input file variables:\n"
-      "  INPUT_FILE <file>  : Read additional options from <file>.\n"
-      "  JOBNAME <name>     : Job name in queueing system (required).\n"
-      "  NODES <#>          : Number of nodes needed.\n"
-      "  PROCS <#>          : Number of processes needed. Calcd from NODES * PPN if not specified\n"
-      "  PROGRAM <name>     : Name of binary to run (required).\n"
+      "  INPUT_FILE <file>      : Read additional options from <file>.\n"
+      "  JOBNAME <name>         : Job name in queueing system (required).\n"
+      "  NODES <#>              : Number of nodes needed.\n"
+      "  PROCS <#>              : Number of processes needed. Calcd from NODES * PPN if not specified\n"
+      "  PROGRAM <name>         : Name of binary to run (required).\n"
      );
   Queue::OptHelp();
   Msg("\n");
@@ -85,7 +85,15 @@ int Submitter::ReadOptions(std::string const& input_file) {
         ErrorMsg("Could not parse option '%s' = '%s'\n", opair->first.c_str(), opair->second.c_str());
         return 1;
       } else if (ret == 0) {
-        Msg("Warning: Ignoring unrecognized Submit option '%s' = '%s'\n", opair->first.c_str(), opair->second.c_str());
+        // See if this is a local queue option
+        ret = localQueue_.ParseOption(opair->first, opair->second);
+        if (ret == -1) {
+          ErrorMsg("Could not parse queue option '%s' = '%s'\n", opair->first.c_str(), opair->second.c_str());
+
+          return 1;
+        } else if (ret == 0) {
+          Msg("Warning: Ignoring unrecognized Submit option '%s' = '%s'\n", opair->first.c_str(), opair->second.c_str());
+        }
       }
     }
   } // END loop over file options
