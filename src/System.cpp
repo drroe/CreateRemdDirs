@@ -296,6 +296,19 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
     ErrorMsg("Start run index is negative.\n");
     return 1;
   }
+  // Loop over desired run numbers 
+  int stop_run = start_run + nruns - 1;
+  for (int runNum = start_run; runNum <= stop_run; ++runNum)
+  {
+    // See if this run already exists
+    int existingRunIdx = findRunIdx(runNum);
+    if (existingRunIdx < 0) {
+      ErrorMsg("Cannot submit run %i, does not exist.\n", runNum);
+      return 1;
+    }
+    Msg("Submit ");
+    Runs_[existingRunIdx].RunSummary();
+  }
 
   return 0;
 }
