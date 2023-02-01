@@ -2,6 +2,7 @@
 #define INC_SUBMITTER_H
 #include <string>
 #include "Queue.h"
+#include "OptArray.h"
 /// Used to submit jobs for runs in a particular system
 class Submitter {
   public:
@@ -13,6 +14,8 @@ class Submitter {
     /// Print help to stdout
     static void OptHelp();
 
+    /// Parse a single option
+    int ParseFileOption(OptArray::OptPair const&);
     /// Read options from a file
     int ReadOptions(std::string const&);
     /// Set debug level
