@@ -84,7 +84,7 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
             is_active_system = true;
           // Count # frames
           unsigned int total_frames = 0;
-          for (System::RunArray::const_iterator run = system->Runs().begin();
+          for (RunArray::const_iterator run = system->Runs().begin();
                                                 run != system->Runs().end();
                                               ++run)
           {
@@ -94,7 +94,7 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
           Msg(" (%u frames) ", total_frames);
           system->PrintSummary();
           int ridx = 0;
-          for (System::RunArray::const_iterator run = system->Runs().begin();
+          for (RunArray::const_iterator run = system->Runs().begin();
                                                 run != system->Runs().end();
                                               ++run, ++ridx)
           {

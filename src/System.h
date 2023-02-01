@@ -5,12 +5,11 @@
 #include "Creator.h"
 #include "Submitter.h"
 #include "MdInterface.h"
-#include "Run.h"
+#include "RunArray.h"
 class QueueArray;
 /// Hold information on runs for a system
 class System {
   public:
-    typedef std::vector<Run> RunArray;
     /// CONSTRUCTOR
     System();
     /// CONSTRUCTOR - top directory, run directory, description

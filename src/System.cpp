@@ -190,8 +190,8 @@ int System::FindRuns(QueueArray& queues) {
   {
     Msg("  Directory: %s\n", it->c_str());
     // Set up the directory
-    Runs_.push_back( Run() );
-    if (Runs_.back().SetupExisting( *it, mdInterface_.Package() )) {
+    Runs_.AddRun( Run() );
+    if (Runs_.Set_back().SetupExisting( *it, mdInterface_.Package() )) {
       ErrorMsg("Setting up existing run '%s' failed.\n", it->c_str());
       return 1;
     }
@@ -345,12 +345,12 @@ int System::CreateRunDirectories(std::string const& crd_dir,
     //}
     int create_stat = 0;
     if (existingRunIdx > -1)
-      create_stat = Runs_[existingRunIdx].CreateNew(runDir, creator_, mdInterface_.Package(),
-                                                    lowest_run_idx, runNum, prevDir);
+      create_stat = Runs_.Set_Run(existingRunIdx).CreateNew(runDir, creator_, mdInterface_.Package(),
+                                                            lowest_run_idx, runNum, prevDir);
     else {
-      Runs_.push_back( Run() );
-      create_stat = Runs_.back().CreateNew(runDir, creator_, mdInterface_.Package(),
-                                           lowest_run_idx, runNum, prevDir);
+      Runs_.AddRun( Run() );
+      create_stat = Runs_.Set_back().CreateNew(runDir, creator_, mdInterface_.Package(),
+                                               lowest_run_idx, runNum, prevDir);
     }
     if (create_stat != 0) {
       ErrorMsg("Creating run '%s' failed.\n", runDir.c_str());
