@@ -28,6 +28,8 @@ class System {
 
     /// Create runs
     int CreateRunDirectories(std::string const&, int, int, bool);
+    /// Submit runs
+    int SubmitRunDirectories(int, int, bool, std::string const&);
     /// Parse a single option
     int ParseOption(std::string const&, std::string const&);
     /// Write current options to files

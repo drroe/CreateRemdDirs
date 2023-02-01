@@ -284,6 +284,22 @@ int System::findRunIdx(int runNum) const {
   return existingRunIdx;
 }
 
+/** Submit runs in system directory. */
+int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
+                                 std::string const& prev_jobidIn)
+{
+  if (nruns < 1) {
+    ErrorMsg("Less than 1 run for SubmitRunDirectories()\n");
+    return 1;
+  }
+  if (start_run < 0) {
+    ErrorMsg("Start run index is negative.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
 /** Create run directories in system directory. */
 int System::CreateRunDirectories(std::string const& crd_dir,
                                  int start_run, int nruns, bool overwrite)
