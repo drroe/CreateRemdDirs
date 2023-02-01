@@ -18,6 +18,10 @@ class Queue {
     void Info() const;
     /// \return True if queue has enough info for job submission
     bool IsValid() const;
+    /// \return header text for queue flags
+    const char* HeaderFlag() const;
+    /// \return Queue submit command
+    const char* SubmitCmd() const;
   private:
     /// KEEP IN SYNC with Type
     static const char* TypeStr_[];

@@ -16,6 +16,20 @@ const char* Queue::TypeStr_[] = {
   "PBS", "SLURM", "NONE"
 };
 
+/** \return Queue flag header text. */
+const char* Queue::HeaderFlag() const {
+  if (queueType_ == PBS) return "PBS";
+  else if (queueType_ == SLURM) return "SBATCH";
+  return 0;
+}
+
+/** \return Queue submit command. */
+const char* Queue::SubmitCmd() const {
+  if (queueType_ == PBS) return "qsub";
+  else if (queueType_ == SLURM) return "sbatch";
+  return 0;
+}
+
 /** Print help to stdout */
 void Queue::OptHelp() {
   Msg("  QUEUE <name>           : Queue/partition name.\n"
