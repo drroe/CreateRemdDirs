@@ -8,6 +8,10 @@ class Submitter {
     enum DependType { BATCH = 0, SUBMIT, NONE, NO_DEPENDS };
     /// CONSTRUCTOR
     Submitter();
+
+    /// Print help to stdout
+    static void OptHelp();
+
     /// Read options from a file
     int ReadOptions(std::string const&);
     /// Set debug level

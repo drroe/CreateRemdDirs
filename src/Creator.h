@@ -14,7 +14,7 @@ class Creator {
     Creator();
 
     typedef std::vector<std::string> Sarray;
-
+    /// Print help to stdout
     static void OptHelp();
    
     /// Write creation options to a file
