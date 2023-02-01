@@ -277,6 +277,9 @@ int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, in
     if (myprocs > 0) qout.Printf("PROCS=%i\n", myprocs);
     qout.Printf("export MPIRUN=\"%s\"\n", mpirun_.c_str());
   }
+  // Run script
+  qout.Printf("\n# Run executable\n./%s\n\n", runScriptName.c_str());
+
   
   qout.Close();
   return 0;
