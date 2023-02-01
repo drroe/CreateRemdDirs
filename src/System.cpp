@@ -167,19 +167,16 @@ int System::FindRuns(QueueArray& queues) {
   }*/
   creator_.Info();
   // See if submission options exist
-  // FIXME re-enable this when the time comes
-/*
   if (fileExists( submitOptsFilename_ )) {
     if (submitter_.ReadOptions( submitOptsFilename_ )) {
       ErrorMsg("Reading submission options file name '%s' failed.\n", submitOptsFilename_.c_str());
       return 1;
     }
-    if (submitter_.CheckOptions()) {
+    /*if (submitter_.CheckOptions()) {
       ErrorMsg("Checking submission options failed.\n");
       return 1;
-    }
+    }*/
   }
-*/
 
   // Search for runs
   StrArray runDirs = ExpandToFilenames(runDirPrefix_ + ".*");
