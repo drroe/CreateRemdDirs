@@ -190,7 +190,56 @@ int Submitter::writeHeader(TextFile& qout, int run_num, std::string const& prev_
   std::string previous_job;
   if (dependType_ == BATCH)
     previous_job = prev_jobidIn;
+  // Calculate procs if needed
+  int myprocs = 0;
+  if (procs_ > 0)
+    myprocs = procs_;
+  else {
+    if (nodes_ > 0 || localQueue_.PPN() > 0) {
+      int iN = 1;
+      int iP = 1;
+      if (nodes_ > 0) iN = nodes_;
+      if (localQueue_.PPN() > 0) iP = localQueue_.PPN();
+      myprocs = iN * iP;
+    }
+  }
+  if (localQueue_.QueueType() != Queue::NO_QUEUE && myprocs < 1) {
+    Msg("Warning: Less than 1 process specified.\n");
+  }
   // Queue-specific options
+// ----- PBS -----------------------------------
+  if (localQueue_.QueueType() == Queue::PBS) {
+    std::string resources("nodes=" + integerToString(nodes_));
+    if (localQueue_.PPN() > 0)
+      resources.append(":ppn=" + integerToString(localQueue_.PPN()));
+    //resources.append(nodeargs_);
+    qout.Printf("#PBS -S /bin/bash\n#PBS -l walltime=%s,%s\n#PBS -N %s\n#PBS -j oe\n",
+                walltime_.c_str(), resources.c_str(), job_title.c_str());
+    if (!email_.empty()) qout.Printf("#PBS -m abe\n#PBS -M %s\n", email_.c_str()); 
+    if (!account_.empty()) qout.Printf("#PBS -A %s\n", account_.c_str());
+    if (!previous_job.empty()) qout.Printf("#PBS -W depend=afterok:%s\n", previous_job.c_str());  
+    if (!localQueue_.Name().empty()) qout.Printf("#PBS -q %s\n", localQueue_.Name().c_str());
+    localQueue_.AdditionalFlags( qout );
+    qout.Printf("\ncd $PBS_O_WORKDIR\n\n");
+  }
+  // ----- SLURM ---------------------------------
+  else if (localQueue_.QueueType() == Queue::SLURM) {
+    qout.Printf("#!/bin/bash\n#SBATCH -J %s\n", job_title.c_str());
+    if (nodes_ > 0) qout.Printf("#SBATCH -N %i\n", nodes_);
+    qout.Printf("#SBATCH -t %s\n", walltime_.c_str());
+    if (myprocs > 0) qout.Printf("#SBATCH -n %i\n", myprocs);
+    if (!email_.empty())
+      qout.Printf("#SBATCH --mail-user=%s\n#SBATCH --mail-type=all\n", email_.c_str());
+    if (!account_.empty())
+      qout.Printf("#SBATCH -A %s\n", account_.c_str());
+    if (!previous_job.empty()) qout.Printf("#SBATCH -d afterok:%s\n", previous_job.c_str());
+    if (!localQueue_.Name().empty()) qout.Printf("#SBATCH -p %s\n", localQueue_.Name().c_str());
+    localQueue_.AdditionalFlags( qout );
+    qout.Printf("\necho \"JobID: $SLURM_JOB_ID\"\necho \"NodeList: $SLURM_NODELIST\"\n"
+                "cd $SLURM_SUBMIT_DIR\n\n");
+  } else {
+    qout.Printf("#!/bin/bash\n# %s\n", job_title.c_str());
+  }
  
   return 0;
 } 

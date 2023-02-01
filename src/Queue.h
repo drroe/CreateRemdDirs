@@ -23,8 +23,15 @@ class Queue {
     std::string HeaderFlag() const;
     /// \return Queue submit command
     std::string SubmitCmd() const;
-    /// Write queue flags to file
-    int WriteFlags(TextFile&) const;
+    /// Write additional queue flags to file
+    int AdditionalFlags(TextFile&) const;
+
+    /// \return Key
+    std::string const& Key() const { return key_; }
+    std::string const& Name() const { return name_; }
+    int PPN() const { return ppn_; }
+    Sarray const& AdditionalCommands() const { return additionalCommands_; }
+    Type QueueType() const { return queueType_; }
   private:
     /// KEEP IN SYNC with Type
     static const char* TypeStr_[];

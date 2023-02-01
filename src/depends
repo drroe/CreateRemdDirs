@@ -24,7 +24,7 @@ MdOptions.o : MdOptions.cpp MdOptions.h Messages.h Option.h
 MdPackage_Amber.o : MdPackage_Amber.cpp CommonOptions.h CpptrajInterface.h Creator.h FileRoutines.h Groups.h MdOptions.h MdPackage.h MdPackage_Amber.h MdinFile.h Messages.h OptArray.h Option.h RepIndexArray.h ReplicaDimArray.h ReplicaDimension.h RunStatus.h StringRoutines.h TextFile.h
 MdinFile.o : MdinFile.cpp Cols.h MdinFile.h Messages.h StringRoutines.h TextFile.h
 Messages.o : Messages.cpp Messages.h
-Queue.o : Queue.cpp Messages.h Queue.h StringRoutines.h
+Queue.o : Queue.cpp Messages.h Queue.h StringRoutines.h TextFile.h
 QueueArray.o : QueueArray.cpp Queue.h QueueArray.h
 RepIndexArray.o : RepIndexArray.cpp RepIndexArray.h ReplicaDimArray.h ReplicaDimension.h StringRoutines.h
 ReplicaDimArray.o : ReplicaDimArray.cpp Messages.h ReplicaDimArray.h ReplicaDimension.h TextFile.h

@@ -1,6 +1,7 @@
 #include "Queue.h"
 #include "Messages.h"
 #include "StringRoutines.h"
+#include "TextFile.h"
 
 using namespace Messages;
 using namespace StringRoutines;
@@ -107,4 +108,12 @@ void Queue::Info() const {
     for (Sarray::const_iterator it = Flags_.begin(); it != Flags_.end(); ++it)
       Msg("\t%s\n", it->c_str());
   }
+}
+
+/** Write additional queue flags to file. */
+int Queue::AdditionalFlags( TextFile& qout ) const {
+  std::string Flag = HeaderFlag();
+  for (Sarray::const_iterator it = Flags_.begin(); it != Flags_.end(); ++it)
+    qout.Printf("#%s %s\n", Flag.c_str(), it->c_str());
+  return 0;
 }
