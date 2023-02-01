@@ -7,7 +7,7 @@
 class Submitter {
   public:
     /// Type describing how to handle dependencies
-    enum DependType { BATCH = 0, SUBMIT, NONE, NO_DEPENDS };
+    enum DependType { BATCH = 0, SUBMIT, NO_DEPENDS };
     /// CONSTRUCTOR
     Submitter();
 
@@ -29,7 +29,7 @@ class Submitter {
     std::string email_;     ///< User email address
     std::string account_;   ///< Account for running jobs
     std::string program_;   ///< Executable name
-    std::string mpirun_;    ///< MPI run command if neededi
+    std::string mpirun_;    ///< MPI run command if needed
     DependType dependType_; ///< Describes how to handle job dependncies
     Queue localQueue_;      ///< Hold options for queue for a single System
 };

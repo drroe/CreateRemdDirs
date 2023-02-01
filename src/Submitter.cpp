@@ -24,11 +24,18 @@ void Submitter::SetDebug(int debugIn) {
 /** Print help to stdout. */
 void Submitter::OptHelp() {
   Msg("Queue job submission input file variables:\n"
-      "  INPUT_FILE <file>      : Read additional options from <file>.\n"
-      "  JOBNAME <name>         : Job name in queueing system (required).\n"
-      "  NODES <#>              : Number of nodes needed.\n"
-      "  PROCS <#>              : Number of processes needed. Calcd from NODES * PPN if not specified\n"
-      "  PROGRAM <name>         : Name of binary to run (required).\n"
+      "  INPUT_FILE <file>          : Read additional options from <file>.\n"
+      "  JOBNAME <name>             : Job name in queueing system (required).\n"
+      "  NODES <#>                  : Number of nodes needed.\n"
+      "  PROCS <#>                  : Number of processes needed.\n"
+      "                               Determined from NODES * PPN if not specified.\n"
+      "  PROGRAM <name>             : Name of binary to run (required).\n"
+      "  MPIRUN <command>           : Command used to execute parallel run. Can use\n"
+      "                               $NODES, $THREADS, $PPN (will be set by script).\n"
+      "  ACCOUNT <name>             : Account name\n"
+      "  EMAIL <email>              : User email address\n"
+      "  DEPEND {BATCH|SUBMIT|NONE} : Job dependencies. BATCH=Use batch system (default),\n"
+      "                               SUBMIT=Execute next script at end of previous, or NONE.\n"
      );
   Queue::OptHelp();
   Msg("\n");
@@ -53,6 +60,25 @@ int Submitter::ParseFileOption( OptArray::OptPair const& opair ) {
     procs_ = convertToInteger( VAR );
   } else if (OPT == "PROGRAM") {
     program_ = VAR;
+  } else if (OPT == "WALLTIME") {
+    walltime_ = VAR;
+  } else if (OPT == "ACCOUNT") {
+    account_ = VAR;
+  } else if (OPT == "EMAIL") {
+    email_ = VAR;
+  } else if (OPT == "MPIRUN") {
+    mpirun_ = VAR;
+  } else if (OPT == "DEPEND") {
+    if (VAR == "BATCH")
+      dependType_ = BATCH;
+    else if (VAR == "SUBMIT")
+      dependType_ = SUBMIT;
+    else if (VAR == "NONE")
+      dependType_ = NO_DEPENDS;
+    else {
+      ErrorMsg("Unrecognized variable %s for option %s\n", VAR.c_str(), OPT.c_str());
+      return -1;
+    }
   } else {
     return 0;
   }

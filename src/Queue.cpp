@@ -15,6 +15,8 @@ Queue::Queue() :
 void Queue::OptHelp() {
   Msg("  PPN <#>                : Processors per node needed.\n"
       "  QTYPE {PBS|SLURM|NONE} : Batch queue system type.\n"
+      "  FLAG <flag>            : Queue-specific flag(s).\n"
+      "  COMMAND <cmd>          : Additional command(s) to run before execution.\n"
      );
 }
 
@@ -37,6 +39,10 @@ int Queue::ParseOption(std::string const& OPT, std::string const& VAR)
       ErrorMsg("Unrecognized variable %s for option %s\n", VAR.c_str(), OPT.c_str());
       return -1;
     }
+  } else if (OPT == "NODEARGS" || OPT == "FLAG") {
+    Flags_.push_back( VAR );
+  } else if (OPT == "COMMAND") {
+    additionalCommands_.push_back( VAR );
   } else {
     return 0;
   }
