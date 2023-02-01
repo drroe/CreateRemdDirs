@@ -1,6 +1,7 @@
 #ifndef INC_SUBMITTER_H
 #define INC_SUBMITTER_H
 #include <string>
+#include "Queue.h"
 /// Used to submit jobs for runs in a particular system
 class Submitter {
   public:
@@ -27,5 +28,6 @@ class Submitter {
     std::string program_;   ///< Executable name
     std::string mpirun_;    ///< MPI run command if neededi
     DependType dependType_; ///< Describes how to handle job dependncies
+    Queue localQueue_;      ///< Hold options for queue for a single System
 };
 #endif

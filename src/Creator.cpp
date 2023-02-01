@@ -390,9 +390,9 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
 int Creator::ReadOptions(std::string const& input_file) {
   package_opts_.clear();
   // Read options from input file
-  if (CheckExists("Input file", input_file)) return 1;
+  if (CheckExists("Create options file", input_file)) return 1;
   std::string fname = tildeExpansion( input_file );
-  Msg("Reading input from file: %s\n", fname.c_str());
+  Msg("Reading Create options from file: %s\n", fname.c_str());
   TextFile infile;
   OptArray Options = infile.GetOptionsArray(fname, debug_);
   if (Options.empty()) return 1;
