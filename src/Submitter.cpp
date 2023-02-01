@@ -3,6 +3,7 @@
 #include "FileRoutines.h"
 #include "TextFile.h"
 #include "StringRoutines.h"
+#include "CommonOptions.h"
 
 using namespace Messages;
 using namespace FileRoutines;
@@ -170,6 +171,14 @@ void Submitter::Info() const {
 
 /** Submit job, set job id */
 int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn) const {
-
+  // Ensure the run script exists
+  std::string runScriptName = CommonOptions::Opt_RunScriptName().Val();
+  if (!fileExists( runScriptName )) {
+    ErrorMsg("Run script %s not found.\n");
+    return 1;
+  }
+  // Create submit script name
+  std::string submitScript( localQueue_.SubmitCmd() + ".sh" );
+  Msg("DEBUG: submit script: %s\n", submitScript.c_str());
   return 0;
 }

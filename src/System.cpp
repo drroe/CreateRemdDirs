@@ -296,7 +296,8 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
     ErrorMsg("Start run index is negative.\n");
     return 1;
   }
-  // Loop over desired run numbers 
+  // Loop over desired run numbers
+  std::string prev_jobid = prev_jobidIn;
   int stop_run = start_run + nruns - 1;
   for (int runNum = start_run; runNum <= stop_run; ++runNum)
   {
@@ -307,7 +308,7 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
       return 1;
     }
     // If not overwriting, only submit if pending
-    Run const& currentRun = Runs_[existingRunIdx];
+    Run& currentRun = Runs_.Set_Run(existingRunIdx);
     if (!overwrite) {
       if (currentRun.Stat().CurrentStat() != RunStatus::PENDING) {
         ErrorMsg("Not overwriting and run %s is not pending.\n", currentRun.RunDirName().c_str());
@@ -318,6 +319,11 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
     if (ChangeToSystemDir()) return 1;
     Msg("Submit ");
     currentRun.RunSummary();
+    if (currentRun.SubmitRun( submitter_, prev_jobid )) {
+      ErrorMsg("Run submission failed.\n");
+      return 1;
+    }
+    prev_jobid = currentRun.JobId();
   }
 
   return 0;

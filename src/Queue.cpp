@@ -17,17 +17,17 @@ const char* Queue::TypeStr_[] = {
 };
 
 /** \return Queue flag header text. */
-const char* Queue::HeaderFlag() const {
+std::string Queue::HeaderFlag() const {
   if (queueType_ == PBS) return "PBS";
   else if (queueType_ == SLURM) return "SBATCH";
-  return 0;
+  return "";
 }
 
 /** \return Queue submit command. */
-const char* Queue::SubmitCmd() const {
+std::string Queue::SubmitCmd() const {
   if (queueType_ == PBS) return "qsub";
   else if (queueType_ == SLURM) return "sbatch";
-  return 0;
+  return "run";
 }
 
 /** Print help to stdout */
