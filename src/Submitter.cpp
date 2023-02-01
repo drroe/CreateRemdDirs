@@ -37,7 +37,7 @@ void Submitter::OptHelp() {
       "                               Determined from NODES * PPN if not specified.\n"
       "  PROGRAM <name>             : Name of binary to run (required).\n"
       "  MPIRUN <command>           : Command used to execute parallel run. Can use\n"
-      "                               $NODES, $THREADS, $PPN (will be set by script).\n"
+      "                               $NODES, $PROCS, $PPN (will be set by script).\n"
       "  ACCOUNT <name>             : Account name\n"
       "  EMAIL <email>              : User email address\n"
       "  DEPEND {BATCH|SUBMIT|NONE} : Job dependencies. BATCH=Use batch system (default),\n"
@@ -185,27 +185,12 @@ void Submitter::Info() const {
 }
 
 /** Write queue header */
-int Submitter::writeHeader(TextFile& qout, int run_num, std::string const& prev_jobidIn) const {
+int Submitter::writeHeader(TextFile& qout, int run_num, std::string const& prev_jobidIn, int myprocs) const {
   std::string job_title = job_name_ + "." + integerToString(run_num);
   std::string previous_job;
   if (dependType_ == BATCH)
     previous_job = prev_jobidIn;
-  // Calculate procs if needed
-  int myprocs = 0;
-  if (procs_ > 0)
-    myprocs = procs_;
-  else {
-    if (nodes_ > 0 || localQueue_.PPN() > 0) {
-      int iN = 1;
-      int iP = 1;
-      if (nodes_ > 0) iN = nodes_;
-      if (localQueue_.PPN() > 0) iP = localQueue_.PPN();
-      myprocs = iN * iP;
-    }
-  }
-  if (localQueue_.QueueType() != Queue::NO_QUEUE && myprocs < 1) {
-    Msg("Warning: Less than 1 process specified.\n");
-  }
+
   // Queue-specific options
 // ----- PBS -----------------------------------
   if (localQueue_.QueueType() == Queue::PBS) {
@@ -238,7 +223,7 @@ int Submitter::writeHeader(TextFile& qout, int run_num, std::string const& prev_
     qout.Printf("\necho \"JobID: $SLURM_JOB_ID\"\necho \"NodeList: $SLURM_NODELIST\"\n"
                 "cd $SLURM_SUBMIT_DIR\n\n");
   } else {
-    qout.Printf("#!/bin/bash\n# %s\n", job_title.c_str());
+    qout.Printf("#!/bin/bash\n# %s\n\n", job_title.c_str());
   }
  
   return 0;
@@ -252,6 +237,22 @@ int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, in
     ErrorMsg("Run script %s not found.\n");
     return 1;
   }
+  // Calculate procs if needed
+  int myprocs = 0;
+  if (procs_ > 0)
+    myprocs = procs_;
+  else {
+    if (nodes_ > 0 || localQueue_.PPN() > 0) {
+      int iN = 1;
+      int iP = 1;
+      if (nodes_ > 0) iN = nodes_;
+      if (localQueue_.PPN() > 0) iP = localQueue_.PPN();
+      myprocs = iN * iP;
+    }
+  }
+  if (localQueue_.QueueType() != Queue::NO_QUEUE && myprocs < 1) {
+    Msg("Warning: Less than 1 process specified.\n");
+  }
   // Create submit script name
   std::string submitScript( localQueue_.SubmitCmd() + ".sh" );
   Msg("DEBUG: submit script: %s\n", submitScript.c_str());
@@ -260,7 +261,23 @@ int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, in
   // Write the run script
   TextFile qout;
   if (qout.OpenWrite( submitScript )) return 1;
-  if (writeHeader(qout, run_num, prev_jobidIn)) return 1;
+  if (writeHeader(qout, run_num, prev_jobidIn, myprocs)) return 1;
+  // Write additional commands
+  if (!localQueue_.AdditionalCommands().empty()) {
+    for (Queue::Sarray::const_iterator it = localQueue_.AdditionalCommands().begin();
+                                       it != localQueue_.AdditionalCommands().end(); ++it)
+      qout.Printf("%s\n", it->c_str());
+    qout.Printf("\n");
+  }
+  // Export EXEPATH and MPIRUN
+  qout.Printf("export EXEPATH=%s\n", program_.c_str());
+  if (!mpirun_.empty()) {
+    if (localQueue_.PPN() > 0) qout.Printf("PPN=%i\n", localQueue_.PPN());
+    if (nodes_ > 0) qout.Printf("NODES=%i\n", nodes_);
+    if (myprocs > 0) qout.Printf("PROCS=%i\n", myprocs);
+    qout.Printf("export MPIRUN=\"%s\"\n", mpirun_.c_str());
+  }
+  
   qout.Close();
   return 0;
 }

@@ -32,7 +32,7 @@ class Submitter {
     /// KEEP IN SYNC WITH DependType
     static const char* DependTypeStr_[];
     /// Write queue header
-    int writeHeader(TextFile&, int, std::string const&) const;
+    int writeHeader(TextFile&, int, std::string const&, int) const;
 
     /// Check that the submitter is valid
     int setupSubmitter();
