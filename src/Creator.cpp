@@ -1,6 +1,5 @@
 #include <algorithm> //std::max
 #include <sstream> // ostringstream
-#include <cstdlib> // atof, atoi
 #include "Creator.h"
 #include "Messages.h"
 #include "StringRoutines.h"
@@ -343,17 +342,17 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
     if (CheckExists("Dimension file", VAR)) { return -1; }
     if (LoadDimension( tildeExpansion(VAR) )) { return -1; }
   } else if (OPT == "MDRUNS")
-    n_md_runs_ = atoi( VAR.c_str() );
+    n_md_runs_ = convertToInteger( VAR );
   else if (OPT == "NSTLIM")
-    mdopts_.Set_N_Steps().SetVal( atoi( VAR.c_str() ) );
+    mdopts_.Set_N_Steps().SetVal( convertToInteger( VAR ) );
   else if (OPT == "DT")
-    mdopts_.Set_TimeStep().SetVal( atof( VAR.c_str() ) );
+    mdopts_.Set_TimeStep().SetVal( convertToDouble( VAR ) );
   else if (OPT == "IG")
-    mdopts_.Set_RandomSeed().SetVal( atoi( VAR.c_str() ) );
+    mdopts_.Set_RandomSeed().SetVal( convertToInteger( VAR ) );
   else if (OPT == "NUMEXCHG")
-    mdopts_.Set_N_Exchanges().SetVal( atoi( VAR.c_str() ) );
+    mdopts_.Set_N_Exchanges().SetVal( convertToInteger( VAR ) );
   else if (OPT == "UMBRELLA")
-    mdopts_.Set_RstWriteFreq().SetVal( atoi( VAR.c_str() ) );
+    mdopts_.Set_RstWriteFreq().SetVal( convertToInteger( VAR ) );
   else if (OPT == "TOPOLOGY") {
     top_file_ = VAR;
     // If the TOPOLOGY exists at this point assume it is an absolute path
@@ -365,9 +364,9 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
   else if (OPT == "REF_FILE")  // Format: <ref_dir>/EXT.rst7
     ref_dir_ = VAR;
   else if (OPT == "TEMPERATURE")
-    mdopts_.Set_Temperature0().SetVal( atof( VAR.c_str() ) );
+    mdopts_.Set_Temperature0().SetVal( convertToDouble( VAR ) );
   else if (OPT == "NTWX")
-    mdopts_.Set_TrajWriteFreq().SetVal( atoi( VAR.c_str() ) );
+    mdopts_.Set_TrajWriteFreq().SetVal( convertToInteger( VAR ) );
 //  else if (OPT == "TRAJOUTARGS")
 //    trajoutargs_ = VAR;
 //  else if (OPT == "FULLARCHIVE")
