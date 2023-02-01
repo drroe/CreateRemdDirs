@@ -29,7 +29,7 @@ QueueArray.o : QueueArray.cpp Queue.h QueueArray.h
 RepIndexArray.o : RepIndexArray.cpp RepIndexArray.h ReplicaDimArray.h ReplicaDimension.h StringRoutines.h
 ReplicaDimArray.o : ReplicaDimArray.cpp Messages.h ReplicaDimArray.h ReplicaDimension.h TextFile.h
 ReplicaDimension.o : ReplicaDimension.cpp FileRoutines.h Messages.h ReplicaDimension.h TextFile.h
-Run.o : Run.cpp FileRoutines.h MdOptions.h MdPackage.h Messages.h Option.h Run.h RunStatus.h StringRoutines.h
+Run.o : Run.cpp FileRoutines.h MdOptions.h MdPackage.h Messages.h OptArray.h Option.h Queue.h Run.h RunStatus.h StringRoutines.h Submitter.h
 RunStatus.o : RunStatus.cpp MdOptions.h Messages.h Option.h RunStatus.h
 StringRoutines.o : StringRoutines.cpp Messages.h StringRoutines.h
 Submitter.o : Submitter.cpp FileRoutines.h Messages.h OptArray.h Queue.h StringRoutines.h Submitter.h TextFile.h

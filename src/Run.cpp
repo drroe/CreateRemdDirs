@@ -3,6 +3,7 @@
 #include "FileRoutines.h"
 #include "StringRoutines.h"
 #include "MdPackage.h"
+#include "Submitter.h"
 
 using namespace Messages;
 
@@ -78,6 +79,23 @@ int Run::CreateNew(std::string const& runDir, Creator const& creator, MdPackage*
   // Set status
   //runStat_ = mdpackage->RunCurrentStatus( FileRoutines::ExpandToFilenames("*", false) );
   runStat_ = RunStatus(RunStatus::PENDING);
+  return 0;
+}
+
+/** Submit run. */
+int Run::SubmitRun(Submitter const& submit, std::string const& prev_jobidIn) {
+  using namespace FileRoutines;
+  if (!fileExists(rundir_)) {
+    ErrorMsg("Cannot submit run, directory %s does not exist.\n", rundir_.c_str());
+    return 1;
+  }
+  if (ChangeDir(rundir_)) return 1;
+
+  if ( submit.SubmitJob(jobid_, prev_jobidIn) ) {
+    ErrorMsg("Job submission from %s failed.\n", rundir_.c_str());
+    return 1;
+  }
+  // TODO run status
   return 0;
 }
 

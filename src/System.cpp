@@ -314,6 +314,8 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
         return 1;
       }
     }
+
+    if (ChangeToSystemDir()) return 1;
     Msg("Submit ");
     currentRun.RunSummary();
   }

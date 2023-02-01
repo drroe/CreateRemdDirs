@@ -163,3 +163,9 @@ void Submitter::Info() const {
     Msg("  ACCOUNT   : %s\n", account_.c_str());
   localQueue_.Info();
 }
+
+/** Submit job, set job id */
+int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn) const {
+
+  return 0;
+}

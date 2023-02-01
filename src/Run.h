@@ -4,6 +4,7 @@
 #include "RunStatus.h"
 class Creator;
 class MdPackage;
+class Submitter;
 /// Hold information for a single run
 class Run {
   public:
@@ -25,11 +26,13 @@ class Run {
     int Refresh(MdPackage*);
     /// Create new directory - rundir, creator, mdpackage, start #, run #, prev run dir
     int CreateNew(std::string const&, Creator const&, MdPackage*, int, int, std::string const&);
-    
+    /// Submit run
+    int SubmitRun(Submitter const&, std::string const&);
   private:
     std::string rundir_;   ///< Run directory. May be relative.
     std::string setupDir_; ///< Directory in which SetupRun gets invoked. Should be absolute run dir
     RunStatus runStat_;    ///< Current run status
+    std::string jobid_;    ///< Current job id
     int idx_;              ///< Run index, based on directory name extension
     int debug_;            ///< Debug level
 };
