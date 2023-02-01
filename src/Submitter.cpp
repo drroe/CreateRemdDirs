@@ -230,7 +230,7 @@ int Submitter::writeHeader(TextFile& qout, int run_num, std::string const& prev_
 } 
 
 /** Submit job, set job id */
-int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, int run_num) const {
+int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, int run_num, std::string const& next_dir) const {
   // Ensure the MD run script exists
   std::string runScriptName = CommonOptions::Opt_RunScriptName().Val();
   if (!fileExists( runScriptName )) {
@@ -277,9 +277,13 @@ int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, in
     if (myprocs > 0) qout.Printf("PROCS=%i\n", myprocs);
     qout.Printf("export MPIRUN=\"%s\"\n", mpirun_.c_str());
   }
-  // Run script
+  // Command to run MD script
   qout.Printf("\n# Run executable\n./%s\n\n", runScriptName.c_str());
-
+  // Set up dependency if necessary
+  if (dependType_ == SUBMIT && !next_dir.empty()) {
+      qout.Printf("cd ../%s && %s %s\n", next_dir.c_str(), localQueue_.SubmitCmd().c_str(), submitScript.c_str());
+  }
+  qout.Printf("exit 0\n"); // TODO capture run script error stat
   
   qout.Close();
   return 0;

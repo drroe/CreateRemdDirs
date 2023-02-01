@@ -312,6 +312,11 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
       ErrorMsg("Cannot submit run %i, does not exist.\n", runNum);
       return 1;
     }
+    // See if next run exists
+    std::string next_dir;
+    int nextRunIdx = findRunIdx(runNum+1);
+    if (nextRunIdx > -1)
+      next_dir = Runs_[nextRunIdx].RunDirName();
     // If not overwriting, only submit if pending
     Run& currentRun = Runs_.Set_Run(existingRunIdx);
     if (!overwrite) {
@@ -324,7 +329,7 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
     if (ChangeToSystemDir()) return 1;
     Msg("Submit ");
     currentRun.RunSummary();
-    if (currentRun.SubmitRun( submitter_, prev_jobid )) {
+    if (currentRun.SubmitRun( submitter_, prev_jobid, next_dir )) {
       ErrorMsg("Run submission failed.\n");
       return 1;
     }

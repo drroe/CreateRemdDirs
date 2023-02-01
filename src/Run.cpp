@@ -83,7 +83,7 @@ int Run::CreateNew(std::string const& runDir, Creator const& creator, MdPackage*
 }
 
 /** Submit run. */
-int Run::SubmitRun(Submitter const& submit, std::string const& prev_jobidIn) {
+int Run::SubmitRun(Submitter const& submit, std::string const& prev_jobidIn, std::string const& next_dir) {
   using namespace FileRoutines;
   if (!fileExists(rundir_)) {
     ErrorMsg("Cannot submit run, directory %s does not exist.\n", rundir_.c_str());
@@ -91,7 +91,7 @@ int Run::SubmitRun(Submitter const& submit, std::string const& prev_jobidIn) {
   }
   if (ChangeDir(rundir_)) return 1;
 
-  if ( submit.SubmitJob(jobid_, prev_jobidIn, idx_) ) {
+  if ( submit.SubmitJob(jobid_, prev_jobidIn, idx_, next_dir) ) {
     ErrorMsg("Job submission from %s failed.\n", rundir_.c_str());
     return 1;
   }

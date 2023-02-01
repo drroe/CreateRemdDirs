@@ -27,7 +27,7 @@ class Submitter {
     /// Print info to stdout
     void Info() const;
     /// Submit job, set job id
-    int SubmitJob(std::string&, std::string const&, int) const;
+    int SubmitJob(std::string&, std::string const&, int, std::string const&) const;
   private:
     /// KEEP IN SYNC WITH DependType
     static const char* DependTypeStr_[];
