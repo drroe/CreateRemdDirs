@@ -3,6 +3,7 @@
 #include <string>
 #include "Queue.h"
 #include "OptArray.h"
+class TextFile;
 /// Used to submit jobs for runs in a particular system
 class Submitter {
   public:
@@ -20,14 +21,18 @@ class Submitter {
     int ReadOptions(std::string const&);
     /// Set debug level
     void SetDebug(int);
+    /// Ensure current options are valid
+    int RefreshSubmitter();
 
     /// Print info to stdout
     void Info() const;
     /// Submit job, set job id
-    int SubmitJob(std::string&, std::string const&) const;
+    int SubmitJob(std::string&, std::string const&, int) const;
   private:
     /// KEEP IN SYNC WITH DependType
     static const char* DependTypeStr_[];
+    /// Write queue header
+    int writeHeader(TextFile&, int, std::string const&) const;
 
     /// Check that the submitter is valid
     int setupSubmitter();

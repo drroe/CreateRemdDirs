@@ -2,6 +2,7 @@
 #define INC_QUEUE_H
 #include <vector>
 #include <string>
+class TextFile;
 /// Hold information on a particular queue/partition
 class Queue {
   public:
@@ -22,6 +23,8 @@ class Queue {
     std::string HeaderFlag() const;
     /// \return Queue submit command
     std::string SubmitCmd() const;
+    /// Write queue flags to file
+    int WriteFlags(TextFile&) const;
   private:
     /// KEEP IN SYNC with Type
     static const char* TypeStr_[];

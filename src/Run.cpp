@@ -91,7 +91,7 @@ int Run::SubmitRun(Submitter const& submit, std::string const& prev_jobidIn) {
   }
   if (ChangeDir(rundir_)) return 1;
 
-  if ( submit.SubmitJob(jobid_, prev_jobidIn) ) {
+  if ( submit.SubmitJob(jobid_, prev_jobidIn, idx_) ) {
     ErrorMsg("Job submission from %s failed.\n", rundir_.c_str());
     return 1;
   }

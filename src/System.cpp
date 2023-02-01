@@ -296,6 +296,11 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
     ErrorMsg("Start run index is negative.\n");
     return 1;
   }
+  // Ensure the submitter is valid
+  if (submitter_.RefreshSubmitter()) {
+    ErrorMsg("Invalid options detected. Cannot submit.\n");
+    return 1;
+  }
   // Loop over desired run numbers
   std::string prev_jobid = prev_jobidIn;
   int stop_run = start_run + nruns - 1;

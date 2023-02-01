@@ -138,6 +138,16 @@ int Submitter::ReadOptions(std::string const& input_file) {
 
 /** Check that submitter is valid. */
 int Submitter::setupSubmitter() {
+  // Check required options
+  if (job_name_.empty()) {
+    ErrorMsg("No JOBNAME specified.\n");
+    return 1;
+  }
+  if (program_.empty()) {
+    ErrorMsg("No PROGRAM specified.\n");
+    return 1;
+  }
+  // Check queue
   if (!localQueue_.IsValid()) {
     ErrorMsg("Invalid queue.\n");
     return 1;
@@ -146,6 +156,11 @@ int Submitter::setupSubmitter() {
   if (user_.empty())
     user_ = NoTrailingWhitespace( UserName() );
   return 0;
+}
+
+/** \return 0 if current options are valid. */
+int Submitter::RefreshSubmitter() {
+  return setupSubmitter();
 }
 
 /** Print options to stdout. */
@@ -169,9 +184,20 @@ void Submitter::Info() const {
   localQueue_.Info();
 }
 
+/** Write queue header */
+int Submitter::writeHeader(TextFile& qout, int run_num, std::string const& prev_jobidIn) const {
+  std::string job_title = job_name_ + "." + integerToString(run_num);
+  std::string previous_job;
+  if (dependType_ == BATCH)
+    previous_job = prev_jobidIn;
+  // Queue-specific options
+ 
+  return 0;
+} 
+
 /** Submit job, set job id */
-int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn) const {
-  // Ensure the run script exists
+int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, int run_num) const {
+  // Ensure the MD run script exists
   std::string runScriptName = CommonOptions::Opt_RunScriptName().Val();
   if (!fileExists( runScriptName )) {
     ErrorMsg("Run script %s not found.\n");
@@ -180,5 +206,12 @@ int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn) co
   // Create submit script name
   std::string submitScript( localQueue_.SubmitCmd() + ".sh" );
   Msg("DEBUG: submit script: %s\n", submitScript.c_str());
+  if (fileExists( submitScript ))
+    Msg("Warning: Overwriting %s\n", submitScript.c_str());
+  // Write the run script
+  TextFile qout;
+  if (qout.OpenWrite( submitScript )) return 1;
+  if (writeHeader(qout, run_num, prev_jobidIn)) return 1;
+  qout.Close();
   return 0;
 }
