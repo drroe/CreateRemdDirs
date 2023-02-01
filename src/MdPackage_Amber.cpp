@@ -10,6 +10,7 @@
 #include "ReplicaDimension.h"
 #include "RunStatus.h"
 #include "CpptrajInterface.h"
+#include "CommonOptions.h"
 
 using namespace Messages;
 
@@ -714,8 +715,9 @@ int MdPackage_Amber::read_traj_nframes(RunStatus& currentStatus, std::string con
 /** \return Info on a current run. */
 RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& files) const {
   // Special cases
+  std::string const& runscript = CommonOptions::Opt_RunScriptName().Val();
   if (files.size() == 2) {
-    if (files[0] == "RunMD.sh" && files[1] == "md.in")
+    if (files[0] == runscript && files[1] == "md.in")
       return RunStatus(RunStatus::PENDING);
   }
   // Scan through files
@@ -727,7 +729,7 @@ RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& file
   for (std::vector<std::string>::const_iterator fname = files.begin();
                                                 fname != files.end(); ++fname)
   {
-    if (*fname == "RunMD.sh") {
+    if (*fname == runscript) {
       has_runscript = true;
     } else if (*fname == "md.out") {
       has_output = true;

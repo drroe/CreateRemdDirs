@@ -9,6 +9,7 @@
 #include "TextFile.h"
 #include "MdPackage.h"
 #include "MdPackage_Amber.h"
+#include "CommonOptions.h"
 
 using namespace Messages;
 using namespace StringRoutines;
@@ -569,13 +570,13 @@ void Creator::Info() const {
 /** Write run script. */
 int Creator::WriteRunMD(std::string const& cmd_opts) const {
   TextFile RunMD;
-  if (RunMD.OpenWrite("RunMD.sh")) return 1;
+  if (RunMD.OpenWrite( CommonOptions::Opt_RunScriptName().Val() )) return 1;
   RunMD.Printf("#!/bin/bash\n\n# Run executable\nTIME0=`date +%%s`\n$MPIRUN $EXEPATH -O %s\n"
                 "TIME1=`date +%%s`\n"
                 "((TOTAL = $TIME1 - $TIME0))\necho \"$TOTAL seconds.\"\n\nexit 0\n",
                 cmd_opts.c_str());
   RunMD.Close();
-  ChangePermissions("RunMD.sh");
+  ChangePermissions( CommonOptions::Opt_RunScriptName().Val() );
   return 0;
 }
 
