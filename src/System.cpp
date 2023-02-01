@@ -293,6 +293,10 @@ int System::CreateRunDirectories(std::string const& crd_dir,
     ErrorMsg("Less than 1 run for CreateRunDirectories()\n");
     return 1;
   }
+  if (start_run < 0) {
+    ErrorMsg("Start run index is negative.\n");
+    return 1;
+  }
   // Set alternate coords if needed.
   if (!crd_dir.empty())
     creator_.SetSpecifiedCoords( crd_dir );
