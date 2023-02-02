@@ -277,7 +277,10 @@ int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, in
     }
   }
   if (localQueue_.QueueType() != Queue::NO_QUEUE && myprocs < 1) {
-    Msg("Warning: Less than 1 process specified.\n");
+    Msg("Warning: Less than 1 process specified. Set PROCS or NODES/PPN.\n");
+  }
+  if (!mpirun_.empty() && myprocs < 1) {
+    Msg("Warning: Less than 1 process specified. Set PROCS or NODES/PPN.\n");
   }
   // Create submit script name
   std::string submitScript( localQueue_.SubmitCmd() + ".sh" );
@@ -312,5 +315,6 @@ int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, in
   qout.Printf("exit 0\n"); // TODO capture run script error stat
   
   qout.Close();
+  ChangePermissions( submitScript );
   return 0;
 }
