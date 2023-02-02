@@ -13,6 +13,8 @@ class Queue {
     Queue();
     /// Print help to stdout
     static void OptHelp();
+    /// Write queue options to file
+    int WriteQueueOpts(TextFile&) const;
     /// Process queue-specific option
     int ParseOption(std::string const&, std::string const&);
     /// Print info to stdout

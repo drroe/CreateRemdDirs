@@ -79,6 +79,10 @@ int System::WriteSystemOptions() {
     ErrorMsg("Writing creation options to file '%s' in dir '%s' failed.\n", createOptsFilename_.c_str(), dirname_.c_str());
     return 1;
   }
+  if (submitter_.WriteOptions( submitOptsFilename_ )) {
+    ErrorMsg("Writing submit options to file '%s' in dir '%s' failed.\n", submitOptsFilename_.c_str(), dirname_.c_str());
+    return 1;
+  }
   needs_save_ = false;
 
   return 0;

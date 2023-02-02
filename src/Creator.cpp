@@ -324,7 +324,7 @@ int Creator::WriteOptions(std::string const& output_file) const {
     outfile.Printf("RST_FILE %s\n", mdopts_.RstFilename().Val().c_str());
   if (mdopts_.RstWriteFreq().IsSet())
     outfile.Printf("UMBRELLA %i\n", mdopts_.RstWriteFreq().Val());
-  // Package options
+  // Package options TODO FIXME
 
   return 0;
 }

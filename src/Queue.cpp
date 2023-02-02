@@ -41,6 +41,22 @@ void Queue::OptHelp() {
      );
 }
 
+/** Write queue options to file. */
+int Queue::WriteQueueOpts(TextFile& outfile) const {
+  if (!name_.empty())
+    outfile.Printf("QUEUE %s\n", name_.c_str());
+  if (ppn_ > 0)
+    outfile.Printf("PPN %i\n", ppn_);
+  if (queueType_ != NO_QUEUE)
+    outfile.Printf("QTYPE %s\n", TypeStr_[queueType_]);
+  for (Sarray::const_iterator it = Flags_.begin(); it != Flags_.end(); ++it)
+    outfile.Printf("FLAG %s\n", it->c_str());
+  for (Sarray::const_iterator it = additionalCommands_.begin();
+                              it != additionalCommands_.end(); ++it)
+    outfile.Printf("COMMAND %s\n", it->c_str());
+  return 0;
+}
+
 /** Parse queue-specific option.
   * \return 1 if processed, 0 if ignored, -1 if error.
   */

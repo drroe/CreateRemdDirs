@@ -81,6 +81,8 @@ int Submitter::WriteOptions(std::string const& output_file) const {
   if (dependType_ != NO_DEPENDS)
     outfile.Printf("DEPEND %s\n", DependTypeStr_[dependType_]);
 
+  if (localQueue_.WriteQueueOpts( outfile )) return 1;
+
   return 0;
 }
 
