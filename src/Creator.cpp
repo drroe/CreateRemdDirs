@@ -22,6 +22,8 @@ Creator::Creator() :
   n_md_runs_(0),
   fileExtWidth_(3),
   mdin_needs_read_(false),
+  runType_(MD),
+  runDescription_("MD"),
   crd_ext_("rst7") //FIXME this is Amber-specific
 {}
 
@@ -445,6 +447,20 @@ int Creator::LoadDimension(std::string const& dfile) {
     return 1;
   }
   dim_files_.push_back( dfile );
+  // Do some run type detection
+  if (Dims_.Ndims() == 1) {
+    if (Dims_.FirstDim().Type() == ReplicaDimension::TEMP ||
+        Dims_.FirstDim().Type() == ReplicaDimension::SGLD)
+      runType_ = TREMD;
+    else if (Dims_.FirstDim().Type() == ReplicaDimension::PH)
+      runType_ = PHREMD;
+    else
+      runType_ = HREMD;
+    runDescription_.assign( Dims_.FirstDim().name() );
+  } else {
+    runType_ = MREMD;
+    runDescription_.assign("MREMD");
+  }
 
   return 0;
 }
@@ -461,8 +477,6 @@ int Creator::CheckCreator() {
   if (Dims_.Empty()) {
     totalReplicas_ = 0;
     Msg("  No dimensions defined: assuming MD run.\n");
-    runType_ = MD;
-    runDescription_.assign("MD");
     if (!mdopts_.Temperature0().IsSet()) {
       Msg("Warning: TEMPERATURE not specified. Using default value: %g\n", mdopts_.Temperature0().Val());
     }
@@ -471,20 +485,6 @@ int Creator::CheckCreator() {
       return 1;
     }
   } else {
-    if (Dims_.Ndims() == 1) {
-      if (Dims_.FirstDim().Type() == ReplicaDimension::TEMP ||
-          Dims_.FirstDim().Type() == ReplicaDimension::SGLD)
-        runType_ = TREMD;
-      else if (Dims_.FirstDim().Type() == ReplicaDimension::PH)
-        runType_ = PHREMD;
-      else
-        runType_ = HREMD;
-      runDescription_.assign( Dims_.FirstDim().name() );
-    } else {
-      runType_ = MREMD;
-      //DimArray::const_iterator dim = Dims_.begin();
-      runDescription_.assign( "MREMD" );
-    }
     // Count total # of replicas, Do some error checking.
     totalReplicas_ = 1;
     for (unsigned int idim = 0; idim != Dims_.Ndims(); idim++)
