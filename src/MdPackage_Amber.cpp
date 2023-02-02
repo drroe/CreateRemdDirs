@@ -11,6 +11,7 @@
 #include "RunStatus.h"
 #include "CpptrajInterface.h"
 #include "CommonOptions.h"
+#include "Submitter.h"
 
 using namespace Messages;
 
@@ -91,11 +92,25 @@ int MdPackage_Amber::ParseCreatorOption(std::string const& OPT, std::string cons
 
 /** Check amber-specific creator options. */
 int MdPackage_Amber::CheckCreatorOptions(Creator const& creator) const {
+  int errcount = 0;
   if (creator.Dims().HasDim(ReplicaDimension::PH) && cpin_file_.empty()) {
     ErrorMsg("CPIN_FILE must be specified if pH dimension is present.\n");
-    return 1;
+    errcount++;
   }
-  return 0;
+  return errcount;
+}
+
+/** Check amber-specific submitter options */
+int MdPackage_Amber::CheckSubmitterOptions(Creator const& creator, Submitter const& submitter) const {
+  int errcount = 0;
+  // If REMD, ensure mpirun is set
+  if (creator.TypeOfRun() != Creator::MD) {
+    if (submitter.MpiRun().empty()) {
+      ErrorMsg("Amber requires MPIRUN must be set for REMD runs.\n");
+      errcount++;
+    }
+  }
+  return errcount;
 }
 
 /** Read amber-specific input from MDIN file. */

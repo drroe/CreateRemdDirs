@@ -155,10 +155,7 @@ int System::read_mdpackage_mdin() {
       return 1;
     }
   }
-  // Check the options
-  if (mdInterface_.Package()->CheckCreatorOptions(creator_)) {
-    Msg("Warning: Invalid package-specific options.\n");
-  }
+
   creator_.Set_MdinAsRead();
   return 0;
 }
@@ -199,24 +196,12 @@ int System::FindRuns(QueueArray& queues) {
   }
   // Process MD package-specific MD input if needed
   if (read_mdpackage_mdin()) return 1;
-/* 
-  if (!creator_.MdinFileName().empty()) {
-    MdOptions packageOpts;
-    if (mdInterface_.Package()->ReadPackageInput( packageOpts, creator_.MdinFileName() )) {
-      ErrorMsg("Reading MD package input options failed.\n");
-      return 1;
-    }
-    // See if we want to use any of the package options
-    if (creator_.SetMdOptions( packageOpts )) {
-      ErrorMsg("Setting MD options from package options failed.\n");
-      return 1;
-    }
-  }
-  if (mdInterface_.Package()->CheckCreatorOptions(creator_)) {
-    Msg("Warning: Invalid package-specific options.\n");
-  }*/
+  // Check the options
   if (creator_.CheckCreator()) {
     Msg("Warning: Invalid Creator options detected.\n");
+  }
+  if (mdInterface_.Package()->CheckCreatorOptions(creator_)) {
+    Msg("Warning: Invalid package-specific Creator options.\n");
   }
   creator_.Info();
 
@@ -233,6 +218,9 @@ int System::FindRuns(QueueArray& queues) {
   }
   if (submitter_.CheckSubmitter()) {
     Msg("Warning: Invalid Submitter options detected.\n");
+  }
+  if (mdInterface_.Package()->CheckSubmitterOptions(creator_, submitter_)) {
+    Msg("Warning: Invalid package-specific Submitter options.\n");
   }
   submitter_.Info();
 

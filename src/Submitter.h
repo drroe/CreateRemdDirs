@@ -30,6 +30,11 @@ class Submitter {
     void Info() const;
     /// Submit job, set job id
     int SubmitJob(std::string&, std::string const&, int, std::string const&) const;
+
+    /// \return Program name
+    std::string const& Program() const { return program_; }
+    /// \return MPI run command
+    std::string const& MpiRun() const { return mpirun_; }
   private:
     /// KEEP IN SYNC WITH DependType
     static const char* DependTypeStr_[];

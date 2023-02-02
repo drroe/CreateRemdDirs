@@ -22,6 +22,8 @@ class MdPackage_Amber : public MdPackage {
     int ParseCreatorOption(std::string const&, std::string const&);
     /// Check creator options
     int CheckCreatorOptions(Creator const&) const;
+    /// Check submitter options
+    int CheckSubmitterOptions(Creator const&, Submitter const&) const;
     /// Write amber-specific creator options to file
     int WriteCreatorOptions(TextFile&) const;
     /// Read amber-specific input (i.e. MDIN input) from file
