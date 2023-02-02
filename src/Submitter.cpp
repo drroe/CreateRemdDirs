@@ -47,6 +47,43 @@ void Submitter::OptHelp() {
   Msg("\n");
 }
 
+/** Write current options to a file. */
+int Submitter::WriteOptions(std::string const& output_file) const {
+  if (fileExists(output_file)) {
+    Msg("Warning: '%s' exists.\n", output_file.c_str());
+    bool overwrite = YesNoPrompt("Overwrite?");
+    if (!overwrite) return 0;
+  }
+  Msg("Writing submit options to '%s'\n", output_file.c_str());
+  TextFile outfile;
+  if (outfile.OpenWrite( output_file )) {
+    ErrorMsg("Opening '%s' for write failed.\n");
+    return 1;
+  }
+  if (!job_name_.empty())
+    outfile.Printf("JOBNAME %s\n", job_name_.c_str());
+  if (nodes_ > 0)
+    outfile.Printf("NODES %i\n", nodes_);
+  if (procs_ > 0)
+    outfile.Printf("PROCS %i\n", procs_);
+  if (!walltime_.empty())
+    outfile.Printf("WALLTIME %s\n", walltime_.c_str());
+  if (!email_.empty())
+    outfile.Printf("EMAIL %s\n", email_.c_str());
+  if (!account_.empty())
+    outfile.Printf("ACCOUNT %s\n", account_.c_str());
+  if (!user_.empty())
+    outfile.Printf("USER %s\n", user_.c_str());
+  if (!program_.empty())
+    outfile.Printf("PROGRAM %s\n", program_.c_str());
+  if (!mpirun_.empty())
+    outfile.Printf("MPIRUN %s\n", mpirun_.c_str());
+  if (dependType_ != NO_DEPENDS)
+    outfile.Printf("DEPEND %s\n", DependTypeStr_[dependType_]);
+
+  return 0;
+}
+
 /** Parse option from a file.
   * \return 1 if option was parsed, 0 if ignored, -1 if error.
   */

@@ -15,6 +15,8 @@ class Submitter {
     /// Print help to stdout
     static void OptHelp();
 
+    /// Write options to a file
+    int WriteOptions(std::string const&) const;
     /// Parse a single option
     int ParseFileOption(OptArray::OptPair const&);
     /// Read options from a file
@@ -44,7 +46,7 @@ class Submitter {
     std::string user_;      ///< User name
     std::string program_;   ///< Executable name
     std::string mpirun_;    ///< MPI run command if needed
-    DependType dependType_; ///< Describes how to handle job dependncies
+    DependType dependType_; ///< Describes how to handle job dependencies
     Queue localQueue_;      ///< Hold options for queue for a single System
 };
 #endif
