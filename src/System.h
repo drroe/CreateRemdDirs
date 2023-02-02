@@ -44,7 +44,7 @@ class System {
     /// Change to system directory
     int ChangeToSystemDir() const;
     /// \return true if System options need to be written
-    bool NeedsSave() const { return needs_save_; }
+    bool NeedsSave() const { return (c_needs_save_ || s_needs_save_); }
     /// \return System dir name
     //std::string const& SystemDirName() const { return dirname_; }
   private:
@@ -67,6 +67,7 @@ class System {
     Creator creator_;                ///< For creating runs
     Submitter submitter_;            ///< For submitting runs
     MdInterface mdInterface_;        ///< Use to interface with different MD packages
-    bool needs_save_;                ///< True if any options have changed and System needs save
+    bool c_needs_save_;              ///< True if Creator options have changed and System needs save
+    bool s_needs_save_;              ///< True if Submitter options have changed and System needs save
 };
 #endif

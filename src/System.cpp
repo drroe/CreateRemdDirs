@@ -13,7 +13,8 @@ System::System() :
   submitOptsFilename_("qsub.opts"),
   runDirPrefix_("run"),
   runDirExtWidth_(3),
-  needs_save_(false)
+  c_needs_save_(false),
+  s_needs_save_(false)
 {}
 
 /** CONSTRUCTOR - toplevel dir, dirname, description */
@@ -25,7 +26,8 @@ System::System(std::string const& top, std::string const& dirname, std::string c
   submitOptsFilename_("qsub.opts"),
   runDirPrefix_("run"),
   runDirExtWidth_(3),
-  needs_save_(false)
+  c_needs_save_(false),
+  s_needs_save_(false)
 {}
 
 /** COPY CONSTRUCTOR */
@@ -41,7 +43,8 @@ System::System(System const& rhs) :
   creator_(rhs.creator_),
   submitter_(rhs.submitter_),
   mdInterface_(rhs.mdInterface_),
-  needs_save_(rhs.needs_save_)
+  c_needs_save_(rhs.c_needs_save_),
+  s_needs_save_(rhs.s_needs_save_)
 {}
 
 /** Assignment */
@@ -58,7 +61,8 @@ System& System::operator=(System const& rhs) {
   creator_ = rhs.creator_;
   submitter_ = rhs.submitter_;
   mdInterface_ = rhs.mdInterface_;
-  needs_save_ = rhs.needs_save_;
+  c_needs_save_ = rhs.c_needs_save_;
+  s_needs_save_ = rhs.s_needs_save_;
 
   return *this;
 }
@@ -75,15 +79,20 @@ int System::WriteSystemOptions() {
     ErrorMsg("Could not change to system directory %s/%s\n", topDir_.c_str(), dirname_.c_str());
     return 1;
   }
-  if (creator_.WriteOptions( createOptsFilename_ )) {
-    ErrorMsg("Writing creation options to file '%s' in dir '%s' failed.\n", createOptsFilename_.c_str(), dirname_.c_str());
-    return 1;
+  if (c_needs_save_) {
+    if (creator_.WriteOptions( createOptsFilename_ )) {
+      ErrorMsg("Writing creation options to file '%s' in dir '%s' failed.\n", createOptsFilename_.c_str(), dirname_.c_str());
+      return 1;
+    }
+    c_needs_save_ = false;
   }
-  if (submitter_.WriteOptions( submitOptsFilename_ )) {
-    ErrorMsg("Writing submit options to file '%s' in dir '%s' failed.\n", submitOptsFilename_.c_str(), dirname_.c_str());
-    return 1;
+  if (s_needs_save_) {
+    if (submitter_.WriteOptions( submitOptsFilename_ )) {
+      ErrorMsg("Writing submit options to file '%s' in dir '%s' failed.\n", submitOptsFilename_.c_str(), dirname_.c_str());
+      return 1;
+    }
+    s_needs_save_ = false;
   }
-  needs_save_ = false;
 
   return 0;
 }
@@ -222,10 +231,13 @@ int System::ParseOption(std::string const& OPT, std::string const& VAR) {
   if (ret == 1) {
     // Ensure creator is refreshed after parsing the option
     creator_.CheckCreator();
+    c_needs_save_ = true;
   }
   // Md package
   if (ret == 0) {
     ret = mdInterface_.Package()->ParseCreatorOption( OPT, VAR );
+    if (ret == 1)
+      c_needs_save_ = true;
   }
   // Submitter
   if (ret == 0) {
@@ -233,11 +245,11 @@ int System::ParseOption(std::string const& OPT, std::string const& VAR) {
     if (ret == 1) {
       // Ensure submitter is checked after parsing the option
       submitter_.CheckSubmitter();
+      s_needs_save_ = true;
     }
   }
   // Handle return status
   if (ret == 1) {
-    needs_save_ = true;
     // Process MD package-specific MD input if needed
     if (read_mdpackage_mdin()) return -1;
   }
