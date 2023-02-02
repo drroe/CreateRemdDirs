@@ -230,6 +230,7 @@ int System::FindRuns(QueueArray& queues) {
 
   clearRuns(); 
   Msg("Run directories:\n");
+  int lastIdx = -1;
   for (StrArray::const_iterator it = runDirs.begin(); it != runDirs.end(); ++it)
   {
     Msg("  Directory: %s\n", it->c_str());
@@ -239,6 +240,13 @@ int System::FindRuns(QueueArray& queues) {
       ErrorMsg("Setting up existing run '%s' failed.\n", it->c_str());
       return 1;
     }
+    // Check that runs are consecutive
+    if (lastIdx != -1) {
+      if (Runs_.back().RunIndex() != lastIdx + 1)
+        Msg("Warning: Runs %i and %i are not consecutive.\n", Runs_.back().RunIndex(), lastIdx);
+    }
+    lastIdx = Runs_.back().RunIndex();
+
     // Change directory back
     if (ChangeToSystemDir()) return 1;
   }
