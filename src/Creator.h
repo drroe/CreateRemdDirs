@@ -21,6 +21,8 @@ class Creator {
     int WriteOptions(std::string const&) const; 
     /// Read creation options from a file
     int ReadOptions(std::string const&);
+    /// Check and update creator based on current options.
+    int CheckCreator();
     /// \return True if the Creator is set up to make regular MD runs
     bool IsSetupForMD() const { return (runType_ == MD); }
     /// Print info to stdout
@@ -33,8 +35,6 @@ class Creator {
     void SetDebug(int d) { debug_ = d; }
     /// Parse a single option from input file
     int ParseFileOption(OptArray::OptPair const&);
-    /// Refresh creator based on current options
-    int RefreshCreator();
     /// Set alternate coordinates location TODO deprecate?
     void SetSpecifiedCoords(std::string const& c) { specified_crd_ = c; }
     /// Set MD options; only overwrite current options if not set.
@@ -81,8 +81,6 @@ class Creator {
     Sarray inputCrds_multiple_md(std::string const&, std::string const&, unsigned int) const;
     /// \return Array containing single input coords for MD run.
     Sarray inputCrds_single_md(std::string const&, std::string const&) const;
-    /// Perform internal setup, called by ReadOptions
-    int setupCreator();
     /// Load a REMD dimension from file
     int LoadDimension(std::string const&);
 

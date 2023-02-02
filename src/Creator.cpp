@@ -408,10 +408,10 @@ int Creator::ReadOptions(std::string const& input_file) {
     }
   } // END loop over options from file
 
-  if (setupCreator()) {
-    Msg("Warning: Invalid or missing options in file '%s'\n", input_file.c_str());
-    //return 1;
-  }
+  //if (setupCreator()) {
+  //  Msg("Warning: Invalid or missing options in file '%s'\n", input_file.c_str());
+  //  //return 1;
+  //}
   return 0;
 }
 
@@ -449,8 +449,10 @@ int Creator::LoadDimension(std::string const& dfile) {
   return 0;
 }
 
-// Creator::Setup()
-int Creator::setupCreator() {
+/** Check that Creator options are valid. Count number of replicas if needed.
+  * Sets the run type.
+  */
+int Creator::CheckCreator() {
   // Perform tilde expansion on coords if necessary.
   if (!crd_dir_.empty() && crd_dir_[0] == '~')
     crd_dir_ = tildeExpansion(crd_dir_);
@@ -534,13 +536,9 @@ int Creator::setupCreator() {
   return 0;
 }
 
-/** Refresh creator based on current options. */
-int Creator::RefreshCreator() {
-  return setupCreator();
-}
-
 // Creator::Info()
 void Creator::Info() const {
+  Msg("Creator options:\n");
   Msg("  Run type: %s\n", RUNTYPESTR_[runType_]);
   mdopts_.PrintOpts( (runType_ == MD), Dims_.DimIdx(ReplicaDimension::TEMP), Dims_.DimIdx(ReplicaDimension::PH));
   Msg(    "  MDIN_FILE             : %s\n", mdin_file_.c_str());

@@ -130,14 +130,14 @@ int Submitter::ReadOptions(std::string const& input_file) {
     }
   } // END loop over file options
 
-  if (setupSubmitter()) {
-    Msg("Warning: Invalid of missing options in file '%s'\n", input_file.c_str());
-  }
+  //if (setupSubmitter()) {
+  //  Msg("Warning: Invalid of missing options in file '%s'\n", input_file.c_str());
+  //}
   return 0;
 }
 
 /** Check that submitter is valid. */
-int Submitter::setupSubmitter() {
+int Submitter::CheckSubmitter() {
   // Check required options
   if (job_name_.empty()) {
     ErrorMsg("No JOBNAME specified.\n");
@@ -158,13 +158,9 @@ int Submitter::setupSubmitter() {
   return 0;
 }
 
-/** \return 0 if current options are valid. */
-int Submitter::RefreshSubmitter() {
-  return setupSubmitter();
-}
-
 /** Print options to stdout. */
 void Submitter::Info() const {
+  Msg("Submitter options:\n");
   Msg(  "  JOBNAME   : %s\n", job_name_.c_str());
   Msg(  "  USER      : %s\n", user_.c_str());
   Msg(  "  DEPEND    : %s\n", DependTypeStr_[dependType_]);

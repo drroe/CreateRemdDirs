@@ -165,6 +165,9 @@ int System::FindRuns(QueueArray& queues) {
   if (mdInterface_.Package()->CheckCreatorOptions(creator_)) {
     Msg("Warning: Invalid package-specific options.\n");
   }*/
+  if (creator_.CheckCreator()) {
+    Msg("Warning: Invalid Creator options detected.\n");
+  }
   creator_.Info();
 
   // See if submission options exist
@@ -177,6 +180,9 @@ int System::FindRuns(QueueArray& queues) {
       ErrorMsg("Checking submission options failed.\n");
       return 1;
     }*/
+  }
+  if (submitter_.CheckSubmitter()) {
+    Msg("Warning: Invalid Submitter options detected.\n");
   }
   submitter_.Info();
 
@@ -210,7 +216,7 @@ int System::ParseOption(std::string const& OPT, std::string const& VAR) {
   int ret = creator_.ParseFileOption( opair );
   if (ret == 1) {
     // Ensure creator is refreshed after parsing the option
-    creator_.RefreshCreator();
+    creator_.CheckCreator();
   } else if (ret == 0) {
     ret = mdInterface_.Package()->ParseCreatorOption( OPT, VAR );
   }
@@ -297,7 +303,7 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
     return 1;
   }
   // Ensure the submitter is valid
-  if (submitter_.RefreshSubmitter()) {
+  if (submitter_.CheckSubmitter()) {
     ErrorMsg("Invalid options detected. Cannot submit.\n");
     return 1;
   }
@@ -350,6 +356,11 @@ int System::CreateRunDirectories(std::string const& crd_dir,
   }
   if (start_run < 0) {
     ErrorMsg("Start run index is negative.\n");
+    return 1;
+  }
+  // Ensure the creator is valid
+  if (!creator_.CheckCreator()) {
+    ErrorMsg("Invalid options detected. Cannot create.\n");
     return 1;
   }
   // Set alternate coords if needed.

@@ -19,10 +19,10 @@ class Submitter {
     int ParseFileOption(OptArray::OptPair const&);
     /// Read options from a file
     int ReadOptions(std::string const&);
+    /// Check that options are valid
+    int CheckSubmitter();
     /// Set debug level
     void SetDebug(int);
-    /// Ensure current options are valid
-    int RefreshSubmitter();
 
     /// Print info to stdout
     void Info() const;
@@ -33,9 +33,6 @@ class Submitter {
     static const char* DependTypeStr_[];
     /// Write queue header
     int writeHeader(TextFile&, int, std::string const&, int) const;
-
-    /// Check that the submitter is valid
-    int setupSubmitter();
 
     int debug_;             ///< Debug level
     std::string job_name_;  ///< Job name
