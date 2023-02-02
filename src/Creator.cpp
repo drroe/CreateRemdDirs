@@ -465,9 +465,8 @@ int Creator::LoadDimension(std::string const& dfile) {
   return 0;
 }
 
-/** Check that Creator options are valid. Count number of replicas if needed.
-  * Sets the run type.
-  */
+/** Check that Creator options are valid. Count number of replicas if needed. 
+  */ // TODO make const by putting replica count elsewhere
 int Creator::CheckCreator() {
   // Perform tilde expansion on coords if necessary.
   if (!crd_dir_.empty() && crd_dir_[0] == '~')
