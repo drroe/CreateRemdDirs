@@ -359,7 +359,7 @@ int System::CreateRunDirectories(std::string const& crd_dir,
     return 1;
   }
   // Ensure the creator is valid
-  if (!creator_.CheckCreator()) {
+  if (creator_.CheckCreator()) {
     ErrorMsg("Invalid options detected. Cannot create.\n");
     return 1;
   }

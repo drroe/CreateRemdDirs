@@ -472,8 +472,7 @@ int Creator::CheckCreator() {
   // Perform tilde expansion on coords if necessary.
   if (!crd_dir_.empty() && crd_dir_[0] == '~')
     crd_dir_ = tildeExpansion(crd_dir_);
-  // Figure out what type of run this is.
-  runDescription_.clear();
+  // Do some checking based on what type of run this is.
   if (Dims_.Empty()) {
     totalReplicas_ = 0;
     Msg("  No dimensions defined: assuming MD run.\n");
