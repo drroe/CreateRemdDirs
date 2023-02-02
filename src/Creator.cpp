@@ -498,27 +498,25 @@ int Creator::CheckCreator() {
       ErrorMsg("No dimension provides topology files and TOPOLOGY not specified.\n");
       return 1;
     }
+    if (!mdopts_.N_Exchanges().IsSet()) {
+      ErrorMsg("Number of exchanges NUMEXCHG not set for REMD run.\n");
+      return 1;
+    }
     if (debug_ > 0)
       Msg("    Topology dimension: %i\n    Temp0 dimension: %i    pH dimension: %i\n",
           Dims_.DimIdx(ReplicaDimension::TOPOLOGY),
           Dims_.DimIdx(ReplicaDimension::TEMP),
           Dims_.DimIdx(ReplicaDimension::PH));
   }
-  if (!mdopts_.TrajWriteFreq().IsSet())
-    Msg("Warning: Trajectory write frequency is not set.\n");
-  // Perform some more error checking
-  if (runType_ == MD) {
-    if (!mdopts_.N_Steps().IsSet()) {
-      ErrorMsg("NSTLIM not set.\n");
-      return 1;
-    }
-  } else {
-    // REMD
-    if (!mdopts_.N_Steps().IsSet() || !mdopts_.N_Exchanges().IsSet()) {
-      ErrorMsg("NSTLIM or NUMEXCHG not set for REMD run.\n");
-      return 1;
-    }
+  // Errors
+  if (!mdopts_.N_Steps().IsSet()) {
+    ErrorMsg("Number of steps NSTLIM not set.\n");
+    return 1;
   }
+  // Warnings
+  if (!mdopts_.TrajWriteFreq().IsSet())
+    Msg("Warning: Trajectory write frequency NTWX is not set.\n");
+  // Perform some more error checking
   if (!mdopts_.TimeStep().IsSet()) {
     Msg("Warning: DT not specified. Using default: %g\n", mdopts_.TimeStep().Val());
   }
