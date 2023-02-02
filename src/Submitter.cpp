@@ -196,7 +196,7 @@ void Submitter::Info() const {
   Msg(  "  DEPEND    : %s\n", DependTypeStr_[dependType_]);
   Msg(  "  PROGRAM   : %s\n", program_.c_str());
   if (!mpirun_.empty())
-    Msg("  MPIRUN    : %s\n", mpirun_.empty());
+    Msg("  MPIRUN    : %s\n", mpirun_.c_str());
   if (nodes_ > 0)
     Msg("  NODES     : %i\n", nodes_);
   if (procs_ > 0)
