@@ -10,7 +10,7 @@ Exec_SetOpt::Exec_SetOpt() {}
 
 /** Basic help text. */
 void Exec_SetOpt::Help() const {
-  Msg("\t{create|submit} <OPTION> <VALUE>}\n");
+  Msg("\t<OPTION> <VALUE>}\n");
 }
 
 /** Help text */
@@ -36,17 +36,6 @@ Exec::RetType Exec_SetOpt::Execute(Manager& manager, Cols& args) const {
   }
   // Get active system
   System& activeSystem = manager.ActiveProjectSystem();
-  // Get create or submit
-  std::string TYPE = args.NextColumn();
-  int create = -1;
-  if (TYPE == "create")
-    create = 1;
-  else if (TYPE == "submit")
-    create = 0;
-  else {
-    ErrorMsg("Expected 'create' or 'submit'.\n");
-    return ERR;
-  }
   // Get OPT
   std::string OPT = args.NextColumn();
   if (OPT.empty()) {
@@ -70,15 +59,12 @@ Exec::RetType Exec_SetOpt::Execute(Manager& manager, Cols& args) const {
 
   Msg("DEBUG: OPT=%s VAR=%s\n", OPT.c_str(), VAR.c_str());
 
-  int ret = 0;
-  if (create == 1)
-    ret = activeSystem.ParseOption( OPT, VAR );
-  else
-    Msg("FIXME: 'submit' not implemented yet.\n");
-  if (ret == -1)
+  int ret = activeSystem.ParseOption( OPT, VAR );
+  if (ret == -1) {
+    ErrorMsg("Could not process '%s = %s'\n", OPT.c_str(), VAR.c_str());
     return ERR;
-  else if (ret == 0)
-    Msg("Warning: Option not recognized.\n");
+  } else if (ret == 0)
+    Msg("Warning: Option '%s = %s' not recognized.\n", OPT.c_str(), VAR.c_str());
 
   return OK;
 }

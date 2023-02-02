@@ -213,13 +213,25 @@ int System::FindRuns(QueueArray& queues) {
   */
 int System::ParseOption(std::string const& OPT, std::string const& VAR) {
   OptArray::OptPair opair(OPT, VAR);
+  // Creator
   int ret = creator_.ParseFileOption( opair );
   if (ret == 1) {
     // Ensure creator is refreshed after parsing the option
     creator_.CheckCreator();
-  } else if (ret == 0) {
+  }
+  // Md package
+  if (ret == 0) {
     ret = mdInterface_.Package()->ParseCreatorOption( OPT, VAR );
   }
+  // Submitter
+  if (ret == 0) {
+    ret = submitter_.ParseFileOption( opair );
+    if (ret == 1) {
+      // Ensure submitter is checked after parsing the option
+      submitter_.CheckSubmitter();
+    }
+  }
+  // Handle return status
   if (ret == 1) {
     needs_save_ = true;
     // Process MD package-specific MD input if needed
@@ -267,6 +279,7 @@ void System::PrintSummary() const {
 /** Print system info. */
 void System::PrintInfo() const {
   creator_.Info();
+  submitter_.Info();
 }
 
 /** Change to system directory. */

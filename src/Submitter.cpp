@@ -138,24 +138,26 @@ int Submitter::ReadOptions(std::string const& input_file) {
 
 /** Check that submitter is valid. */
 int Submitter::CheckSubmitter() {
+  int errcount = 0;
+  // Set user if needed
+  if (user_.empty())
+    user_ = NoTrailingWhitespace( UserName() );
   // Check required options
   if (job_name_.empty()) {
     ErrorMsg("No JOBNAME specified.\n");
-    return 1;
+    errcount++;
   }
   if (program_.empty()) {
     ErrorMsg("No PROGRAM specified.\n");
-    return 1;
+    errcount++;
   }
   // Check queue
   if (!localQueue_.IsValid()) {
     ErrorMsg("Invalid queue.\n");
-    return 1;
+    errcount++;
   }
-  // Set user if needed
-  if (user_.empty())
-    user_ = NoTrailingWhitespace( UserName() );
-  return 0;
+
+  return errcount;
 }
 
 /** Print options to stdout. */

@@ -468,6 +468,7 @@ int Creator::LoadDimension(std::string const& dfile) {
 /** Check that Creator options are valid. Count number of replicas if needed. 
   */ // TODO make const by putting replica count elsewhere
 int Creator::CheckCreator() {
+  int errcount = 0;
   // Perform tilde expansion on coords if necessary.
   if (!crd_dir_.empty() && crd_dir_[0] == '~')
     crd_dir_ = tildeExpansion(crd_dir_);
@@ -480,7 +481,7 @@ int Creator::CheckCreator() {
     }
     if (top_file_.empty()) {
       ErrorMsg("TOPOLOGY not specified.\n");
-      return 1;
+      errcount++;
     }
   } else {
     // Count total # of replicas, Do some error checking.
@@ -495,11 +496,11 @@ int Creator::CheckCreator() {
     }
     if (!Dims_.HasDim(ReplicaDimension::TOPOLOGY) && top_file_.empty()) {
       ErrorMsg("No dimension provides topology files and TOPOLOGY not specified.\n");
-      return 1;
+      errcount++;
     }
     if (!mdopts_.N_Exchanges().IsSet()) {
       ErrorMsg("Number of exchanges NUMEXCHG not set for REMD run.\n");
-      return 1;
+      errcount++;
     }
     if (debug_ > 0)
       Msg("    Topology dimension: %i\n    Temp0 dimension: %i    pH dimension: %i\n",
@@ -510,7 +511,7 @@ int Creator::CheckCreator() {
   // Errors
   if (!mdopts_.N_Steps().IsSet()) {
     ErrorMsg("Number of steps NSTLIM not set.\n");
-    return 1;
+    errcount++;
   }
   // Warnings
   if (!mdopts_.TrajWriteFreq().IsSet())
@@ -529,7 +530,7 @@ int Creator::CheckCreator() {
     return 1;
   }*/
 
-  return 0;
+  return errcount;
 }
 
 // Creator::Info()
