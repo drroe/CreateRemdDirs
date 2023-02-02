@@ -6,6 +6,7 @@ class RepIndexArray;
 class MdOptions;
 class Creator;
 class RunStatus;
+class TextFile;
 /// Abstract base class for various MD packages.
 class MdPackage {
   public:
@@ -29,6 +30,8 @@ class MdPackage {
     virtual int ParseCreatorOption(std::string const&, std::string const&) = 0;
     /// Check creator options
     virtual int CheckCreatorOptions(Creator const&) const = 0;
+    /// Write package-specific creator options to a file
+    virtual int WriteCreatorOptions(TextFile&) const = 0;
     /// Read package-specific input options from a file
     virtual int ReadPackageInput(MdOptions&, std::string const&) = 0;
     /// Create package-specific input files

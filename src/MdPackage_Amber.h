@@ -22,6 +22,8 @@ class MdPackage_Amber : public MdPackage {
     int ParseCreatorOption(std::string const&, std::string const&);
     /// Check creator options
     int CheckCreatorOptions(Creator const&) const;
+    /// Write amber-specific creator options to file
+    int WriteCreatorOptions(TextFile&) const;
     /// Read amber-specific input (i.e. MDIN input) from file
     int ReadPackageInput(MdOptions&, std::string const&);
     /// Create amber-specific input files
@@ -52,7 +54,7 @@ class MdPackage_Amber : public MdPackage {
     bool override_irest_;         ///< If true do not set irest, use from MDIN
     bool override_ntx_;           ///< If true do not set ntx, use from MDIN
     MdinFile mdinFile_;           ///< Used to read input from MDIN
-    bool uselog_;                 ///< If true add -l log command line arg
+    bool uselog_;                 ///< If true add -l log command line arg TODO deprecate
     std::string cpin_file_;       ///< Constant pH input file name
 };
 #endif

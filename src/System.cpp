@@ -4,6 +4,7 @@
 #include "Run.h"
 #include "StringRoutines.h"
 #include "MdPackage.h"
+#include "TextFile.h"
 
 using namespace Messages;
 
@@ -79,19 +80,55 @@ int System::WriteSystemOptions() {
     ErrorMsg("Could not change to system directory %s/%s\n", topDir_.c_str(), dirname_.c_str());
     return 1;
   }
+  // ----- Creator and MdPackage -------
   if (c_needs_save_) {
-    if (creator_.WriteOptions( createOptsFilename_ )) {
-      ErrorMsg("Writing creation options to file '%s' in dir '%s' failed.\n", createOptsFilename_.c_str(), dirname_.c_str());
-      return 1;
+    bool write_file = true;
+    if (fileExists( createOptsFilename_ )) {
+      Msg("Warning: '%s' exists.\n", createOptsFilename_.c_str());
+      write_file = YesNoPrompt("Overwrite?");
     }
-    c_needs_save_ = false;
+    if (write_file) {
+      Msg("Writing create options to '%s'\n", createOptsFilename_.c_str());
+      TextFile outfile;
+      if (outfile.OpenWrite( createOptsFilename_ )) {
+        ErrorMsg("Opening '%s' for write failed.\n", createOptsFilename_.c_str());
+        return 1;
+      }
+      if (creator_.WriteOptions( outfile )) {
+        ErrorMsg("Writing creation options to file '%s' in dir '%s' failed.\n", createOptsFilename_.c_str(), dirname_.c_str());
+        return 1;
+      }
+      if (mdInterface_.HasPackage()) {
+        if (mdInterface_.Package()->WriteCreatorOptions( outfile )) {
+          ErrorMsg("Writing package-specific creation options to file '%s' in dir '%s' failed.\n", createOptsFilename_.c_str(), dirname_.c_str());
+          return 1;
+        }
+      }
+      outfile.Close();
+      c_needs_save_ = false;
+    }
   }
+  // ----- Submitter and Queue ---------
   if (s_needs_save_) {
-    if (submitter_.WriteOptions( submitOptsFilename_ )) {
-      ErrorMsg("Writing submit options to file '%s' in dir '%s' failed.\n", submitOptsFilename_.c_str(), dirname_.c_str());
-      return 1;
+    bool write_file = true;
+    if (fileExists( submitOptsFilename_ )) {
+      Msg("Warning: '%s' exists.\n", submitOptsFilename_.c_str());
+      write_file = YesNoPrompt("Overwrite?");
     }
-    s_needs_save_ = false;
+    if (write_file) {
+      Msg("Writing submit options to '%s'\n", submitOptsFilename_.c_str());
+      TextFile outfile;
+      if (outfile.OpenWrite( submitOptsFilename_ )) {
+        ErrorMsg("Opening '%s' for write failed.\n", submitOptsFilename_.c_str());
+        return 1;
+      }
+      if (submitter_.WriteOptions( outfile )) {
+        ErrorMsg("Writing submit options to file '%s' in dir '%s' failed.\n", submitOptsFilename_.c_str(), dirname_.c_str());
+        return 1;
+      }
+      outfile.Close();
+      s_needs_save_ = false;
+    }
   }
 
   return 0;

@@ -5,6 +5,7 @@
 #include "ReplicaDimArray.h"
 #include "OptArray.h"
 class RepIndexArray;
+class TextFile;
 /// Class responsible for creating run input and script
 class Creator {
   public:
@@ -18,7 +19,7 @@ class Creator {
     static void OptHelp();
    
     /// Write creation options to a file
-    int WriteOptions(std::string const&) const; 
+    int WriteOptions(TextFile&) const; 
     /// Read creation options from a file
     int ReadOptions(std::string const&);
     /// Check and update creator based on current options.

@@ -48,18 +48,7 @@ void Submitter::OptHelp() {
 }
 
 /** Write current options to a file. */
-int Submitter::WriteOptions(std::string const& output_file) const {
-  if (fileExists(output_file)) {
-    Msg("Warning: '%s' exists.\n", output_file.c_str());
-    bool overwrite = YesNoPrompt("Overwrite?");
-    if (!overwrite) return 0;
-  }
-  Msg("Writing submit options to '%s'\n", output_file.c_str());
-  TextFile outfile;
-  if (outfile.OpenWrite( output_file )) {
-    ErrorMsg("Opening '%s' for write failed.\n");
-    return 1;
-  }
+int Submitter::WriteOptions(TextFile& outfile) const {
   if (!job_name_.empty())
     outfile.Printf("JOBNAME %s\n", job_name_.c_str());
   if (nodes_ > 0)

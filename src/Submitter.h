@@ -16,7 +16,7 @@ class Submitter {
     static void OptHelp();
 
     /// Write options to a file
-    int WriteOptions(std::string const&) const;
+    int WriteOptions(TextFile&) const;
     /// Parse a single option
     int ParseFileOption(OptArray::OptPair const&);
     /// Read options from a file

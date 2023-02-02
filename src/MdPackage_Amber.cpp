@@ -55,6 +55,17 @@ void MdPackage_Amber::OptHelp() {
       "  USELOG {yes|no}    : yes (default): use logfile (pmemd), otherwise do not (sander).\n");
 }
 
+/** Write amber-specific creator options to file. */
+int MdPackage_Amber::WriteCreatorOptions(TextFile& outfile) const {
+  if (uselog_)
+    outfile.Printf("USELOG yes\n");
+  else
+    outfile.Printf("USELOG no\n");
+  if (!cpin_file_.empty())
+    outfile.Printf("CPIN_FILE %s\n", cpin_file_.c_str());
+  return 0;
+}
+
 /** Parse amber-specific creator option.
   * \return 1 if option was parsed, -1 if error, 0 otherwise.
   */ 

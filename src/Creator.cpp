@@ -278,18 +278,7 @@ Msg("\n"
 }
 
 /** Write current options to a file. */
-int Creator::WriteOptions(std::string const& output_file) const {
-  if (fileExists(output_file)) {
-    Msg("Warning: '%s' exists.\n", output_file.c_str());
-    bool overwrite = YesNoPrompt("Overwrite?");
-    if (!overwrite) return 0;
-  }
-  Msg("Writing create options to '%s'\n", output_file.c_str());
-  TextFile outfile;
-  if (outfile.OpenWrite( output_file )) {
-    ErrorMsg("Opening '%s' for write failed.\n");
-    return 1;
-  }
+int Creator::WriteOptions(TextFile& outfile) const {
   if (n_md_runs_ > 0) // TODO should be 1?
     outfile.Printf("MDRUNS %i\n", n_md_runs_);
   // Files
