@@ -59,7 +59,7 @@ int Run::Refresh(MdPackage* mdpackage) {
 }
 
 /** Create new or overwrite existing run dir. */
-int Run::CreateNew(std::string const& runDir, Creator const& creator, MdPackage* mdpackage,
+int Run::CreateNew(std::string const& runDir, Creator const& creator, Submitter const& submitter, MdPackage* mdpackage,
                    int start_run, int run_num, std::string const& prevDir)
 {
   using namespace FileRoutines;
@@ -72,7 +72,7 @@ int Run::CreateNew(std::string const& runDir, Creator const& creator, MdPackage*
   if (ChangeDir(rundir_)) return 1;
   setupDir_ = GetWorkingDir();
 
-  if (mdpackage->CreateInputFiles(creator, start_run, run_num, rundir_, prevDir)) {
+  if (mdpackage->CreateInputFiles(creator, submitter, start_run, run_num, rundir_, prevDir)) {
     ErrorMsg("Error creating run in %s\n", runDir.c_str());
     return 1;
   }

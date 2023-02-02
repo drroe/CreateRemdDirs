@@ -29,7 +29,7 @@ class MdPackage_Amber : public MdPackage {
     /// Read amber-specific input (i.e. MDIN input) from file
     int ReadPackageInput(MdOptions&, std::string const&);
     /// Create amber-specific input files
-    int CreateInputFiles(Creator const&, int, int, std::string const&, std::string const&) const;
+    int CreateInputFiles(Creator const&, Submitter const&, int, int, std::string const&, std::string const&) const;
     /// \return Information on an existing run from output files
     RunStatus RunCurrentStatus(std::vector<std::string> const&) const;
   private:
@@ -46,7 +46,7 @@ class MdPackage_Amber : public MdPackage {
     /// Create single MD input
     int create_singlemd_input(Creator const&, int, int, std::string const&, std::string const&) const;
     /// Create remd input
-    int create_remd_input(Creator const&, int, int, std::string const&, std::string const&) const;
+    int create_remd_input(Creator const&, int, int, std::string const&, std::string const&, bool) const;
     /// Read info from an MDOUT file; gets top name
     int read_mdout(RunStatus&, std::string const&, std::string&) const;
     /// Read # frames from traj file
@@ -56,7 +56,6 @@ class MdPackage_Amber : public MdPackage {
     bool override_irest_;         ///< If true do not set irest, use from MDIN
     bool override_ntx_;           ///< If true do not set ntx, use from MDIN
     MdinFile mdinFile_;           ///< Used to read input from MDIN
-    bool uselog_;                 ///< If true add -l log command line arg TODO deprecate
     std::string cpin_file_;       ///< Constant pH input file name
 };
 #endif

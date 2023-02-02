@@ -192,3 +192,18 @@ std::string FileRoutines::Extension(std::string const& fname) {
   }
   return fname.substr(found+1);
 }
+
+/** \return base file name. */
+// Get position of last occurence of '/' to determine base filename
+std::string FileRoutines::Basename(std::string const& fullPathName) {
+  std::string baseName;
+  size_t found = fullPathName.find_last_of("/");
+  if (found == std::string::npos) {
+    baseName = fullPathName;
+    //dirPrefix_.clear();
+  } else {
+    baseName = fullPathName.substr(found+1);
+    //dirPrefix_ = fullPathName_.substr(0, found+1);
+  }
+  return baseName;
+}

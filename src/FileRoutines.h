@@ -31,5 +31,7 @@ int ChangePermissions(std::string const&);
 std::string UserName();
 /// \return portion of file name after final '.'
 std::string Extension(std::string const&);
+/// \return Base file name
+std::string Basename(std::string const&);
 }
 #endif

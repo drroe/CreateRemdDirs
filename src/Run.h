@@ -27,7 +27,7 @@ class Run {
     /// Refresh run status
     int Refresh(MdPackage*);
     /// Create new directory - rundir, creator, mdpackage, start #, run #, prev run dir
-    int CreateNew(std::string const&, Creator const&, MdPackage*, int, int, std::string const&);
+    int CreateNew(std::string const&, Creator const&, Submitter const&, MdPackage*, int, int, std::string const&);
     /// Submit run
     int SubmitRun(Submitter const&, std::string const&, std::string const&);
   private:

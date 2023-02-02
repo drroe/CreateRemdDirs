@@ -21,8 +21,7 @@ const std::string MdPackage_Amber::remddimName_("remd.dim");
 /** CONSTRUCTOR */
 MdPackage_Amber::MdPackage_Amber() :
   override_irest_(false),
-  override_ntx_(false),
-  uselog_(false)
+  override_ntx_(false)
 {}
 
 /** COPY CONSTRUCTOR */
@@ -32,7 +31,6 @@ MdPackage_Amber::MdPackage_Amber(MdPackage_Amber const& rhs) :
   override_irest_(rhs.override_irest_),
   override_ntx_(rhs.override_ntx_),
   mdinFile_(rhs.mdinFile_),
-  uselog_(rhs.uselog_),
   cpin_file_(rhs.cpin_file_)
 {}
 
@@ -44,7 +42,6 @@ MdPackage_Amber& MdPackage_Amber::operator=(MdPackage_Amber const& rhs) {
   override_ntx_ = rhs.override_ntx_;
   override_irest_ = rhs.override_irest_;
   mdinFile_ = rhs.mdinFile_;
-  uselog_ = rhs.uselog_;
   cpin_file_ = rhs.cpin_file_;
 
   return *this;
@@ -58,10 +55,6 @@ void MdPackage_Amber::OptHelp() {
 
 /** Write amber-specific creator options to file. */
 int MdPackage_Amber::WriteCreatorOptions(TextFile& outfile) const {
-  if (uselog_)
-    outfile.Printf("USELOG yes\n");
-  else
-    outfile.Printf("USELOG no\n");
   if (!cpin_file_.empty())
     outfile.Printf("CPIN_FILE %s\n", cpin_file_.c_str());
   return 0;
@@ -71,17 +64,7 @@ int MdPackage_Amber::WriteCreatorOptions(TextFile& outfile) const {
   * \return 1 if option was parsed, -1 if error, 0 otherwise.
   */ 
 int MdPackage_Amber::ParseCreatorOption(std::string const& OPT, std::string const& VAR) {
-  if (OPT == "USELOG") {
-    if (VAR == "yes")
-      uselog_ = true;
-    else if (VAR == "no")
-      uselog_ = false;
-    else {
-      ErrorMsg("Expected either 'yes' or 'no' for USELOG.\n");
-      //OptHelp(); FIXME
-      return -1;
-    }
-  } else if (OPT == "CPIN_FILE") {
+  if (OPT == "CPIN_FILE") {
     cpin_file_ = VAR;
     if (FileRoutines::fileExists(cpin_file_))
       cpin_file_ = FileRoutines::tildeExpansion( cpin_file_ );
@@ -325,17 +308,27 @@ const
 }
 
 /** Create input files for Amber run. Should already be in run_dir. */
-int MdPackage_Amber::CreateInputFiles(Creator const& creator, int start_run, int run_num, std::string const& run_dir, std::string const& prevDir)
+int MdPackage_Amber::CreateInputFiles(Creator const& creator, Submitter const& submitter, int start_run, int run_num, std::string const& run_dir, std::string const& prevDir)
 const
 {
   int err = 1;
+  // Determine if we are using sander or pmemd to figure out if we need the logfile flag or not
+  bool uselog = false;
+  if (!submitter.Program().empty()) {
+    std::string basename = FileRoutines::Basename( submitter.Program() );
+    if ( basename.find("pmemd") != std::string::npos ) {
+      Msg("DEBUG: pmemd detected, using logfile.\n");
+      uselog = true;
+    }
+  }
+  // TODO uselog for all run types
   if (creator.IsSetupForMD()) {
     if (creator.N_MD_Runs() > 1)
       err = create_multimd_input( creator, start_run, run_num, run_dir, prevDir );
     else
       err = create_singlemd_input( creator, start_run, run_num, run_dir, prevDir );
   } else
-    err = create_remd_input( creator, start_run, run_num, run_dir, prevDir );
+    err = create_remd_input( creator, start_run, run_num, run_dir, prevDir, uselog );
   return err;
 }
 
@@ -488,7 +481,7 @@ const
 }
 
 /** Create input files for Amber REMD run. */
-int MdPackage_Amber::create_remd_input(Creator const& creator, int start_run, int run_num, std::string const& run_dir, std::string const& prevDir)
+int MdPackage_Amber::create_remd_input(Creator const& creator, int start_run, int run_num, std::string const& run_dir, std::string const& prevDir, bool uselog)
 const
 {
   using namespace FileRoutines;
@@ -580,7 +573,7 @@ const
       }
       GROUPFILE_LINE.append(" -ref " + tildeExpansion(repRef));
     }
-    if (uselog_)
+    if (uselog)
       GROUPFILE_LINE.append(" -l LOG/logfile." + EXT);
     if (creator.TypeOfRun() == Creator::PHREMD) {
       if (run_num == 0)
@@ -635,7 +628,7 @@ const
   if (Mkdir( "TRAJ"   )) return 1;
   if (Mkdir( "RST"    )) return 1;
   if (Mkdir( "INFO"   )) return 1;
-  if (uselog_)
+  if (uselog)
     if (Mkdir( "LOG"    )) return 1;
   if (creator.TypeOfRun() == Creator::PHREMD) {
     if (Mkdir( "CPH" )) return 1;

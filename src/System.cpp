@@ -475,11 +475,11 @@ int System::CreateRunDirectories(std::string const& crd_dir,
     //}
     int create_stat = 0;
     if (existingRunIdx > -1)
-      create_stat = Runs_.Set_Run(existingRunIdx).CreateNew(runDir, creator_, mdInterface_.Package(),
+      create_stat = Runs_.Set_Run(existingRunIdx).CreateNew(runDir, creator_, submitter_, mdInterface_.Package(),
                                                             lowest_run_idx, runNum, prevDir);
     else {
       Runs_.AddRun( Run() );
-      create_stat = Runs_.Set_back().CreateNew(runDir, creator_, mdInterface_.Package(),
+      create_stat = Runs_.Set_back().CreateNew(runDir, creator_, submitter_, mdInterface_.Package(),
                                                lowest_run_idx, runNum, prevDir);
     }
     if (create_stat != 0) {
