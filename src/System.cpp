@@ -256,13 +256,16 @@ int System::ParseOption(std::string const& OPT, std::string const& VAR) {
   if (ret == 1) {
     // Ensure creator is refreshed after parsing the option
     creator_.CheckCreator();
+    mdInterface_.Package()->CheckCreatorOptions(creator_);
     c_needs_save_ = true;
   }
   // Md package
   if (ret == 0) {
     ret = mdInterface_.Package()->ParseCreatorOption( OPT, VAR );
-    if (ret == 1)
+    if (ret == 1) {
+      mdInterface_.Package()->CheckCreatorOptions(creator_);
       c_needs_save_ = true;
+    }
   }
   // Submitter
   if (ret == 0) {
@@ -270,6 +273,7 @@ int System::ParseOption(std::string const& OPT, std::string const& VAR) {
     if (ret == 1) {
       // Ensure submitter is checked after parsing the option
       submitter_.CheckSubmitter();
+      mdInterface_.Package()->CheckSubmitterOptions(creator_, submitter_);
       s_needs_save_ = true;
     }
   }
@@ -357,7 +361,9 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
     return 1;
   }
   // Ensure the submitter is valid
-  if (submitter_.CheckSubmitter()) {
+  if (submitter_.CheckSubmitter() || 
+      mdInterface_.Package()->CheckSubmitterOptions(creator_, submitter_))
+  {
     ErrorMsg("Invalid options detected. Cannot submit.\n");
     return 1;
   }
@@ -413,7 +419,7 @@ int System::CreateRunDirectories(std::string const& crd_dir,
     return 1;
   }
   // Ensure the creator is valid
-  if (creator_.CheckCreator()) {
+  if (creator_.CheckCreator() || mdInterface_.Package()->CheckCreatorOptions(creator_)) { 
     ErrorMsg("Invalid options detected. Cannot create.\n");
     return 1;
   }
