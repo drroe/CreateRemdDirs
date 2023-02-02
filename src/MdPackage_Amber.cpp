@@ -12,6 +12,7 @@
 #include "CpptrajInterface.h"
 #include "CommonOptions.h"
 #include "Submitter.h"
+#include "Cols.h"
 
 using namespace Messages;
 
@@ -713,7 +714,26 @@ const
     }
     ptr = mdout.Gets();
   }
+  // Scan down to timings
+  while (ptr != 0) {
+    std::string ptrstr(ptr);
+    if (ptrstr.compare(0, 29, "|     Average timings for all") == 0 ||
+        ptrstr.compare(0, 25, "| Average timings for all"    ) == 0)
+    {
+      ptr = mdout.Gets(); //|     Elapsed(s) =
+      ptr = mdout.Gets(); //|         ns/day =
+      std::string timingLine(ptr);
+      Cols timing;
+      timing.Split(timingLine, "| =\r\n");
+      std::string nspd = timing.GetKey("ns/day");
+      if (!nspd.empty())
+        currentStat.Set_NsPerDay().SetVal( convertToDouble( nspd ) );
+      break;
+    }
+    ptr = mdout.Gets();
+  }
   mdout.Close();
+
   if (completed)
     currentStat.Set_Status( RunStatus::COMPLETE );
   else

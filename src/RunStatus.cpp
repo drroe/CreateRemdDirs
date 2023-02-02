@@ -45,6 +45,8 @@ void RunStatus::PrintStatus() const {
           runOpts_.Total_Time(),
           "Unknown",
           runOpts_.Expected_Frames());
+    if (ns_per_day_.IsSet())
+      Msg(" %g ns/day", ns_per_day_.Val());
   }
 }
 
