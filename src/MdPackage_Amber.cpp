@@ -764,6 +764,7 @@ RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& file
   std::string traj_name;
   bool has_input = false;
   bool has_runscript = false;
+  bool has_submitscript = false;
 
   std::string const& runscriptname = CommonOptions::Opt_RunScriptName().Val();
 
@@ -771,7 +772,9 @@ RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& file
   for (std::vector<std::string>::const_iterator fname = files.begin();
                                                 fname != files.end(); ++fname)
   {
-    if (*fname == runscriptname)
+    if (CommonOptions::IsSubmitScript(*fname))
+      has_submitscript = true;
+    else if (*fname == runscriptname)
       has_runscript = true;
     else if (*fname == "md.in")
       // MD input
@@ -818,8 +821,12 @@ RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& file
   }
 
   if (currentStat.CurrentStat() == RunStatus::UNKNOWN) {
-    if (has_runscript && output_name.empty())
-      currentStat.Set_Status(RunStatus::PENDING);
+    if (has_runscript && output_name.empty()) {
+      if (has_submitscript)
+        currentStat.Set_Status(RunStatus::READY);
+      else
+        currentStat.Set_Status(RunStatus::PENDING);
+    }
   }
   //DEBUG
   //currentStat.Opts().PrintOpts(false, -1, -1);

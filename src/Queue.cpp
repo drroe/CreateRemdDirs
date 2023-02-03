@@ -24,7 +24,10 @@ std::string Queue::HeaderFlag() const {
   return "";
 }
 
-/** \return Queue submit command. */
+/** \return Queue submit command.
+  * This is also used to name the job submit script.
+  * NOTE: If additional names are added here, update CommonOptions::IsSubmitScript()
+  */
 std::string Queue::SubmitCmd() const {
   if (queueType_ == PBS) return "qsub";
   else if (queueType_ == SLURM) return "sbatch";

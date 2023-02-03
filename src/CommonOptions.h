@@ -8,5 +8,7 @@ namespace CommonOptions {
 /// \return Run script name option
 Option<std::string>& Opt_RunScriptName();
 
+/// \return True if given name is a recognized submit script name; see Queue::SubmitCmd()
+bool IsSubmitScript(std::string const&);
 }
 #endif
