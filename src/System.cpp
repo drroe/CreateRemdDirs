@@ -369,6 +369,7 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
     return 1;
   }
   // Ensure the submitter is valid
+  submitter_.Info();
   if (submitter_.CheckSubmitter() || 
       mdInterface_.Package()->CheckSubmitterOptions(creator_, submitter_))
   {
@@ -427,6 +428,7 @@ int System::CreateRunDirectories(std::string const& crd_dir,
     return 1;
   }
   // Ensure the creator is valid
+  creator_.Info();
   if (creator_.CheckCreator() || mdInterface_.Package()->CheckCreatorOptions(creator_)) { 
     ErrorMsg("Invalid options detected. Cannot create.\n");
     return 1;
@@ -434,7 +436,6 @@ int System::CreateRunDirectories(std::string const& crd_dir,
   // Set alternate coords if needed. FIXME should be passed into CreateNew
   if (!crd_dir.empty())
     creator_.SetSpecifiedCoords( crd_dir );
-  creator_.Info();
   // If any runs exist, determine the lowest index and highest index
   int lowest_run_idx;
   if (Runs_.empty())
