@@ -12,7 +12,7 @@ FileNameArray::FileNameArray(std::string const& base,
                              std::string const& prevDir,
                              std::string const& crd_ext,
                              int fileExtWidth) :
-  base_(base),
+  base_(tildeExpansion(base)),
   startRunNum_(startRunNum),
   runNum_(runNum),
   prevDir_(prevDir),
@@ -24,7 +24,7 @@ FileNameArray::FileNameArray(std::string const& base,
 FileNameArray::FileNameArray(std::string const& base,
                              std::string const& crd_ext,
                              int fileExtWidth) :
-  base_(base),
+  base_(tildeExpansion(base)),
   startRunNum_(0),
   runNum_(0),
   crd_ext_(crd_ext),
@@ -101,6 +101,7 @@ const
 
 /** Generate list of name(s) */
 int FileNameArray::Generate(unsigned int nfiles, std::string const& specified_crd) {
+  Msg("DEBUG: Generate nfiles=%u specified_crd='%s' base='%s'\n", nfiles, specified_crd.c_str(), base_.c_str());
   files_.clear();
   if (base_.empty()) return 0;
   if (nfiles == 0) return 0;

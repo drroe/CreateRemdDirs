@@ -426,7 +426,7 @@ const
 //  if (Mkdir(run_dir)) return 1;
 //  if (ChangeDir(run_dir)) return 1;
   // Get input coordinates array
-  FileNameArray inpcrd_files(creator.CrdDir(), start_run, run_num, prevDir + "/mdrst.rst7", ".rst7", 3);
+  FileNameArray inpcrd_files(creator.CrdDir(), start_run, run_num, prevDir + "/mdrst.rst7", "rst7", 3);
   if (inpcrd_files.Generate(1, "")) {
     ErrorMsg("Generating input coords file name failed.\n");
     return 1;
@@ -438,7 +438,7 @@ const
     return 1;
   }
   // Get reference coords if any
-  FileNameArray refcrd_files(creator.RefDir(), ".rst7", 3);
+  FileNameArray refcrd_files(creator.RefDir(), "rst7", 3);
   if (refcrd_files.Generate(1, "")) {
     ErrorMsg("Generating reference coords file name failed.\n");
     return 1;
@@ -488,20 +488,18 @@ const
 //  if (Mkdir(run_dir)) return 1;
 //  if (ChangeDir(run_dir)) return 1;
   // Get Coords
-  Creator::Sarray crd_files = creator.InputCoordsNames(start_run, run_num, prevDir);
-  if (crd_files.empty()) {
-    ErrorMsg("Could not get COORDS for REMD.\n");
+  FileNameArray inpcrd_files(creator.CrdDir(), start_run, run_num, prevDir + "/RST", "rst7", 3);
+  if (inpcrd_files.Generate(creator.TotalReplicas(), "")) {
+    ErrorMsg("Generating input coords file names for REMD failed.\n");
     return 1;
   }
   // Get any ref coords
-  Creator::Sarray ref_files = creator.RefCoordsNames();
-/*
-  // Ensure that coords directory exists.
-  if (crdDirSpecified_ && !fileExists(crd_dir_)) {
-    ErrorMsg("Coords directory '%s' not found. Must specify absolute path"
-             " or path relative to '%s'\n", crd_dir_.c_str(), run_dir.c_str());
+  FileNameArray refcrd_files(creator.RefDir(), "rst7", 3);
+  if (refcrd_files.Generate(creator.TotalReplicas(), "")) {
+    ErrorMsg("Generating ref coords file names for REMD failed.\n");
     return 1;
-  }*/
+  }
+
   // If constant pH, ensure CPIN file exists
   if (creator.TypeOfRun() == Creator::PHREMD && !fileExists(cpin_file_))
   {
@@ -555,15 +553,15 @@ const
     }
 
     // Write to groupfile. Determine restart.
-    std::string const& INPUT_CRD = crd_files[rep];
+    std::string const& INPUT_CRD = inpcrd_files[rep];
     if (Debug() > 1)
       Msg("\t\tINPCRD: %s\n", INPUT_CRD.c_str());
     std::string GROUPFILE_LINE = "-O -remlog rem.log -i " + mdin_name +
       " -p " + currentTop + " -c " + INPUT_CRD + " -o OUTPUT/rem.out." + EXT +
       " -inf INFO/reminfo." + EXT + " -r RST/" + EXT + 
       ".rst7 -x TRAJ/rem.crd." + EXT;
-    if (!ref_files.empty()) {
-      std::string const& repRef = ref_files[rep];
+    if (!refcrd_files.empty()) {
+      std::string const& repRef = refcrd_files[rep];
       if (!fileExists( repRef )) {
         ErrorMsg("Reference file '%s' not found. Must specify absolute path"
                  " or path relative to '%s'\n", repRef.c_str(), run_dir.c_str());
