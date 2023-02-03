@@ -448,6 +448,11 @@ int System::CreateRunDirectories(std::string const& crd_dir,
                "Error:   index after run %i.\n", start_run, highest_run_idx);
       return 1;
     }
+    if (start_run < lowest_run_idx) {
+      ErrorMsg("Error: Runs exist and specified start index %i is lower than\n"
+               "Error:   lowest existing run index %i\n", start_run, lowest_run_idx);
+      return 1;
+    }
   }
   // Loop over desired run numbers 
   int stop_run = start_run + nruns - 1;
