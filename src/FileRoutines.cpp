@@ -1,11 +1,12 @@
 #include <cstdio>    // fopen, fclose
 #include <cerrno>
 #include <cstring>
+#include <cstdlib> // getenv
 #include <sys/stat.h> // mkdir
 #include <unistd.h> // getcwd 
-#ifndef __PGI
-#  include <glob.h>  // For tilde expansion
-#endif
+//#if ndef __PGI
+#  include <glob.h>  // ExpandToFilenames 
+//#en dif
 #include "FileRoutines.h"
 #include "Messages.h"
 
@@ -18,6 +19,21 @@ using namespace Messages;
   * so that this routine and fileExists() can be used to silently check files.
   */
 std::string FileRoutines::tildeExpansion(std::string const& filenameIn) {
+  if (filenameIn.empty()) return std::string("");
+  if (filenameIn[0] != '~') return filenameIn;
+  // See if HOME is defined
+  if (filenameIn.size() > 1 && filenameIn[1] == '/') {
+    // filenameIn has form '~/<something>'. Replace '~' with home directory if possible
+    char* homedir = getenv("HOME");
+    if (homedir != 0) {
+      std::string fname = std::string(homedir) + filenameIn.substr(1);
+      return fname;
+    }
+  }
+  // If no expansion possible just return filenameIn
+  return filenameIn;
+}
+/*
   if (filenameIn.empty()) {
     ErrorMsg("tildeExpansion: null filename specified.\n");
     return std::string("");
@@ -47,7 +63,7 @@ std::string FileRoutines::tildeExpansion(std::string const& filenameIn) {
   }
   return returnFilename;
 # endif
-}
+}*/
 
 // ExpandToFilenames()
 /** Expand given expression with file name wildcards into an array of
