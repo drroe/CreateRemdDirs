@@ -431,17 +431,23 @@ int System::CreateRunDirectories(std::string const& crd_dir,
     ErrorMsg("Invalid options detected. Cannot create.\n");
     return 1;
   }
-  // Set alternate coords if needed.
+  // Set alternate coords if needed. FIXME should be passed into CreateNew
   if (!crd_dir.empty())
     creator_.SetSpecifiedCoords( crd_dir );
   creator_.Info();
-  // If any runs exist, determine the lowest index
+  // If any runs exist, determine the lowest index and highest index
   int lowest_run_idx;
   if (Runs_.empty())
     lowest_run_idx = start_run;
   else {
     lowest_run_idx = Runs_.front().RunIndex();
     Msg("Lowest existing run index is %i\n", lowest_run_idx);
+    int highest_run_idx = Runs_.back().RunIndex();
+    if (start_run > highest_run_idx + 1) {
+      ErrorMsg("Error: Runs exist and specified start index %i is not the next\n"
+               "Error:   index after run %i.\n", start_run, highest_run_idx);
+      return 1;
+    }
   }
   // Loop over desired run numbers 
   int stop_run = start_run + nruns - 1;
