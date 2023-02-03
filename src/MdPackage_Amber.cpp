@@ -13,6 +13,7 @@
 #include "CommonOptions.h"
 #include "Submitter.h"
 #include "Cols.h"
+#include "FileNameArray.h"
 
 using namespace Messages;
 
@@ -425,9 +426,9 @@ const
 //  if (Mkdir(run_dir)) return 1;
 //  if (ChangeDir(run_dir)) return 1;
   // Get input coordinates array
-  Creator::Sarray crd_files = creator.InputCoordsNames(start_run, run_num, prevDir);
-  if (crd_files.empty()) {
-    ErrorMsg("Could not get input coords for MD.\n");
+  FileNameArray inpcrd_files(creator.CrdDir(), start_run, run_num, prevDir + "/mdrst.rst7", ".rst7", 3);
+  if (inpcrd_files.Generate(1, "")) {
+    ErrorMsg("Generating input coords file name failed.\n");
     return 1;
   }
   // Ensure topology exists.
@@ -437,29 +438,18 @@ const
     return 1;
   }
   // Get reference coords if any
-  Creator::Sarray ref_files = creator.RefCoordsNames();
+  FileNameArray refcrd_files(creator.RefDir(), ".rst7", 3);
+  if (refcrd_files.Generate(1, "")) {
+    ErrorMsg("Generating reference coords file name failed.\n");
+    return 1;
+  }
 
   // Set up run command 
   std::string cmd_opts;
-  cmd_opts.assign("-i md.in -p " + topname + " -c " + crd_files.front() + 
+  cmd_opts.assign("-i md.in -p " + topname + " -c " + inpcrd_files[0] + 
                     " -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info");
-/*    std::string mdRef;
-    if (!ref_file_.empty() || !ref_dir_.empty()) {
-      if (!ref_file_.empty())
-        mdRef = ref_file_;
-      else if (!ref_dir_.empty())
-        mdRef = ref_dir_;
-      if (!ref_file_.empty() && !ref_dir_.empty())
-        Msg("Warning: Both reference dir and prefix defined. Using '%s'\n", mdRef.c_str());
-      if (!fileExists( mdRef )) {
-        ErrorMsg("Reference file '%s' not found. Must specify absolute path"
-                 " or path relative to '%s'\n", mdRef.c_str(), run_dir.c_str());
-        return 1;
-      }
-      cmd_opts.append(" -ref " + tildeExpansion(mdRef));
-    }*/
-  if (!ref_files.empty())
-    cmd_opts.append(" -ref " + ref_files.front());
+  if (!refcrd_files.empty())
+    cmd_opts.append(" -ref " + refcrd_files[0]);
 
   creator.WriteRunMD( cmd_opts );
   // Info for this run.

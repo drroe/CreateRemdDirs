@@ -15,13 +15,14 @@ Exec_Save.o : Exec_Save.cpp Creator.h Exec.h Exec_Save.h Manager.h MdInterface.h
 Exec_SetOpt.o : Exec_SetOpt.cpp Cols.h Creator.h Exec.h Exec_SetOpt.h Manager.h MdInterface.h MdOptions.h Messages.h OptArray.h Option.h Project.h Queue.h QueueArray.h ReplicaDimArray.h ReplicaDimension.h Run.h RunArray.h RunStatus.h Submitter.h System.h
 Exec_Submit.o : Exec_Submit.cpp Cols.h Creator.h Exec.h Exec_Submit.h Manager.h MdInterface.h MdOptions.h Messages.h OptArray.h Option.h Project.h Queue.h QueueArray.h ReplicaDimArray.h ReplicaDimension.h Run.h RunArray.h RunStatus.h Submitter.h System.h
 Exec_System.o : Exec_System.cpp Cols.h Exec.h Exec_System.h Messages.h
+FileNameArray.o : FileNameArray.cpp FileNameArray.h FileRoutines.h Messages.h StringRoutines.h
 FileRoutines.o : FileRoutines.cpp FileRoutines.h Messages.h
 Groups.o : Groups.cpp Groups.h Messages.h TextFile.h
 main.o : main.cpp Commands.h Creator.h Exec.h FileRoutines.h Manager.h MdInterface.h MdOptions.h Messages.h OptArray.h Option.h Project.h Queue.h QueueArray.h ReplicaDimArray.h ReplicaDimension.h Run.h RunArray.h RunStatus.h StringRoutines.h Submitter.h System.h
 Manager.o : Manager.cpp Creator.h Manager.h MdInterface.h MdOptions.h Messages.h OptArray.h Option.h Project.h Queue.h QueueArray.h ReplicaDimArray.h ReplicaDimension.h Run.h RunArray.h RunStatus.h Submitter.h System.h TextFile.h
 MdInterface.o : MdInterface.cpp MdInterface.h MdPackage.h MdPackage_Amber.h MdinFile.h Messages.h
 MdOptions.o : MdOptions.cpp MdOptions.h Messages.h Option.h
-MdPackage_Amber.o : MdPackage_Amber.cpp Cols.h CommonOptions.h CpptrajInterface.h Creator.h FileRoutines.h Groups.h MdOptions.h MdPackage.h MdPackage_Amber.h MdinFile.h Messages.h OptArray.h Option.h Queue.h RepIndexArray.h ReplicaDimArray.h ReplicaDimension.h RunStatus.h StringRoutines.h Submitter.h TextFile.h
+MdPackage_Amber.o : MdPackage_Amber.cpp Cols.h CommonOptions.h CpptrajInterface.h Creator.h FileNameArray.h FileRoutines.h Groups.h MdOptions.h MdPackage.h MdPackage_Amber.h MdinFile.h Messages.h OptArray.h Option.h Queue.h RepIndexArray.h ReplicaDimArray.h ReplicaDimension.h RunStatus.h StringRoutines.h Submitter.h TextFile.h
 MdinFile.o : MdinFile.cpp Cols.h MdinFile.h Messages.h StringRoutines.h TextFile.h
 Messages.o : Messages.cpp Messages.h
 Queue.o : Queue.cpp Messages.h Queue.h StringRoutines.h TextFile.h

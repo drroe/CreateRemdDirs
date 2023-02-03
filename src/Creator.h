@@ -74,6 +74,9 @@ class Creator {
     /// \return Name of topology at specified index in top_dim_ dimension (or MD top file).
     std::string TopologyName(RepIndexArray const&) const;
     /// \return Array of input coordinate files given start run #, current run #, and prev. dir. name
+    std::string const& CrdDir() const { return crd_dir_; }
+    std::string const& RefDir() const { return ref_dir_; }
+
     Sarray InputCoordsNames(int, int, std::string const&) const;
     /// \return Array of reference coordinate files
     Sarray RefCoordsNames() const;

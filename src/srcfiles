@@ -16,6 +16,7 @@ Exec_Save.cpp \
 Exec_SetOpt.cpp \
 Exec_Submit.cpp \
 Exec_System.cpp \
+FileNameArray.cpp \
 FileRoutines.cpp \
 Groups.cpp \
 main.cpp \
