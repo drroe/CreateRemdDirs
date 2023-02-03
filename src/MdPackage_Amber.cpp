@@ -760,56 +760,65 @@ int MdPackage_Amber::read_traj_nframes(RunStatus& currentStatus, std::string con
 
 /** \return Info on a current run. */
 RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& files) const {
-  // Special cases
-  std::string const& runscript = CommonOptions::Opt_RunScriptName().Val();
-  if (files.size() == 2) {
-    if (files[0] == runscript && files[1] == "md.in")
-      return RunStatus(RunStatus::PENDING);
-  }
-  // Scan through files
-  RunStatus currentStat;
-  std::string topname;
-  std::string trajname;
-  bool has_output = false;
+  std::string output_name;
+  std::string traj_name;
+  bool has_input = false;
   bool has_runscript = false;
+
+  std::string const& runscriptname = CommonOptions::Opt_RunScriptName().Val();
+
+  // Scan through files. Determine what is here.
   for (std::vector<std::string>::const_iterator fname = files.begin();
                                                 fname != files.end(); ++fname)
   {
-    if (*fname == runscript) {
+    if (*fname == runscriptname)
       has_runscript = true;
-    } else if (*fname == "md.out") {
-      has_output = true;
-      if (read_mdout( currentStat, *fname, topname )) {
-        ErrorMsg("Could not read '%s'\n", fname->c_str());
-      }
-    } else if (*fname == "mdcrd.nc") {
-       has_output = true;
-       trajname = *fname;
-    } else if (*fname == "OUTPUT") {
-      // See if any output exists
+    else if (*fname == "md.in")
+      // MD input
+      has_input = true;
+    else if (*fname == "INPUT") {
+      // REMD input
+      FileRoutines::StrArray remd_infiles = FileRoutines::ExpandToFilenames("INPUT/*", false);
+      if (!remd_infiles.empty())
+        has_input = true;
+    } else if (*fname == "md.out")
+      // MD output
+      output_name = *fname;
+    else if (*fname == "OUTPUT") {
+      // REMD output
       FileRoutines::StrArray remd_outfiles = FileRoutines::ExpandToFilenames("OUTPUT/*", false);
       if (!remd_outfiles.empty()) {
-        has_output = true;
-        if (read_mdout( currentStat, remd_outfiles.front(), topname )) {
-          ErrorMsg("Could not read '%s'\n", remd_outfiles.front().c_str());
-        }
+        output_name = remd_outfiles.front();
       }
-    } else if (*fname == "TRAJ") {
-      // See if any trajectories exist
+    } else if (*fname == "mdcrd.nc")
+      // MD trajectory
+      traj_name = *fname;
+    else if (*fname == "TRAJ") {
+      // REMD trajectory
       FileRoutines::StrArray remd_trajfiles = FileRoutines::ExpandToFilenames("TRAJ/*", false);
       if (!remd_trajfiles.empty()) {
-        has_output = true;
-        trajname = remd_trajfiles.front();
+        traj_name = remd_trajfiles.front();
       }
     }
-  }
-  if (!topname.empty() && !trajname.empty()) {
-    if (read_traj_nframes( currentStat, topname, trajname )) {
-      ErrorMsg("Could not read # frames from '%s'\n", trajname.c_str());
+  } // END loop over files
+
+  // Determine status
+  RunStatus currentStat;
+  std::string top_name;
+  if (!output_name.empty()) {
+    if (read_mdout( currentStat, output_name, top_name )) {
+      ErrorMsg("Could not read '%s'\n", output_name.c_str());
     }
   }
+
+  if (!top_name.empty() && !traj_name.empty()) {
+    if (read_traj_nframes( currentStat, top_name, traj_name )) {
+      ErrorMsg("Could not read # frames from '%s'\n", traj_name.c_str());
+    }
+  }
+
   if (currentStat.CurrentStat() == RunStatus::UNKNOWN) {
-    if (has_runscript && !has_output)
+    if (has_runscript && output_name.empty())
       currentStat.Set_Status(RunStatus::PENDING);
   }
   //DEBUG
