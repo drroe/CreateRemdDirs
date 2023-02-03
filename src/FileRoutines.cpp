@@ -138,7 +138,7 @@ int FileRoutines::Mkdir(std::string const& dname) {
 
 /** If given path is a relative path, add a '../' prefix. */
 std::string FileRoutines::add_path_prefix(std::string const& path) {
-  if (path.empty() || path[0] == '/')
+  if (path.empty() || path[0] == '/' || path[0] == '~')
     // No path or absolute path
     return path;
   else
