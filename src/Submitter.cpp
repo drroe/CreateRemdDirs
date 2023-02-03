@@ -307,13 +307,12 @@ int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, in
     qout.Printf("export MPIRUN=\"%s\"\n", mpirun_.c_str());
   }
   // Command to run MD script
-  qout.Printf("\n# Run executable\n./%s\n\n", runScriptName.c_str());
+  qout.Printf("\n# Run executable\n./%s\nERR=$?\n\n", runScriptName.c_str());
   // Set up dependency if necessary
   if (dependType_ == SUBMIT && !next_dir.empty()) {
       qout.Printf("cd ../%s && %s %s\n", next_dir.c_str(), localQueue_.SubmitCmd().c_str(), submitScript.c_str());
   }
-  qout.Printf("exit 0\n"); // TODO capture run script error stat
-  
+  qout.Printf("exit $ERR\n"); 
   qout.Close();
   ChangePermissions( submitScript );
   return 0;
