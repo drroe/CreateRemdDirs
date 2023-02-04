@@ -426,8 +426,8 @@ const
 //  if (Mkdir(run_dir)) return 1;
 //  if (ChangeDir(run_dir)) return 1;
   // Get input coordinates array
-  FileNameArray inpcrd_files(creator.CrdDir(), start_run, run_num, prevDir + "/mdrst.rst7", "rst7", 3);
-  if (inpcrd_files.Generate(1, "")) {
+  FileNameArray inpcrd_files(creator.CrdDir(), start_run, run_num, prevDir + "/mdrst.rst7", FileNameArray::IS_FILE, "rst7", 3);
+  if (inpcrd_files.Generate(1)) {
     ErrorMsg("Generating input coords file name failed.\n");
     return 1;
   }
@@ -439,7 +439,7 @@ const
   }
   // Get reference coords if any
   FileNameArray refcrd_files(creator.RefDir(), "rst7", 3);
-  if (refcrd_files.Generate(1, "")) {
+  if (refcrd_files.Generate(1)) {
     ErrorMsg("Generating reference coords file name failed.\n");
     return 1;
   }
@@ -488,14 +488,14 @@ const
 //  if (Mkdir(run_dir)) return 1;
 //  if (ChangeDir(run_dir)) return 1;
   // Get Coords
-  FileNameArray inpcrd_files(creator.CrdDir(), start_run, run_num, prevDir + "/RST", "rst7", 3);
-  if (inpcrd_files.Generate(creator.TotalReplicas(), "")) {
+  FileNameArray inpcrd_files(creator.CrdDir(), start_run, run_num, prevDir + "/RST", FileNameArray::IS_DIR, "rst7", 3);
+  if (inpcrd_files.Generate(creator.TotalReplicas())) {
     ErrorMsg("Generating input coords file names for REMD failed.\n");
     return 1;
   }
   // Get any ref coords
   FileNameArray refcrd_files(creator.RefDir(), "rst7", 3);
-  if (refcrd_files.Generate(creator.TotalReplicas(), "")) {
+  if (refcrd_files.Generate(creator.TotalReplicas())) {
     ErrorMsg("Generating ref coords file names for REMD failed.\n");
     return 1;
   }
@@ -809,7 +809,7 @@ RunStatus MdPackage_Amber::RunCurrentStatus(std::vector<std::string> const& file
   }
 
   if (currentStat.CurrentStat() == RunStatus::UNKNOWN) {
-    if (has_runscript && output_name.empty()) {
+    if (has_input && has_runscript && output_name.empty()) {
       if (has_submitscript)
         currentStat.Set_Status(RunStatus::READY);
       else
