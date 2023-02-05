@@ -415,8 +415,7 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
 }
 
 /** Create run directories in system directory. */
-int System::CreateRunDirectories(std::string const& crd_dir,
-                                 int start_run, int nruns, bool overwrite)
+int System::CreateRunDirectories(int start_run, int nruns, bool overwrite)
 {
   //using namespace FileRoutines;
   if (nruns < 1) {
@@ -433,9 +432,6 @@ int System::CreateRunDirectories(std::string const& crd_dir,
     ErrorMsg("Invalid options detected. Cannot create.\n");
     return 1;
   }
-  // Set alternate coords if needed. FIXME should be passed into CreateNew
-  if (!crd_dir.empty())
-    creator_.SetSpecifiedCoords( crd_dir );
   // If any runs exist, determine the lowest index and highest index
   int lowest_run_idx;
   if (Runs_.empty())

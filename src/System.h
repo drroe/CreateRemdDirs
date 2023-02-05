@@ -27,7 +27,7 @@ class System {
     void SetDebug(int);
 
     /// Create runs
-    int CreateRunDirectories(std::string const&, int, int, bool);
+    int CreateRunDirectories(int, int, bool);
     /// Submit runs
     int SubmitRunDirectories(int, int, bool, std::string const&);
     /// Parse a single option

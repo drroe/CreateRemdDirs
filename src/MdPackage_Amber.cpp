@@ -350,9 +350,15 @@ const
 //  if (Mkdir(run_dir)) return 1;
 //  if (ChangeDir(run_dir)) return 1;
   // Get input coordinates array
-  Creator::Sarray crd_files = creator.InputCoordsNames(start_run, run_num, prevDir);
-  if (crd_files.empty()) {
-    ErrorMsg("Could not get input coords for MD.\n");
+  FileNameArray inpcrd_files(creator.CrdDir(), prevDir, FileNameArray::IS_FILE, "rst7", 3);
+  if (inpcrd_files.Generate(creator.N_MD_Runs(), (start_run == run_num))) {
+    ErrorMsg("Generating input coords file names for multi-MD failed.\n");
+    return 1;
+  }
+  // Get any ref coords
+  FileNameArray refcrd_files(creator.RefDir(), "rst7", 3);
+  if (refcrd_files.Generate(creator.N_MD_Runs(), (start_run == run_num))) {
+    ErrorMsg("Generating ref coords file names for multi-MD failed.\n");
     return 1;
   }
   // Ensure topology exists.
@@ -361,8 +367,6 @@ const
     ErrorMsg("Could not get topology name.\n");
     return 1;
   }
-  // Get reference coords if any
-  Creator::Sarray ref_files = creator.RefCoordsNames();
   // Set up run command 
   std::string cmd_opts;
   TextFile GROUP;
@@ -388,17 +392,13 @@ const
       
     //}
     GROUP.Printf("-i %s -p %s -c %s -x md.nc.%s -r %s.rst7 -o md.out.%s -inf md.info.%s",
-                 mdin_name.c_str(), topname.c_str(), crd_files[grp-1].c_str(),
+                 mdin_name.c_str(), topname.c_str(), inpcrd_files[grp-1].c_str(),
                  EXT.c_str(), EXT.c_str(), EXT.c_str(), EXT.c_str());
-    std::string const& repRef = ref_files[grp-1];//RefFileName(integerToString(grp, width));
-    if (!repRef.empty()) {
-      /*if (!fileExists( repRef )) {
-        ErrorMsg("Reference file '%s' not found. Must specify absolute path"
-                 " or path relative to '%s'\n", repRef.c_str(), run_dir.c_str());
-        return 1;
+    if (!refcrd_files.empty()) {
+      std::string const& repRef = refcrd_files[grp-1];//RefFileName(integerToString(grp, width));
+      if (!repRef.empty()) {
+        GROUP.Printf(" -ref %s", repRef.c_str());
       }
-      repRef = tildeExpansion(repRef);*/
-      GROUP.Printf(" -ref %s", repRef.c_str());
     }
     GROUP.Printf("\n");
   } 
@@ -426,8 +426,8 @@ const
 //  if (Mkdir(run_dir)) return 1;
 //  if (ChangeDir(run_dir)) return 1;
   // Get input coordinates array
-  FileNameArray inpcrd_files(creator.CrdDir(), start_run, run_num, prevDir + "/mdrst.rst7", FileNameArray::IS_FILE, "rst7", 3);
-  if (inpcrd_files.Generate(1)) {
+  FileNameArray inpcrd_files(creator.CrdDir(), prevDir + "/mdrst.rst7", FileNameArray::IS_FILE, "rst7", 3);
+  if (inpcrd_files.Generate(1, (start_run == run_num))) {
     ErrorMsg("Generating input coords file name failed.\n");
     return 1;
   }
@@ -439,7 +439,7 @@ const
   }
   // Get reference coords if any
   FileNameArray refcrd_files(creator.RefDir(), "rst7", 3);
-  if (refcrd_files.Generate(1)) {
+  if (refcrd_files.Generate(1, (start_run==run_num))) {
     ErrorMsg("Generating reference coords file name failed.\n");
     return 1;
   }
@@ -488,14 +488,14 @@ const
 //  if (Mkdir(run_dir)) return 1;
 //  if (ChangeDir(run_dir)) return 1;
   // Get Coords
-  FileNameArray inpcrd_files(creator.CrdDir(), start_run, run_num, prevDir + "/RST", FileNameArray::IS_DIR, "rst7", 3);
-  if (inpcrd_files.Generate(creator.TotalReplicas())) {
+  FileNameArray inpcrd_files(creator.CrdDir(), prevDir + "/RST", FileNameArray::IS_DIR, "rst7", 3);
+  if (inpcrd_files.Generate(creator.TotalReplicas(), (run_num==start_run))) {
     ErrorMsg("Generating input coords file names for REMD failed.\n");
     return 1;
   }
   // Get any ref coords
   FileNameArray refcrd_files(creator.RefDir(), "rst7", 3);
-  if (refcrd_files.Generate(creator.TotalReplicas())) {
+  if (refcrd_files.Generate(creator.TotalReplicas(), (start_run==run_num))) {
     ErrorMsg("Generating ref coords file names for REMD failed.\n");
     return 1;
   }

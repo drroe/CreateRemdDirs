@@ -30,7 +30,6 @@ Exec::RetType Exec_Create::Execute(Manager& manager, Cols& args) const {
   if (args.GetKeyInteger(start_run, "beg", -1)) return ERR;
   if (args.GetKeyInteger(stop_run, "end", -1)) return ERR;
   if (args.GetKeyInteger(nruns, "nruns", -1)) return ERR;
-  std::string crd_dir = args.GetKey("crd");
   bool overwrite = args.HasKey("overwrite");
 
   // Set defaults if needed
@@ -63,7 +62,7 @@ Exec::RetType Exec_Create::Execute(Manager& manager, Cols& args) const {
     return ERR;
   }
 
-  if (activeSystem.CreateRunDirectories(crd_dir, start_run, nruns, overwrite)) {
+  if (activeSystem.CreateRunDirectories(start_run, nruns, overwrite)) {
     ErrorMsg("Run directory creation failed.\n");
     return ERR;
   }

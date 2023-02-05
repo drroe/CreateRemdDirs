@@ -36,8 +36,6 @@ class Creator {
     void SetDebug(int d) { debug_ = d; }
     /// Parse a single option from input file
     int ParseFileOption(OptArray::OptPair const&);
-    /// Set alternate coordinates location TODO deprecate?
-    void SetSpecifiedCoords(std::string const& c) { specified_crd_ = c; }
     /// Set MD options; only overwrite current options if not set.
     int SetMdOptions(MdOptions const&);
     /// \return Package-specific options
@@ -73,18 +71,11 @@ class Creator {
     std::string TopologyName() const;
     /// \return Name of topology at specified index in top_dim_ dimension (or MD top file).
     std::string TopologyName(RepIndexArray const&) const;
-    /// \return Array of input coordinate files given start run #, current run #, and prev. dir. name
+    /// \return Name of input coordinates file/directory.
     std::string const& CrdDir() const { return crd_dir_; }
+    /// \return Name of reference coordinates file/directory
     std::string const& RefDir() const { return ref_dir_; }
-
-    Sarray InputCoordsNames(int, int, std::string const&) const;
-    /// \return Array of reference coordinate files
-    Sarray RefCoordsNames() const;
   private:
-    /// \return Array of input coords for multiple MD.
-    Sarray inputCrds_multiple_md(std::string const&, std::string const&, unsigned int) const;
-    /// \return Array containing single input coords for MD run.
-    Sarray inputCrds_single_md(std::string const&, std::string const&) const;
     /// Load a REMD dimension from file
     int LoadDimension(std::string const&);
 
@@ -105,9 +96,7 @@ class Creator {
     RUNTYPE runType_;             ///< Type of run from options file.
     std::string runDescription_;  ///< Run description
     std::string crd_dir_;         ///< Directory where input coordinates are/MD input coords (from options file).
-    std::string specified_crd_;   ///< Input coords set in SetSpecifiedCoords(); overrides crd_dir_. TODO should be passed in 
-    std::string crd_ext_;         ///< Input coords file name extension
-    std::string ref_file_;        ///< Reference file (MD) or path prefix (REMD)
+    std::string ref_file_;        ///< Reference file (MD) or path prefix (REMD) TODO deprecate
     std::string ref_dir_;         ///< Directory where reference coords are (like crd_dir_)
     std::string mdin_file_;       ///< Md package-specific input file
     Sarray dim_files_;            ///< REMD dimension files
