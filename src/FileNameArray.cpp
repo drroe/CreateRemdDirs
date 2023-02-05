@@ -8,14 +8,11 @@ using namespace FileRoutines;
 
 /** CONSTRUCTOR */
 FileNameArray::FileNameArray(std::string const& base,
-                             int startRunNum, int runNum,
                              std::string const& prevDir,
                              PrevType prevType,
                              std::string const& crd_ext,
                              int fileExtWidth) :
   base_(tildeExpansion(base)),
-  startRunNum_(startRunNum),
-  runNum_(runNum),
   prevDir_(prevDir),
   prevType_(prevType),
   crd_ext_(crd_ext),
@@ -27,8 +24,6 @@ FileNameArray::FileNameArray(std::string const& base,
                              std::string const& crd_ext,
                              int fileExtWidth) :
   base_(tildeExpansion(base)),
-  startRunNum_(0),
-  runNum_(0),
   prevType_(IS_FILE),
   crd_ext_(crd_ext),
   fileExtWidth_(fileExtWidth)
@@ -76,13 +71,13 @@ const
 
 
 /** Generate list of name(s) */
-int FileNameArray::Generate(unsigned int nfiles) {
+int FileNameArray::Generate(unsigned int nfiles, bool is_initial_run) {
   Msg("DEBUG: Generate nfiles=%u base='%s'\n", nfiles, base_.c_str());
   files_.clear();
   if (base_.empty()) return 0;
   if (nfiles == 0) return 0;
 
-  if (runNum_ == startRunNum_) {
+  if (is_initial_run) {//runNum_ == startRunNum_) {
     // Initial run. Use base. Base must exist
     std::string base_path = add_path_prefix(base_);
     if (!fileExists( base_path )) {

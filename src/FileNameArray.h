@@ -7,12 +7,12 @@ class FileNameArray {
   public:
     /// Indicate whether previous will be dir or file
     enum PrevType { IS_DIR = 0, IS_FILE };
-    /// CONSTRUCTOR - take base name/path, start run #, current run #, previous dir/coords name, previous type, file extension, file ext. min width
-    FileNameArray(std::string const&, int, int, std::string const&, PrevType, std::string const&, int);
+    /// CONSTRUCTOR - take base name/path, previous dir/coords name, previous type, file extension, file ext. min width
+    FileNameArray(std::string const&, std::string const&, PrevType, std::string const&, int);
     /// CONSTRUCTOR - always use base name/path - take base, file extension, file ext. min width
     FileNameArray(std::string const&, std::string const&, int);
-    /// Generate specified number of file name(s)
-    int Generate(unsigned int);
+    /// Generate specified number of file name(s) for initial (true) or subsequent (false) run
+    int Generate(unsigned int, bool);
     /// \return true if no file names
     bool empty() const { return files_.empty(); }
     /// \return file name at index
@@ -26,8 +26,6 @@ class FileNameArray {
 
     Sarray files_; ///< Hold all generated file names
     std::string base_; ///< Base initial file name/dir name (runNum == 0)
-    int startRunNum_;  ///< Starting run number
-    int runNum_;       ///< Current run number
     std::string prevDir_; ///< Previous run directory/file name
     PrevType prevType_;   ///< Previous run type (directory/file)
     std::string crd_ext_; ///< Coordinates extension (for multiple files)
