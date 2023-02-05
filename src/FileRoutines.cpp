@@ -110,7 +110,7 @@ bool FileRoutines::fileExists(std::string const& filenameIn) {
   if (fname.empty()) return false;
   FILE *infile = fopen(fname.c_str(), "rb");
   if (infile==0) {
-    ErrorMsg("File '%s': %s\n", fname.c_str(), strerror( errno ));
+    //ErrorMsg("File '%s': %s\n", fname.c_str(), strerror( errno ));
     return false;
   }
   fclose(infile);
