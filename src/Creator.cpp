@@ -17,7 +17,6 @@ using namespace FileRoutines;
 
 /** CONSTRUCTOR */
 Creator::Creator() :
-  totalReplicas_(0),
   debug_(0),
   n_md_runs_(0),
   fileExtWidth_(3),
@@ -295,14 +294,13 @@ int Creator::LoadDimension(std::string const& dfile) {
 
 /** Check that Creator options are valid. Count number of replicas if needed. 
   */ // TODO make const by putting replica count elsewhere
-int Creator::CheckCreator() {
+int Creator::CheckCreator() const {
   int errcount = 0;
   // Perform tilde expansion on coords if necessary.
-  if (!crd_dir_.empty() && crd_dir_[0] == '~')
-    crd_dir_ = tildeExpansion(crd_dir_);
+  //if (!crd_dir_.empty() && crd_dir_[0] == '~')
+  //  crd_dir_ = tildeExpansion(crd_dir_);
   // Do some checking based on what type of run this is.
   if (Dims_.Empty()) {
-    totalReplicas_ = 0;
     Msg("  No dimensions defined: assuming MD run.\n");
     if (!mdopts_.Temperature0().IsSet()) {
       Msg("Warning: TEMPERATURE not specified. Using default value: %g\n", mdopts_.Temperature0().Val());
@@ -312,12 +310,6 @@ int Creator::CheckCreator() {
       errcount++;
     }
   } else {
-    // Count total # of replicas, Do some error checking.
-    totalReplicas_ = 1;
-    for (unsigned int idim = 0; idim != Dims_.Ndims(); idim++)
-    {
-      totalReplicas_ *= Dims_[idim].Size();
-    }
     if (!Dims_.HasDim(ReplicaDimension::TEMP) && !mdopts_.Temperature0().IsSet()) {
       Msg("Warning: No dimension provides temperature and TEMPERATURE not specified.\n");
       Msg("Warning:   Using default temperature: %g\n", mdopts_.Temperature0().Val());

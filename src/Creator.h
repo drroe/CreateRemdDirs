@@ -22,8 +22,8 @@ class Creator {
     int WriteOptions(TextFile&) const; 
     /// Read creation options from a file
     int ReadOptions(std::string const&);
-    /// Check and update creator based on current options.
-    int CheckCreator();
+    /// Check creator based on current options.
+    int CheckCreator() const;
     /// \return True if the Creator is set up to make regular MD runs
     bool IsSetupForMD() const { return (runType_ == MD); }
     /// Print info to stdout
@@ -64,8 +64,6 @@ class Creator {
     // ----- Run Options -------------------------
     /// \return Number of MD runs to be performed in a single run directory.
     int N_MD_Runs() const { return n_md_runs_; }
-    /// \return Total number of replicas
-    unsigned int TotalReplicas() const { return totalReplicas_; }
     /// \return True if reference should be previous run restart
     bool UsePrevRestartAsRef() const { return usePrevRestartAsRef_; }
     // ----- File names --------------------------
@@ -90,7 +88,6 @@ class Creator {
     MdOptions mdopts_;            ///< Hold MD options
 
     ReplicaDimArray Dims_;        ///< Hold any replica dimensions
-    unsigned int totalReplicas_;  ///< Total # of replicas based on dimensions
     int debug_;
     int n_md_runs_;               ///< Number of MD runs.
     int fileExtWidth_;            ///< Filename extension width
