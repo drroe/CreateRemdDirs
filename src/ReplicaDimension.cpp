@@ -77,6 +77,9 @@ int TopologyDim::LoadDim(std::string const& fname) {
       tops_.push_back( std::string(topname) );
     // Optionally add the temperature
     if (ncols > 1) {
+      if (temps_.empty())
+        Msg("Warning: replica temperatures in Hamiltonian file not supported.\n"
+            "Warning: Create a separate temperature dimension and use 'REMD_DIAGONAL yes' option.\n");
       //Msg("DBG: Temperature %f\n", toptemp);
       temps_.push_back( toptemp );
     }
