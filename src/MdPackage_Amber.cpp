@@ -577,11 +577,6 @@ const
       ".rst7 -x TRAJ/rem.crd." + EXT;
     if (!refcrd_files.empty()) {
       std::string const& repRef = refcrd_files[rep];
-      if (!fileExists( repRef )) {
-        ErrorMsg("Reference file '%s' not found. Must specify absolute path"
-                 " or path relative to '%s'\n", repRef.c_str(), run_dir.c_str());
-        return 1;
-      }
       GROUPFILE_LINE.append(" -ref " + tildeExpansion(repRef));
     }
     if (uselog)
