@@ -77,29 +77,29 @@ std::string Creator::NumericalExt(int num, int max) const {
 
 void Creator::OptHelp() {
   Msg("Creation input file variables:\n"
-      "  CRD_FILE <dir>     : Starting coordinates file/directory (run 0 only).\n"
+      "  CRD_FILE <dir>      : Starting coordinates file/directory (run 0 only).\n"
       "                       Expect name '<CRD_FILE>/XXX.rst7' for REMD.\n"
-      "  REF_FILE <dir>     : Reference coordinates file/directory (optional).\n"
+      "  REF_FILE <dir>      : Reference coordinates file/directory (optional).\n"
       "                       Expect name '<REF_FILE>/XXX.rst7' for REMD.\n"
-      "  REF_TYPE <type>    : <type>=single: Use single reference. <type>=previous: Use previous run restart.\n"
-//      "  REFERENCE <file>   : Single reference coordinates (optional).\n"
-      "  DIMENSION <file>   : File containing replica dimension information, 1 per dimension\n"
+      "  REF_TYPE <type>     : <type>=single (default): Use single reference. <type>=previous: Use previous run restart.\n"
+      "  DIMENSION <file>    : File containing replica dimension information, 1 per dimension\n"
       "    Headers:");
   for (ReplicaAllocator::Token const* ptr = ReplicaAllocator::AllocArray;
                                       ptr->Key != 0; ++ptr)
     Msg(" %s", ptr->Key);
 Msg("\n"
-      "  TOPOLOGY <file>    : Topology for MD/non-H-REMD run.\n"
-      "  MDIN_FILE <file>   : File containing extra MDIN input.\n"
-      "  RST_FILE <file>    : File containing NMR restraints (MD only).\n"
-      "  TEMPERATURE <T>    : Temperature for 1D HREMD run.\n"
-      "  NSTLIM <nstlim>    : MD input; steps per exchange. Required.\n"
-      "  DT <step>          : MD input; time step.\n"
-      "  IG <seed>          : MD input; random seed.\n"
-      "  NUMEXCHG <#>       : MD input; number of exchanges. Required for REMD.\n"
-      "  NTWX <#>           : MD input; trajectory write frequency in steps.\n"
-      "  MDRUNS <#>         : Number of MD runs when not REMD (default 1).\n"
-      "  UMBRELLA <#>       : Indicates MD umbrella sampling with write frequency <#>.\n");
+      "  REMD_DIAGONAL <opt> : <opt>=no (default): Create replica grid. <opt>=yes: Do diagonal replicas.\n"
+      "  TOPOLOGY <file>     : Topology for MD/non-H-REMD run.\n"
+      "  MDIN_FILE <file>    : File containing extra MDIN input.\n"
+      "  RST_FILE <file>     : File containing NMR restraints (MD only).\n"
+      "  TEMPERATURE <T>     : Temperature for 1D HREMD run.\n"
+      "  NSTLIM <nstlim>     : MD input; steps per exchange. Required.\n"
+      "  DT <step>           : MD input; time step.\n"
+      "  IG <seed>           : MD input; random seed.\n"
+      "  NUMEXCHG <#>        : MD input; number of exchanges. Required for REMD.\n"
+      "  NTWX <#>            : MD input; trajectory write frequency in steps.\n"
+      "  MDRUNS <#>          : Number of MD runs when not REMD (default 1).\n"
+      "  UMBRELLA <#>        : Indicates MD umbrella sampling with write frequency <#>.\n");
       MdPackage_Amber::OptHelp();
       Msg("\n");
 }
