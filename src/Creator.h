@@ -98,7 +98,7 @@ class Creator {
     RUNTYPE runType_;             ///< Type of run from options file.
     std::string runDescription_;  ///< Run description
     std::string crd_dir_;         ///< Directory where input coordinates are/MD input coords (from options file).
-    std::string ref_file_;        ///< Reference file (MD) or path prefix (REMD) TODO deprecate
+//    std::string ref_file_;        ///< Reference file (MD) or path prefix (REMD) TODO deprecate
     std::string ref_dir_;         ///< Directory where reference coords are (like crd_dir_)
     std::string mdin_file_;       ///< Md package-specific input file
     Sarray dim_files_;            ///< REMD dimension files

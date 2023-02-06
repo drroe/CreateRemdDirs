@@ -113,8 +113,8 @@ int Creator::WriteOptions(TextFile& outfile) const {
     outfile.Printf("CRD_FILE %s\n", crd_dir_.c_str());
   if (!ref_dir_.empty())
     outfile.Printf("REF_FILE %s\n", ref_dir_.c_str());
-  if (!ref_file_.empty())
-    outfile.Printf("REFERENCE %s\n", ref_file_.c_str());
+//  if (!ref_file_.empty())
+//    outfile.Printf("REFERENCE %s\n", ref_file_.c_str());
   if (!mdin_file_.empty())
     outfile.Printf("MDIN_FILE %s\n", mdin_file_.c_str());
   if (!dim_files_.empty()) {
@@ -177,7 +177,7 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
     if (fileExists(top_file_))
       top_file_ = tildeExpansion( top_file_ );
   } else if (OPT == "REFERENCE") // Format: <ref_file_>.EXT
-    ref_file_ = VAR;
+    ref_dir_ = VAR;
   else if (OPT == "REF_FILE")  // Format: <ref_dir>/EXT.rst7
     ref_dir_ = VAR;
   else if (OPT == "TEMPERATURE")
@@ -355,21 +355,21 @@ void Creator::Info() const {
   Msg(    "  MDIN_FILE             : %s\n", mdin_file_.c_str());
   if (runType_ == MD) {
     // Regular MD
-    Msg(  "  TOP                   : %s\n", top_file_.c_str());
-    Msg(  "  CRD                   : %s\n", crd_dir_.c_str());
-    if (!ref_file_.empty())
-      Msg("  REF                   : %s\n", ref_file_.c_str());
+    Msg(  "  TOPOLOGY              : %s\n", top_file_.c_str());
+    Msg(  "  CRD_FILE              : %s\n", crd_dir_.c_str());
+//    if (!ref_file_.empty())
+//      Msg("  REF                   : %s\n", ref_file_.c_str());
     if (!ref_dir_.empty())
-      Msg("  REF                   : %s\n", ref_dir_.c_str());
+      Msg("  REF_FILE              : %s\n", ref_dir_.c_str());
   } else {
     // Some type of replica exchange run
     if (!Dims_.HasDim(ReplicaDimension::TOPOLOGY))
-      Msg("  TOP                   : %s\n", top_file_.c_str());
-    Msg(  "  CRD_DIR               : %s\n", crd_dir_.c_str());
-    if (!ref_file_.empty())
-      Msg("  REF_PREFIX            : %s\n", ref_file_.c_str());
-    else if (!ref_dir_.empty())
-      Msg("  REF_DIR               : %s\n", ref_dir_.c_str());
+      Msg("  TOPOLOGY              : %s\n", top_file_.c_str());
+    Msg(  "  CRD_FILE              : %s\n", crd_dir_.c_str());
+//    if (!ref_file_.empty())
+//      Msg("  REF_PREFIX            : %s\n", ref_file_.c_str());
+    if (!ref_dir_.empty())
+      Msg("  REF_FILE              : %s\n", ref_dir_.c_str());
     Msg(  "  %u dimensions, %u total replicas.\n", Dims_.Ndims(), totalReplicas_);
     for (unsigned int idim = 0; idim != Dims_.Ndims(); idim++)
       Msg("    %u : %s\n", idim, Dims_[idim].description());
