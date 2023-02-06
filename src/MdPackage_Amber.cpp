@@ -497,9 +497,11 @@ const
 //  // Create and change to run directory.
 //  if (Mkdir(run_dir)) return 1;
 //  if (ChangeDir(run_dir)) return 1;
+  // Hold current indices in each dimension.
+  RepIndexArray Indices( creator.Dims() );
   // Get Coords
   FileNameArray inpcrd_files(creator.CrdDir(), prevDir + "/RST", FileNameArray::IS_DIR, "rst7", 3);
-  if (inpcrd_files.Generate(creator.TotalReplicas(), (run_num==start_run))) {
+  if (inpcrd_files.Generate(Indices.TotalReplicas(), (run_num==start_run))) {
     ErrorMsg("Generating input coords file names for REMD failed.\n");
     return 1;
   }
@@ -510,7 +512,7 @@ const
     ref_is_initial = (start_run == run_num);
   else
     ref_is_initial = true;
-  if (refcrd_files.Generate(creator.TotalReplicas(), ref_is_initial)) {
+  if (refcrd_files.Generate(Indices.TotalReplicas(), ref_is_initial)) {
     ErrorMsg("Generating ref coords file names for REMD failed.\n");
     return 1;
   }
@@ -533,12 +535,12 @@ const
   // Open GROUPFILE
   TextFile GROUPFILE;
   if (GROUPFILE.OpenWrite(groupfileName_)) return 1; 
-  // Hold current indices in each dimension.
-  RepIndexArray Indices( creator.Dims().Ndims() );
-  for (unsigned int rep = 0; rep != creator.TotalReplicas(); rep++)
+
+  // Loop over all replicas
+  for (unsigned int rep = 0; rep != Indices.TotalReplicas(); rep++)
   {
     // Get replica extension
-    std::string EXT = creator.NumericalExt(rep+1, creator.TotalReplicas());
+    std::string EXT = creator.NumericalExt(rep+1, Indices.TotalReplicas());
     // Get topology for this replica
     std::string currentTop = creator.TopologyName( Indices );
     if (currentTop.empty()) {
@@ -619,7 +621,7 @@ const
   }
   // Create Run script
   std::string cmd_opts;
-  std::string NG = integerToString( creator.TotalReplicas() );
+  std::string NG = integerToString( Indices.TotalReplicas() );
   if (creator.TypeOfRun() == Creator::MREMD)
     cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -remd-file " + remddimName_);
   else if (creator.TypeOfRun() == Creator::HREMD)

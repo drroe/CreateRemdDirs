@@ -391,7 +391,9 @@ void Creator::Info() const {
       Msg("  REF_FILE              : %s\n", ref_dir_.c_str());
       Msg("  REF_TYPE              : %s\n", ref_prev_str[(int)usePrevRestartAsRef_]);
     }
-    Msg(  "  %u dimensions, %u total replicas.\n", Dims_.Ndims(), totalReplicas_);
+    // Use replica index array to get total replica count
+    RepIndexArray Indices( Dims_ );
+    Msg(  "  %u dimensions, %u total replicas.\n", Dims_.Ndims(), Indices.TotalReplicas());
     for (unsigned int idim = 0; idim != Dims_.Ndims(); idim++)
       Msg("    %u : %s\n", idim, Dims_[idim].description());
   }

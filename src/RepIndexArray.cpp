@@ -3,6 +3,28 @@
 #include "StringRoutines.h"
 #include "ReplicaDimArray.h"
 
+/** CONSTRUCTOR - take replica dimension array. */ // TODO take increment_
+RepIndexArray::RepIndexArray(ReplicaDimArray const& Dims) :
+  indices_(Dims.Ndims(), 0),
+  increment_(NORMAL),
+  totalReplicas_(0)
+{
+  // Count total replicas
+  if (!Dims.Empty()) {
+    if (increment_ == NORMAL) {
+      totalReplicas_ = 1;
+      for (unsigned int idim = 0; idim != Dims.Ndims(); idim++)
+        totalReplicas_ *= Dims[idim].Size();
+    } else {
+      // DIAGONAL
+      totalReplicas_ = Dims[0].Size();
+      for (unsigned int idim = 0; idim != Dims.Ndims(); idim++)
+        if (Dims[idim].Size() > totalReplicas_)
+          totalReplicas_ = Dims[idim].Size();
+    }
+  }
+}
+
 /** Increment the replica index array. */
 void RepIndexArray::Increment(ReplicaDimArray const& Dims) {
   if (increment_ == NORMAL) {

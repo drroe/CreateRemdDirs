@@ -11,9 +11,9 @@ class RepIndexArray {
 
     typedef std::vector<unsigned int> Iarray;
     /// CONSTRUCTOR - no indices
-    RepIndexArray() : increment_(NORMAL) {}
-    /// CONSTRUCTOR - take number of dimensions
-    RepIndexArray(unsigned int n) : indices_(n, 0), increment_(NORMAL) {}
+    RepIndexArray() : increment_(NORMAL), totalReplicas_(0) {}
+    /// CONSTRUCTOR - take replica dimension array TODO take increment too
+    RepIndexArray(ReplicaDimArray const&);
     /// \return index array
     Iarray const& Indices() const { return indices_; }
     /// \return true if no indices
@@ -30,8 +30,11 @@ class RepIndexArray {
     const_iterator end() const { return indices_.end(); }*/
     /// \return indices as a string, incremented by offset
     std::string IndicesStr(unsigned int) const;
+    /// \return total # replicas
+    unsigned int TotalReplicas() const { return totalReplicas_; }
   private:
     Iarray indices_;
     IncrementType increment_;
+    unsigned int totalReplicas_;
 };
 #endif
