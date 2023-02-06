@@ -66,6 +66,8 @@ class Creator {
     int N_MD_Runs() const { return n_md_runs_; }
     /// \return True if reference should be previous run restart
     bool UsePrevRestartAsRef() const { return usePrevRestartAsRef_; }
+    /// \return True if doing diagonal REMD
+    bool RemdDiagonal() const; { return remd_diagonal_; }
     // ----- File names --------------------------
     /// \return Name of first topology file from the top_dim_ dimension or MD top file.
     std::string TopologyName() const;
@@ -91,6 +93,7 @@ class Creator {
     int fileExtWidth_;            ///< Filename extension width
     bool mdin_needs_read_;        ///< If true, mdin_file_ needs to be read by MdPackage
     bool usePrevRestartAsRef_;    ///< If true, reference will be restart of previous run.
+    bool remd_diagonal_;          ///< If true, increment all dimensions for each replica.
     RUNTYPE runType_;             ///< Type of run from options file. TODO deprecate
     std::string runDescription_;  ///< Run description
     std::string crd_dir_;         ///< Directory where input coordinates are/MD input coords (from options file).
