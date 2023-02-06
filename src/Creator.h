@@ -66,6 +66,8 @@ class Creator {
     int N_MD_Runs() const { return n_md_runs_; }
     /// \return Total number of replicas
     unsigned int TotalReplicas() const { return totalReplicas_; }
+    /// \return True if reference should be previous run restart FIXME implement
+    bool UsePrevRestartAsRef() const { return false; }
     // ----- File names --------------------------
     /// \return Name of first topology file from the top_dim_ dimension or MD top file.
     std::string TopologyName() const;

@@ -350,14 +350,19 @@ const
 //  if (Mkdir(run_dir)) return 1;
 //  if (ChangeDir(run_dir)) return 1;
   // Get input coordinates array
-  FileNameArray inpcrd_files(creator.CrdDir(), prevDir, FileNameArray::IS_FILE, "rst7", 3);
+  FileNameArray inpcrd_files(creator.CrdDir(), prevDir, FileNameArray::IS_DIR, "rst7", 3);
   if (inpcrd_files.Generate(creator.N_MD_Runs(), (start_run == run_num))) {
     ErrorMsg("Generating input coords file names for multi-MD failed.\n");
     return 1;
   }
   // Get any ref coords
-  FileNameArray refcrd_files(creator.RefDir(), "rst7", 3);
-  if (refcrd_files.Generate(creator.N_MD_Runs(), (start_run == run_num))) {
+  FileNameArray refcrd_files(creator.RefDir(), prevDir, FileNameArray::IS_DIR, "rst7", 3);
+  bool ref_is_initial;
+  if (creator.UsePrevRestartAsRef())
+    ref_is_initial = (start_run == run_num);
+  else
+    ref_is_initial = true;
+  if (refcrd_files.Generate(creator.N_MD_Runs(), ref_is_initial)) {
     ErrorMsg("Generating ref coords file names for multi-MD failed.\n");
     return 1;
   }
@@ -438,8 +443,13 @@ const
     return 1;
   }
   // Get reference coords if any
-  FileNameArray refcrd_files(creator.RefDir(), "rst7", 3);
-  if (refcrd_files.Generate(1, (start_run==run_num))) {
+  FileNameArray refcrd_files(creator.RefDir(), prevDir + "/mdrst.rst7", FileNameArray::IS_FILE, "rst7", 3);
+  bool ref_is_initial;
+  if (creator.UsePrevRestartAsRef())
+    ref_is_initial = (start_run == run_num);
+  else
+    ref_is_initial = true;
+  if (refcrd_files.Generate(1, ref_is_initial)) {
     ErrorMsg("Generating reference coords file name failed.\n");
     return 1;
   }
@@ -494,8 +504,13 @@ const
     return 1;
   }
   // Get any ref coords
-  FileNameArray refcrd_files(creator.RefDir(), "rst7", 3);
-  if (refcrd_files.Generate(creator.TotalReplicas(), (start_run==run_num))) {
+  FileNameArray refcrd_files(creator.RefDir(), prevDir + "/RST", FileNameArray::IS_DIR, "rst7", 3);
+  bool ref_is_initial;
+  if (creator.UsePrevRestartAsRef())
+    ref_is_initial = (start_run == run_num);
+  else
+    ref_is_initial = true;
+  if (refcrd_files.Generate(creator.TotalReplicas(), ref_is_initial)) {
     ErrorMsg("Generating ref coords file names for REMD failed.\n");
     return 1;
   }

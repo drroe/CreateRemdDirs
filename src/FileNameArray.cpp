@@ -19,16 +19,6 @@ FileNameArray::FileNameArray(std::string const& base,
   fileExtWidth_(fileExtWidth)
 {}
 
-/** CONSTRUCTOR - always use base */
-FileNameArray::FileNameArray(std::string const& base,
-                             std::string const& crd_ext,
-                             int fileExtWidth) :
-  base_(tildeExpansion(base)),
-  prevType_(IS_FILE),
-  crd_ext_(crd_ext),
-  fileExtWidth_(fileExtWidth)
-{}
-
 /** \return File numerical prefix/extension.
   * Determines a numerical prefix/extension based on max number of expected
   * files and the current default width.
@@ -72,7 +62,7 @@ const
 
 /** Generate list of name(s) */
 int FileNameArray::Generate(unsigned int nfiles, bool is_initial_run) {
-  Msg("DEBUG: Generate nfiles=%u base='%s'\n", nfiles, base_.c_str());
+  Msg("DEBUG: Generate nfiles=%u base='%s' is_initial=%i\n", nfiles, base_.c_str(), (int)is_initial_run);
   files_.clear();
   if (base_.empty()) return 0;
   if (nfiles == 0) return 0;
