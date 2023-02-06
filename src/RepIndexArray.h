@@ -7,11 +7,13 @@ class ReplicaDimArray;
 /// Used to hold and count replica indices in 1 or more dimensions.
 class RepIndexArray {
   public:
+    enum IncrementType { NORMAL = 0, DIAGONAL };
+
     typedef std::vector<unsigned int> Iarray;
     /// CONSTRUCTOR - no indices
-    RepIndexArray() {}
+    RepIndexArray() : increment_(NORMAL) {}
     /// CONSTRUCTOR - take number of dimensions
-    RepIndexArray(unsigned int n) : indices_(n, 0) {}
+    RepIndexArray(unsigned int n) : indices_(n, 0), increment_(NORMAL) {}
     /// \return index array
     Iarray const& Indices() const { return indices_; }
     /// \return true if no indices
@@ -30,5 +32,6 @@ class RepIndexArray {
     std::string IndicesStr(unsigned int) const;
   private:
     Iarray indices_;
+    IncrementType increment_;
 };
 #endif
