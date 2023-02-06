@@ -66,8 +66,8 @@ class Creator {
     int N_MD_Runs() const { return n_md_runs_; }
     /// \return Total number of replicas
     unsigned int TotalReplicas() const { return totalReplicas_; }
-    /// \return True if reference should be previous run restart FIXME implement
-    bool UsePrevRestartAsRef() const { return false; }
+    /// \return True if reference should be previous run restart
+    bool UsePrevRestartAsRef() const { return usePrevRestartAsRef_; }
     // ----- File names --------------------------
     /// \return Name of first topology file from the top_dim_ dimension or MD top file.
     std::string TopologyName() const;
@@ -77,7 +77,7 @@ class Creator {
     std::string const& CrdDir() const { return crd_dir_; }
     /// \return Name of reference coordinates file/directory
     std::string const& RefDir() const { return ref_dir_; }
-  private:
+  private: 
     /// Load a REMD dimension from file
     int LoadDimension(std::string const&);
 
@@ -95,6 +95,7 @@ class Creator {
     int n_md_runs_;               ///< Number of MD runs.
     int fileExtWidth_;            ///< Filename extension width
     bool mdin_needs_read_;        ///< If true, mdin_file_ needs to be read by MdPackage
+    bool usePrevRestartAsRef_;    ///< If true, reference will be restart of previous run.
     RUNTYPE runType_;             ///< Type of run from options file.
     std::string runDescription_;  ///< Run description
     std::string crd_dir_;         ///< Directory where input coordinates are/MD input coords (from options file).

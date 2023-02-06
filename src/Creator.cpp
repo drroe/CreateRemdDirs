@@ -22,6 +22,7 @@ Creator::Creator() :
   n_md_runs_(0),
   fileExtWidth_(3),
   mdin_needs_read_(false),
+  usePrevRestartAsRef_(false),
   runType_(MD),
   runDescription_("MD")
 {}
@@ -76,26 +77,27 @@ std::string Creator::NumericalExt(int num, int max) const {
 
 void Creator::OptHelp() {
   Msg("Creation input file variables:\n"
-      "  CRD_FILE <dir>     : Starting coordinates location (run 0 only).\n"
+      "  CRD_FILE <dir>     : Starting coordinates file/directory (run 0 only).\n"
       "                       Expect name '<CRD_FILE>/XXX.rst7' for REMD.\n"
-      "  REF_FILE <dir>     : Reference coordinates directory (optional).\n"
+      "  REF_FILE <dir>     : Reference coordinates file/directory (optional).\n"
       "                       Expect name '<REF_FILE>/XXX.rst7' for REMD.\n"
-      "  REFERENCE <file>   : Single reference coordinates (optional).\n"
+      "  REF_TYPE <type>    : <type>=single: Use single reference. <type>=previous: Use previous run restart.\n"
+//      "  REFERENCE <file>   : Single reference coordinates (optional).\n"
       "  DIMENSION <file>   : File containing replica dimension information, 1 per dimension\n"
       "    Headers:");
   for (ReplicaAllocator::Token const* ptr = ReplicaAllocator::AllocArray;
                                       ptr->Key != 0; ++ptr)
     Msg(" %s", ptr->Key);
 Msg("\n"
-      "  TOPOLOGY <file>    : Topology for 1D TREMD run.\n"
+      "  TOPOLOGY <file>    : Topology for MD/non-H-REMD run.\n"
       "  MDIN_FILE <file>   : File containing extra MDIN input.\n"
       "  RST_FILE <file>    : File containing NMR restraints (MD only).\n"
       "  TEMPERATURE <T>    : Temperature for 1D HREMD run.\n"
-      "  NSTLIM <nstlim>    : Input file; steps per exchange. Required.\n"
-      "  DT <step>          : Input file; time step. Required.\n"
-      "  IG <seed>          : Input file; random seed.\n"
-      "  NUMEXCHG <#>       : Input file; number of exchanges. Required for REMD.\n"
-      "  NTWX <#>           : Input file; trajectory write frequency in steps.\n"
+      "  NSTLIM <nstlim>    : MD input; steps per exchange. Required.\n"
+      "  DT <step>          : MD input; time step.\n"
+      "  IG <seed>          : MD input; random seed.\n"
+      "  NUMEXCHG <#>       : MD input; number of exchanges. Required for REMD.\n"
+      "  NTWX <#>           : MD input; trajectory write frequency in steps.\n"
       "  MDRUNS <#>         : Number of MD runs when not REMD (default 1).\n"
       "  UMBRELLA <#>       : Indicates MD umbrella sampling with write frequency <#>.\n");
       MdPackage_Amber::OptHelp();
@@ -111,8 +113,11 @@ int Creator::WriteOptions(TextFile& outfile) const {
     outfile.Printf("TOPOLOGY %s\n", top_file_.c_str());
   if (!crd_dir_.empty())
     outfile.Printf("CRD_FILE %s\n", crd_dir_.c_str());
-  if (!ref_dir_.empty())
+  if (!ref_dir_.empty()) {
     outfile.Printf("REF_FILE %s\n", ref_dir_.c_str());
+    if (usePrevRestartAsRef_)
+      outfile.Printf("REF_TYPE previous\n");
+  }
 //  if (!ref_file_.empty())
 //    outfile.Printf("REFERENCE %s\n", ref_file_.c_str());
   if (!mdin_file_.empty())
@@ -180,7 +185,16 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
     ref_dir_ = VAR;
   else if (OPT == "REF_FILE")  // Format: <ref_dir>/EXT.rst7
     ref_dir_ = VAR;
-  else if (OPT == "TEMPERATURE")
+  else if (OPT == "REF_TYPE") {
+    if (VAR == "single")
+      usePrevRestartAsRef_ = false;
+    else if (VAR == "previous")
+      usePrevRestartAsRef_ = true;
+    else {
+      ErrorMsg("Unrecognized option '%s' for REF_TYPE.\n", VAR.c_str());
+      return -1;
+    }
+  } else if (OPT == "TEMPERATURE")
     mdopts_.Set_Temperature0().SetVal( convertToDouble( VAR ) );
   else if (OPT == "NTWX")
     mdopts_.Set_TrajWriteFreq().SetVal( convertToInteger( VAR ) );
@@ -245,7 +259,7 @@ template <typename T> void set_mdopt(T& currentOpt, T const& newOpt, std::string
   }
 }
 
-/** Set MD options from external source. */
+/** Set MD options from external source. FIXME do all options*/
 int Creator::SetMdOptions(MdOptions const& opts) {
   set_mdopt< Option<int> >(mdopts_.Set_TrajWriteFreq(), opts.TrajWriteFreq(), "Trajectory write frequency");
   set_mdopt< Option<double> >(mdopts_.Set_TimeStep(), opts.TimeStep(), "Time step");
@@ -349,6 +363,9 @@ int Creator::CheckCreator() {
 
 // Creator::Info()
 void Creator::Info() const {
+  // This corresponds to usePrevRestartAsRef_
+  static const char* ref_prev_str[] = { "single", "previous" };
+
   Msg("Creator options:\n");
   Msg(    "  Run type              : %s\n", RUNTYPESTR_[runType_]);
   mdopts_.PrintOpts( (runType_ == MD), Dims_.DimIdx(ReplicaDimension::TEMP), Dims_.DimIdx(ReplicaDimension::PH));
@@ -359,8 +376,10 @@ void Creator::Info() const {
     Msg(  "  CRD_FILE              : %s\n", crd_dir_.c_str());
 //    if (!ref_file_.empty())
 //      Msg("  REF                   : %s\n", ref_file_.c_str());
-    if (!ref_dir_.empty())
+    if (!ref_dir_.empty()) {
       Msg("  REF_FILE              : %s\n", ref_dir_.c_str());
+      Msg("  REF_TYPE              : %s\n", ref_prev_str[(int)usePrevRestartAsRef_]);
+    }
   } else {
     // Some type of replica exchange run
     if (!Dims_.HasDim(ReplicaDimension::TOPOLOGY))
@@ -368,8 +387,10 @@ void Creator::Info() const {
     Msg(  "  CRD_FILE              : %s\n", crd_dir_.c_str());
 //    if (!ref_file_.empty())
 //      Msg("  REF_PREFIX            : %s\n", ref_file_.c_str());
-    if (!ref_dir_.empty())
+    if (!ref_dir_.empty()) {
       Msg("  REF_FILE              : %s\n", ref_dir_.c_str());
+      Msg("  REF_TYPE              : %s\n", ref_prev_str[(int)usePrevRestartAsRef_]);
+    }
     Msg(  "  %u dimensions, %u total replicas.\n", Dims_.Ndims(), totalReplicas_);
     for (unsigned int idim = 0; idim != Dims_.Ndims(); idim++)
       Msg("    %u : %s\n", idim, Dims_[idim].description());
