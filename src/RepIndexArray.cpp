@@ -3,12 +3,14 @@
 #include "StringRoutines.h"
 #include "ReplicaDimArray.h"
 
-/** CONSTRUCTOR - take replica dimension array. */ // TODO take increment_
-RepIndexArray::RepIndexArray(ReplicaDimArray const& Dims) :
+/** CONSTRUCTOR - take replica dimension array. */
+RepIndexArray::RepIndexArray(ReplicaDimArray const& Dims, bool is_diagonal) :
   indices_(Dims.Ndims(), 0),
   increment_(NORMAL),
   totalReplicas_(0)
 {
+  if (is_diagonal)
+    increment_ = DIAGONAL;
   // Count total replicas
   if (!Dims.Empty()) {
     if (increment_ == NORMAL) {

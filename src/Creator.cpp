@@ -22,6 +22,7 @@ Creator::Creator() :
   fileExtWidth_(3),
   mdin_needs_read_(false),
   usePrevRestartAsRef_(false),
+  remd_diagonal_(false),
   runType_(MD),
   runDescription_("MD")
 {}
@@ -122,6 +123,8 @@ int Creator::WriteOptions(TextFile& outfile) const {
   if (!dim_files_.empty()) {
     for (Sarray::const_iterator it = dim_files_.begin(); it != dim_files_.end(); it++)
       outfile.Printf("DIMENSION %s\n", it->c_str());
+    if (remd_diagonal_)
+      outfile.Printf("REMD_DIAGONAL yes\n");
   }
   // Md Options
   if (mdopts_.N_Steps().IsSet())
@@ -189,6 +192,15 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
       usePrevRestartAsRef_ = true;
     else {
       ErrorMsg("Unrecognized option '%s' for REF_TYPE.\n", VAR.c_str());
+      return -1;
+    }
+  } else if (OPT == "REMD_DIAGONAL") {
+    if (VAR == "yes")
+      remd_diagonal_ = true;
+    else if (VAR == "no")
+      remd_diagonal_ = false;
+    else {
+      ErrorMsg("Unrecognized option '%s' for REMD_DIAGONAL.\n", VAR.c_str());
       return -1;
     }
   } else if (OPT == "TEMPERATURE")
@@ -378,7 +390,9 @@ void Creator::Info() const {
       Msg("  REF_TYPE              : %s\n", ref_prev_str[(int)usePrevRestartAsRef_]);
     }
     // Use replica index array to get total replica count
-    RepIndexArray Indices( Dims_ );
+    if (remd_diagonal_)
+      Msg("  REMD_DIAGONAL         : yes\n");
+    RepIndexArray Indices( Dims_, remd_diagonal_ );
     Msg(  "  %u dimensions, %u total replicas.\n", Dims_.Ndims(), Indices.TotalReplicas());
     for (unsigned int idim = 0; idim != Dims_.Ndims(); idim++)
       Msg("    %u : %s\n", idim, Dims_[idim].description());

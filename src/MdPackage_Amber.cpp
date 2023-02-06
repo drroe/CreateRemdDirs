@@ -498,7 +498,7 @@ const
 //  if (Mkdir(run_dir)) return 1;
 //  if (ChangeDir(run_dir)) return 1;
   // Hold current indices in each dimension.
-  RepIndexArray Indices( creator.Dims() );
+  RepIndexArray Indices( creator.Dims(), creator.RemdDiagonal() );
   // Get Coords
   FileNameArray inpcrd_files(creator.CrdDir(), prevDir + "/RST", FileNameArray::IS_DIR, "rst7", 3);
   if (inpcrd_files.Generate(Indices.TotalReplicas(), (run_num==start_run))) {

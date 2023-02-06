@@ -67,7 +67,7 @@ class Creator {
     /// \return True if reference should be previous run restart
     bool UsePrevRestartAsRef() const { return usePrevRestartAsRef_; }
     /// \return True if doing diagonal REMD
-    bool RemdDiagonal() const; { return remd_diagonal_; }
+    bool RemdDiagonal() const { return remd_diagonal_; }
     // ----- File names --------------------------
     /// \return Name of first topology file from the top_dim_ dimension or MD top file.
     std::string TopologyName() const;

@@ -12,8 +12,8 @@ class RepIndexArray {
     typedef std::vector<unsigned int> Iarray;
     /// CONSTRUCTOR - no indices
     RepIndexArray() : increment_(NORMAL), totalReplicas_(0) {}
-    /// CONSTRUCTOR - take replica dimension array TODO take increment too
-    RepIndexArray(ReplicaDimArray const&);
+    /// CONSTRUCTOR - take replica dimension array, true if diagonal increment
+    RepIndexArray(ReplicaDimArray const&, bool);
     /// \return index array
     Iarray const& Indices() const { return indices_; }
     /// \return true if no indices
