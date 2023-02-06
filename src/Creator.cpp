@@ -117,8 +117,6 @@ int Creator::WriteOptions(TextFile& outfile) const {
     if (usePrevRestartAsRef_)
       outfile.Printf("REF_TYPE previous\n");
   }
-//  if (!ref_file_.empty())
-//    outfile.Printf("REFERENCE %s\n", ref_file_.c_str());
   if (!mdin_file_.empty())
     outfile.Printf("MDIN_FILE %s\n", mdin_file_.c_str());
   if (!dim_files_.empty()) {
@@ -180,7 +178,7 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
     // and perform tildeExpansion.
     if (fileExists(top_file_))
       top_file_ = tildeExpansion( top_file_ );
-  } else if (OPT == "REFERENCE") // Format: <ref_file_>.EXT
+  } else if (OPT == "REFERENCE")
     ref_dir_ = VAR;
   else if (OPT == "REF_FILE")  // Format: <ref_dir>/EXT.rst7
     ref_dir_ = VAR;
@@ -366,8 +364,6 @@ void Creator::Info() const {
     // Regular MD
     Msg(  "  TOPOLOGY              : %s\n", top_file_.c_str());
     Msg(  "  CRD_FILE              : %s\n", crd_dir_.c_str());
-//    if (!ref_file_.empty())
-//      Msg("  REF                   : %s\n", ref_file_.c_str());
     if (!ref_dir_.empty()) {
       Msg("  REF_FILE              : %s\n", ref_dir_.c_str());
       Msg("  REF_TYPE              : %s\n", ref_prev_str[(int)usePrevRestartAsRef_]);
@@ -377,8 +373,6 @@ void Creator::Info() const {
     if (!Dims_.HasDim(ReplicaDimension::TOPOLOGY))
       Msg("  TOPOLOGY              : %s\n", top_file_.c_str());
     Msg(  "  CRD_FILE              : %s\n", crd_dir_.c_str());
-//    if (!ref_file_.empty())
-//      Msg("  REF_PREFIX            : %s\n", ref_file_.c_str());
     if (!ref_dir_.empty()) {
       Msg("  REF_FILE              : %s\n", ref_dir_.c_str());
       Msg("  REF_TYPE              : %s\n", ref_prev_str[(int)usePrevRestartAsRef_]);

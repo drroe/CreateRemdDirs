@@ -9,7 +9,7 @@ class TextFile;
 /// Class responsible for creating run input and script
 class Creator {
   public:
-    /// Specific type of run the Creator will make (set in Setup); SYNC WITH RUNTYPESTR_
+    /// Specific type of run the Creator will make (set in Setup); SYNC WITH RUNTYPESTR_ TODO deprecate
     enum RUNTYPE { MD=0, TREMD, HREMD, PHREMD, MREMD };
     /// CONSTRUCTOR
     Creator();
@@ -83,8 +83,6 @@ class Creator {
 
     // File and MDIN variables
     std::string top_file_;
-    //std::string trajoutargs_;
-    //std::string fullarchive_;
     MdOptions mdopts_;            ///< Hold MD options
 
     ReplicaDimArray Dims_;        ///< Hold any replica dimensions
@@ -93,10 +91,9 @@ class Creator {
     int fileExtWidth_;            ///< Filename extension width
     bool mdin_needs_read_;        ///< If true, mdin_file_ needs to be read by MdPackage
     bool usePrevRestartAsRef_;    ///< If true, reference will be restart of previous run.
-    RUNTYPE runType_;             ///< Type of run from options file.
+    RUNTYPE runType_;             ///< Type of run from options file. TODO deprecate
     std::string runDescription_;  ///< Run description
     std::string crd_dir_;         ///< Directory where input coordinates are/MD input coords (from options file).
-//    std::string ref_file_;        ///< Reference file (MD) or path prefix (REMD) TODO deprecate
     std::string ref_dir_;         ///< Directory where reference coords are (like crd_dir_)
     std::string mdin_file_;       ///< Md package-specific input file
     Sarray dim_files_;            ///< REMD dimension files
