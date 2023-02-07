@@ -1,6 +1,7 @@
 #include "Manager.h"
 #include "Messages.h"
 #include "TextFile.h"
+#include "FileRoutines.h"
 
 using namespace Messages;
 
@@ -64,8 +65,9 @@ int Manager::InitManager(std::string const& CurrentDir, std::string const& input
           std::string description = input.Token(2);
           for (int col = 3; col < ncols; col++)
             description.append(" " + input.Token(col));
-          Msg("System: %s  Description: '%s'\n", input.Token(1).c_str(), description.c_str());
-          projects_.back().AddSystem( System(CurrentDir, input.Token(1), description) );
+          std::string system_dir = FileRoutines::tildeExpansion(input.Token(1));
+          Msg("System: %s  Description: '%s'\n", system_dir.c_str(), description.c_str());
+          projects_.back().AddSystem( System(CurrentDir, system_dir, description) );
           projects_.back().LastSystem().SetDebug( debug_ );
           if (projects_.back().LastSystem().FindRuns(queues_)) return 1;
         }
