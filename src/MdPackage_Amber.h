@@ -39,7 +39,7 @@ class MdPackage_Amber : public MdPackage {
     /// Write given namelist to specified file
     void writeNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
     /// Write Amber MDIN file
-    int writeMdInputFile(std::string const&, MdOptions const&, std::string const&, int,
+    int writeMdInputFile(std::string const&, MdOptions const&, std::string const&, bool,
                          RepIndexArray const&, unsigned int) const;
     /// Create multi-group MD input
     int create_multimd_input(Creator const&, int, int, std::string const&, std::string const&) const;
@@ -53,8 +53,8 @@ class MdPackage_Amber : public MdPackage {
     int read_traj_nframes(RunStatus&, std::string const&, std::string const&) const;
 
     std::string additionalInput_; ///< Hold any additional MDIN input
-    bool override_irest_;         ///< If true do not set irest, use from MDIN
-    bool override_ntx_;           ///< If true do not set ntx, use from MDIN
+    //bool override_irest_;         ///< If true do not set irest, use from MDIN
+    //bool override_ntx_;           ///< If true do not set ntx, use from MDIN
     MdinFile mdinFile_;           ///< Used to read input from MDIN
     std::string cpin_file_;       ///< Constant pH input file name
 };

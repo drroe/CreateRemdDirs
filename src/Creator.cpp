@@ -268,11 +268,13 @@ template <typename T> void set_mdopt(T& currentOpt, T const& newOpt, std::string
   }
 }
 
-/** Set MD options from external source. FIXME do all options*/
+/** Set MD options from a set external variable if not already set here. FIXME do all options*/
 int Creator::SetMdOptions(MdOptions const& opts) {
   set_mdopt< Option<int> >(mdopts_.Set_TrajWriteFreq(), opts.TrajWriteFreq(), "Trajectory write frequency");
   set_mdopt< Option<double> >(mdopts_.Set_TimeStep(), opts.TimeStep(), "Time step");
   set_mdopt< Option<double> >(mdopts_.Set_Temperature0(), opts.Temperature0(), "Temperature");
+  set_mdopt< Option<double> >(mdopts_.Set_pH(), opts.pH(), "Solvent pH");
+  set_mdopt< Option<int>    >(mdopts_.Set_RandomSeed(), opts.RandomSeed(), "Random seed");
 
   return 0;
 }

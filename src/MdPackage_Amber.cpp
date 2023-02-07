@@ -21,17 +21,17 @@ const std::string MdPackage_Amber::groupfileName_( "groupfile" ); // TODO make t
 const std::string MdPackage_Amber::remddimName_("remd.dim");
 
 /** CONSTRUCTOR */
-MdPackage_Amber::MdPackage_Amber() :
-  override_irest_(false),
-  override_ntx_(false)
+MdPackage_Amber::MdPackage_Amber() //:
+  //override_irest_(false),
+  //override_ntx_(false)
 {}
 
 /** COPY CONSTRUCTOR */
 MdPackage_Amber::MdPackage_Amber(MdPackage_Amber const& rhs) :
   MdPackage(rhs),
   additionalInput_(rhs.additionalInput_),
-  override_irest_(rhs.override_irest_),
-  override_ntx_(rhs.override_ntx_),
+//  override_irest_(rhs.override_irest_),
+//  override_ntx_(rhs.override_ntx_),
   mdinFile_(rhs.mdinFile_),
   cpin_file_(rhs.cpin_file_)
 {}
@@ -41,8 +41,8 @@ MdPackage_Amber& MdPackage_Amber::operator=(MdPackage_Amber const& rhs) {
   if (&rhs == this) return *this;
   MdPackage::operator=(rhs);
   additionalInput_ = rhs.additionalInput_;
-  override_ntx_ = rhs.override_ntx_;
-  override_irest_ = rhs.override_irest_;
+//  override_ntx_ = rhs.override_ntx_;
+//  override_irest_ = rhs.override_irest_;
   mdinFile_ = rhs.mdinFile_;
   cpin_file_ = rhs.cpin_file_;
 
@@ -113,12 +113,12 @@ int MdPackage_Amber::ReadPackageInput(MdOptions& opts, std::string const& fname)
   if (CheckExists("Amber MDIN file", fname)) return 1;
   std::string mdin_fileName = tildeExpansion(fname);
 
-  override_irest_ = false;
-  override_ntx_ = false;
+//  override_irest_ = false;
+//  override_ntx_ = false;
   additionalInput_.clear();
   if (mdinFile_.ParseFile( mdin_fileName )) return 1;
   if (Debug() > 0) mdinFile_.PrintNamelists();
-  std::string valname = mdinFile_.GetNamelistVar("&cntrl", "irest");
+/*  std::string valname = mdinFile_.GetNamelistVar("&cntrl", "irest");
   if (!valname.empty()) {
     Msg("Warning: Using 'irest = %s' in '%s'\n", valname.c_str(), mdin_fileName.c_str());
     override_irest_ = true;
@@ -127,7 +127,7 @@ int MdPackage_Amber::ReadPackageInput(MdOptions& opts, std::string const& fname)
   if (!valname.empty()) {
     Msg("Warning: Using 'ntx = %s' in '%s'\n", valname.c_str(), mdin_fileName.c_str());
     override_ntx_ = true;
-  }
+  }*/
   // Add any &cntrl variables to additionalInput_
   for (MdinFile::const_iterator nl = mdinFile_.nl_begin(); nl != mdinFile_.nl_end(); ++nl)
   {
@@ -145,14 +145,19 @@ int MdPackage_Amber::ReadPackageInput(MdOptions& opts, std::string const& fname)
         } else if (tkn->first == "temp0") {
           opts.Set_Temperature0().SetVal( convertToDouble(tkn->second) );
           continue;
+        } else if (tkn->first == "solvph") {
+          opts.Set_pH().SetVal( convertToDouble(tkn->second) );
+          continue;
+        } else if (tkn->first == "ig") {
+          opts.Set_RandomSeed().SetVal( convertToInteger(tkn->second) );
         // Avoid vars which will be set
         } else if (tkn->first == "imin" ||
             tkn->first == "nstlim" ||
+            tkn->first == "irest" ||
+            tkn->first == "ntx" ||
             tkn->first == "ntwx" ||
-            tkn->first == "ig" ||
             tkn->first == "tempi" ||
-            tkn->first == "numexchg" ||
-            tkn->first == "solvph"
+            tkn->first == "numexchg"
            )
         {
           Msg("Warning: Not using variable '%s' found in '%s'\n", tkn->first.c_str(), mdin_fileName.c_str());
@@ -174,10 +179,10 @@ int MdPackage_Amber::ReadPackageInput(MdOptions& opts, std::string const& fname)
       Msg("Warning: MDIN file contains additonal namelist '%s'\n", nl->first.c_str());
   }
 
-  if (override_irest_ != override_ntx_) {
+  /*if (override_irest_ != override_ntx_) {
     ErrorMsg("Both 'irest' and 'ntx' must be in '%s' if either are.\n", mdin_fileName.c_str());
     return 1;
-  }
+  }*/
 
   return 0;
 }
@@ -209,7 +214,7 @@ const
 /** Write amber MDIN file. */
 int MdPackage_Amber::writeMdInputFile(std::string const& runDescription,
                                       MdOptions const& mdopts,
-                                      std::string const& fname, int run_num, 
+                                      std::string const& fname, bool is_initial, 
                                       RepIndexArray const& Indices, unsigned int rep)
 const
 {
@@ -219,15 +224,15 @@ const
 
   int irest = 1;
   int ntx = 5;
-  if (!override_irest_) {
-    if (run_num == 0) {
+  //if (!override_irest_) {
+    if (is_initial) {
       if (rep == 0)
-        Msg("    Run 0: irest=0, ntx=1\n");
+        Msg("    Initial run: irest=0, ntx=1\n");
       irest = 0;
       ntx = 1;
     }
-  } else
-    Msg("    Using irest/ntx from MDIN.\n");
+  //} else
+  //  Msg("    Using irest/ntx from MDIN.\n");
   //if (debug_ > 1)
     Msg("\t\tMDIN: %s\n", fname.c_str()); // DEBUG
 
@@ -256,11 +261,11 @@ const
   if (mdopts.TrajWriteFreq().IsSet())
     MDIN.Printf("    ntwx = %i,\n", mdopts.TrajWriteFreq().Val());
 
-  if (!override_irest_)
+  //if (!override_irest_)
     MDIN.Printf("    irest = %i, ntx = %i, ig = %i,\n",
                 irest, ntx, mdopts.RandomSeed().Val());
-  else
-    MDIN.Printf("    ig = %i,\n", mdopts.RandomSeed().Val());
+  //else
+  //  MDIN.Printf("    ig = %i,\n", mdopts.RandomSeed().Val());
   if (mdopts.N_Exchanges().Val() > -1)
     MDIN.Printf("    numexchg = %i,\n", mdopts.N_Exchanges().Val());
   if (mdopts.pH().IsSet())
@@ -389,7 +394,7 @@ const
         return 1;
       }
       if (writeMdInputFile(creator.RunDescription(), currentMdOpts,
-                           mdin_name, run_num, RepIndexArray(), grp))
+                           mdin_name, (run_num==start_run), RepIndexArray(), grp))
       {
         ErrorMsg("Create input failed for group %i\n", grp);
         return 1;
@@ -475,7 +480,7 @@ const
       return 1;
     }
     if (writeMdInputFile(creator.RunDescription(), currentMdOpts,
-                         "md.in", run_num, RepIndexArray(), 0)) // TODO customize md.in name
+                         "md.in", (run_num==start_run), RepIndexArray(), 0)) // TODO customize md.in name
     {
       ErrorMsg("Create input failed for MD\n");
       return 1;
@@ -563,7 +568,7 @@ const
       Msg("  { %s }\n", Indices.IndicesStr(0).c_str());
     }
     if (writeMdInputFile(creator.RunDescription(), currentMdOpts,
-                         mdin_name, run_num, Indices, rep))
+                         mdin_name, (run_num==start_run), Indices, rep))
     {
       ErrorMsg("Create input failed for rep %u\n", rep+1);
       return 1;
