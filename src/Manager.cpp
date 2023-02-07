@@ -99,8 +99,8 @@ int Manager::ChangeToActiveSystemDir() const {
 
 /** Set active project and system. */
 int Manager::SetActiveProjectSystem(int tgtProjectIdx, int tgtSystemIdx) {
-  if (tgtProjectIdx < 0 || tgtSystemIdx < 0) {
-    ErrorMsg("Must specify valid active project and system indices.\n");
+  if (tgtProjectIdx < 0) {
+    ErrorMsg("Must specify a valid project index.\n");
     return 1;
   }
 
@@ -110,6 +110,12 @@ int Manager::SetActiveProjectSystem(int tgtProjectIdx, int tgtSystemIdx) {
   }
   activeProjectIdx_ = tgtProjectIdx;
   Project& activeProject = ActiveProject();
+
+  // If no system index given default to zero.
+  if (tgtSystemIdx < 0) {
+    Msg("No system specified; defaulting to 0.\n");
+    tgtSystemIdx = 0;
+  }
 
   if ((unsigned int)tgtSystemIdx >= activeProject.Systems().size()) {
     ErrorMsg("System index %i is out of range.\n", tgtSystemIdx);

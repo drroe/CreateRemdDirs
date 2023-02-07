@@ -24,7 +24,10 @@ Exec::RetType Exec_Active::Execute(Manager& manager, Cols& args) const {
   }
 
   if (manager.SetActiveProjectSystem(tgtProjectIdx, tgtSystemIdx)) return ERR;
-  Msg("Project %i system %i is active.\n", tgtProjectIdx, tgtSystemIdx);
+ 
+  Project const& activeProject = manager.Projects()[manager.ActiveProjectIdx()];
+  Msg("Project %i system %i is active.\n", manager.ActiveProjectIdx(),
+      activeProject.ActiveSystemIdx());
   System const& activeSystem = manager.ActiveProjectSystem();
   activeSystem.PrintSummary();
 
