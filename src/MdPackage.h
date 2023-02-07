@@ -37,6 +37,8 @@ class MdPackage {
     virtual int WriteCreatorOptions(TextFile&) const = 0;
     /// Read package-specific input options from a file
     virtual int ReadPackageInput(MdOptions&, std::string const&) = 0;
+    /// Print package info to stdout
+    virtual void PackageInfo() const = 0;
     /// Create package-specific input files
     virtual int CreateInputFiles(Creator const&, Submitter const&, int, int, std::string const&, std::string const&) const = 0;
     /// \return Information on an existing run from output files

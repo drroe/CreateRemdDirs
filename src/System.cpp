@@ -332,6 +332,8 @@ void System::PrintSummary() const {
 /** Print system info. */
 void System::PrintInfo() const {
   creator_.Info();
+  if (mdInterface_.HasPackage())
+    mdInterface_.Package()->PackageInfo();
   submitter_.Info();
 }
 
