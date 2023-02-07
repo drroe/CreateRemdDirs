@@ -7,6 +7,8 @@ class FileNameArray {
   public:
     /// Indicate whether previous will be dir or file
     enum PrevType { IS_DIR = 0, IS_FILE };
+    /// CONSTRUCTOR - empty array
+    FileNameArray();
     /// CONSTRUCTOR - take base name/path, previous dir/coords name, previous type, file extension, file ext. min width
     FileNameArray(std::string const&, std::string const&, PrevType, std::string const&, int);
     /// Generate specified number of file name(s) for initial (true) or subsequent (false) run

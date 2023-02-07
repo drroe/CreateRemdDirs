@@ -28,6 +28,8 @@ class MdPackage_Amber : public MdPackage {
     int WriteCreatorOptions(TextFile&) const;
     /// Read amber-specific input (i.e. MDIN input) from file
     int ReadPackageInput(MdOptions&, std::string const&);
+    /// Print amber-specific options to stdout
+    void PackageInfo() const;
     /// Create amber-specific input files
     int CreateInputFiles(Creator const&, Submitter const&, int, int, std::string const&, std::string const&) const;
     /// \return Information on an existing run from output files

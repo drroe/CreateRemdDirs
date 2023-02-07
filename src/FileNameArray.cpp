@@ -6,6 +6,9 @@
 using namespace Messages;
 using namespace FileRoutines;
 
+/** CONSTRUCTOR - empty */
+FileNameArray::FileNameArray() : prevType_(IS_FILE), fileExtWidth_(0) {}
+
 /** CONSTRUCTOR */
 FileNameArray::FileNameArray(std::string const& base,
                              std::string const& prevDir,

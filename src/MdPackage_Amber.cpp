@@ -52,7 +52,8 @@ MdPackage_Amber& MdPackage_Amber::operator=(MdPackage_Amber const& rhs) {
 void MdPackage_Amber::OptHelp() {
   Msg("Amber-specific:\n"
       "  CPIN_FILE <file>   : CPIN file (constant pH only).\n"
-      "  USELOG {yes|no}    : yes (default): use logfile (pmemd), otherwise do not (sander).\n");
+//      "  USELOG {yes|no}    : yes (default): use logfile (pmemd), otherwise do not (sander).\n"
+     );
 }
 
 /** Write amber-specific creator options to file. */
@@ -60,6 +61,13 @@ int MdPackage_Amber::WriteCreatorOptions(TextFile& outfile) const {
   if (!cpin_file_.empty())
     outfile.Printf("CPIN_FILE %s\n", cpin_file_.c_str());
   return 0;
+}
+
+/** print amber-specific options to stdout */
+void MdPackage_Amber::PackageInfo() const {
+  Msg("Amber-specific options:\n");
+  if (!cpin_file_.empty())
+    Msg("  CPIN_FILE : %s\n", cpin_file_.c_str());
 }
 
 /** Parse amber-specific creator option.
@@ -89,7 +97,7 @@ int MdPackage_Amber::CheckCreatorOptions(Creator const& creator) const {
 int MdPackage_Amber::CheckSubmitterOptions(Creator const& creator, Submitter const& submitter) const {
   int errcount = 0;
   // If REMD or multiple groups, ensure mpirun is set
-  if (creator.TypeOfRun() != Creator::MD || creator.N_MD_Runs() > 1) {
+  if (creator.Dims().Ndims() > 0 || creator.N_MD_Runs() > 1) {
     if (submitter.MpiRun().empty()) {
       ErrorMsg("Amber requires MPIRUN be set for multi-group runs.\n");
       errcount++;
@@ -522,13 +530,22 @@ const
     return 1;
   }
 
-  // If constant pH, ensure CPIN file exists
-  if (creator.TypeOfRun() == Creator::PHREMD && !fileExists(cpin_file_))
-  {
-    ErrorMsg("CPIN file '%s' not found. Must specify absolute path"
-             " or path relative to '%s'\n", cpin_file_.c_str(), run_dir.c_str());
-    return 1;
+  // Constant pH setup
+  FileNameArray cpin_files, cpout_files;
+  if (creator.Dims().HasDim(ReplicaDimension::PH)) {
+    // Constant pH. Ensure CPIN exists.
+    //if (!fileExists(cpin_file_)) {
+    //  ErrorMsg("CPIN file '%s' not found. Must specify absolute path"
+    //           " or path relative to system dir.\n", cpin_file_.c_str());
+    //  return 1;
+    //}
+    cpin_files = FileNameArray(cpin_file_, prevDir + "/CPH", FileNameArray::IS_DIR, "cprestrt", 3);
+    if (cpin_files.Generate(Indices.TotalReplicas(), (run_num==start_run))) {
+      ErrorMsg("Generating CPIN file names for REMD failed.\n");
+      return 1;
+    }
   }
+
   // Do we need to setup groups for MREMD?
   Groups groups_;
   bool setupGroups = (groups_.Empty() && creator.Dims().Ndims() > 1);
@@ -588,22 +605,12 @@ const
     }
     if (uselog)
       GROUPFILE_LINE.append(" -l LOG/logfile." + EXT);
-    if (creator.TypeOfRun() == Creator::PHREMD) {
-      if (run_num == 0)
-        GROUPFILE_LINE.append(" -cpin " + cpin_file_);
-      else {
-        // Use CPrestart from previous run
-        std::string prevCP("../" + prevDir + "/CPH/cprestrt." + EXT);
-        if (start_run == run_num && !fileExists( prevCP )) {
-          ErrorMsg("Previous CP restart %s not found.\n", prevCP.c_str());
-          return 1;
-        }
-        GROUPFILE_LINE.append(" -cpin " + prevCP);
-      }
-      GROUPFILE_LINE.append(" -cpout CPH/cpout." + EXT +
-                            " -cprestrt CPH/cprestrt." + EXT);
+    if (!cpin_files.empty()) {
+      GROUPFILE_LINE.append(" -cpin " + cpin_files[rep]);
+      GROUPFILE_LINE.append(" -cpout CPH/" + EXT + ".cpout" +
+                            " -cprestrt CPH/" + EXT + ".cprestrt");
     }
-    /// Add any dimension-specific flags to groupline
+    /// Add any other dimension-specific flags to groupline
     for (unsigned int id = 0; id != creator.Dims().Ndims(); id++) {
       if (creator.Dims()[id].Type() == ReplicaDimension::AMD_DIHEDRAL)
         GROUPFILE_LINE += std::string(" -amd AMD/amd." + EXT);
