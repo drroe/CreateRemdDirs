@@ -29,7 +29,7 @@ class Run {
     /// Create new directory - rundir, creator, mdpackage, start #, run #, prev run dir
     int CreateNew(std::string const&, Creator const&, Submitter const&, MdPackage*, int, int, std::string const&);
     /// Submit run
-    int SubmitRun(Submitter const&, std::string const&, std::string const&, bool);
+    int SubmitRun(Submitter const&, bool, std::string const&, std::string const&, bool);
   private:
     std::string rundir_;   ///< Run directory. May be relative.
     std::string setupDir_; ///< Directory in which SetupRun gets invoked. Should be absolute run dir

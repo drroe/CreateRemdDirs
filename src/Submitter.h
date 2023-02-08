@@ -31,7 +31,7 @@ class Submitter {
     /// Print info to stdout
     void Info() const;
     /// Submit job, set job id
-    int SubmitJob(std::string&, std::string const&, int, std::string const&, bool) const;
+    int SubmitJob(std::string&, std::string const&, bool, int, std::string const&, bool) const;
 
     /// \return Program name
     std::string const& Program() const { return program_; }

@@ -382,6 +382,7 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
     return 1;
   }
   // Loop over desired run numbers
+  bool first_to_submit = true;
   std::string prev_jobid = prev_jobidIn;
   int stop_run = start_run + nruns - 1;
   for (int runNum = start_run; runNum <= stop_run; ++runNum)
@@ -409,10 +410,11 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
     if (ChangeToSystemDir()) return 1;
     Msg("Submit ");
     currentRun.RunSummary();
-    if (currentRun.SubmitRun( submitter_, prev_jobid, next_dir, testOnly )) {
+    if (currentRun.SubmitRun( submitter_, first_to_submit, prev_jobid, next_dir, testOnly )) {
       ErrorMsg("Run submission failed.\n");
       return 1;
     }
+    first_to_submit = false;
     prev_jobid = currentRun.JobId();
   }
 

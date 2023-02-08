@@ -263,7 +263,7 @@ int Submitter::writeHeader(TextFile& qout, int run_num, std::string const& prev_
 } 
 
 /** Submit job, set job id */
-int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, int run_num, std::string const& next_dir, bool testOnly) const {
+int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, bool first_to_submit, int run_num, std::string const& next_dir, bool testOnly) const {
   // Ensure the MD run script exists
   std::string runScriptName = CommonOptions::Opt_RunScriptName().Val();
   if (!fileExists( runScriptName )) {
@@ -323,5 +323,13 @@ int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, in
   qout.Printf("exit $ERR\n"); 
   qout.Close();
   ChangePermissions( submitScript );
+
+  if (testOnly)
+    Msg("Just testing. Skipping script submission.\n");
+  else if (dependType_ == SUBMIT && !first_to_submit)
+    Msg("Job will be submitted when previous job completes.\n");
+  else {
+    Msg("PLACEHOLDER FOR JOB SUBMIT.\n");
+  }
   return 0;
 }
