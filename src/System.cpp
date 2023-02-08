@@ -216,6 +216,9 @@ int System::FindRuns(QueueArray& queues) {
       return 1;
     }*/
   }
+  // Set default user if needed
+  submitter_.SetDefaultUser();
+  // Check submitter options
   if (submitter_.CheckSubmitter()) {
     Msg("Warning: Invalid Submitter options detected.\n");
   }

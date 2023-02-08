@@ -38,6 +38,7 @@ void Submitter::OptHelp() {
       "  PROGRAM <name>             : Name of binary to run (required).\n"
       "  MPIRUN <command>           : Command used to execute parallel run. Can use\n"
       "                               $NODES, $PROCS, $PPN (will be set by script).\n"
+      "  USER <name>                : User name\n"
       "  ACCOUNT <name>             : Account name\n"
       "  EMAIL <email>              : User email address\n"
       "  DEPEND {BATCH|SUBMIT|NONE} : Job dependencies. BATCH=Use batch system (default),\n"
@@ -96,6 +97,8 @@ int Submitter::ParseFileOption( OptArray::OptPair const& opair ) {
     program_ = VAR;
   } else if (OPT == "WALLTIME") {
     walltime_ = VAR;
+  } else if (OPT == "USER") {
+    user_ = VAR;
   } else if (OPT == "ACCOUNT") {
     account_ = VAR;
   } else if (OPT == "EMAIL") {
@@ -157,13 +160,18 @@ int Submitter::ReadOptions(std::string const& input_file) {
       }
     }
   } // END loop over file options
+
+
+  return 0;
+}
+
+/** Set user if not already set. */
+void Submitter::SetDefaultUser() {
   // Set user if needed
   if (user_.empty()) {
     user_ = NoTrailingWhitespace( UserName() );
     Msg("Warning: USER not set; setting to '%s'\n", user_.c_str());
   }
-
-  return 0;
 }
 
 /** Check that submitter is valid. */

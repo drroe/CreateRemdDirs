@@ -21,6 +21,8 @@ class Submitter {
     int ParseFileOption(OptArray::OptPair const&);
     /// Read options from a file
     int ReadOptions(std::string const&);
+    /// Set default user if needed
+    void SetDefaultUser();
     /// Check that options are valid
     int CheckSubmitter() const;
     /// Set debug level
