@@ -191,6 +191,9 @@ int Submitter::CheckSubmitter() const {
       ErrorMsg("No WALLTIME specified for queue.\n");
       errcount++;
     }
+    if (dependType_ == NO_DEPENDS) {
+      Msg("Warning: No job dependency type set (DEPEND)\n");
+    }
   }
 
   return errcount;
