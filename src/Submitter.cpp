@@ -157,19 +157,19 @@ int Submitter::ReadOptions(std::string const& input_file) {
       }
     }
   } // END loop over file options
+  // Set user if needed
+  if (user_.empty()) {
+    user_ = NoTrailingWhitespace( UserName() );
+    Msg("Warning: USER not set; setting to '%s'\n", user_.c_str());
+  }
 
-  //if (setupSubmitter()) {
-  //  Msg("Warning: Invalid of missing options in file '%s'\n", input_file.c_str());
-  //}
   return 0;
 }
 
 /** Check that submitter is valid. */
-int Submitter::CheckSubmitter() {
+int Submitter::CheckSubmitter() const {
   int errcount = 0;
-  // Set user if needed
-  if (user_.empty())
-    user_ = NoTrailingWhitespace( UserName() );
+
   // Check required options
   if (job_name_.empty()) {
     ErrorMsg("No JOBNAME specified.\n");

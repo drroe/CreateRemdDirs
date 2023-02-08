@@ -22,7 +22,7 @@ class Submitter {
     /// Read options from a file
     int ReadOptions(std::string const&);
     /// Check that options are valid
-    int CheckSubmitter();
+    int CheckSubmitter() const;
     /// Set debug level
     void SetDebug(int);
 
