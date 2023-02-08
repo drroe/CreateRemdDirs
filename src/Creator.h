@@ -32,6 +32,8 @@ class Creator {
     RUNTYPE TypeOfRun() const { return runType_; }
     /// \return Run description
     std::string const& RunDescription() const { return runDescription_; }
+    /// \return Current MD options
+    MdOptions const& MdOpts() const { return mdopts_; }
     /// Set debug level
     void SetDebug(int d) { debug_ = d; }
     /// Parse a single option from input file

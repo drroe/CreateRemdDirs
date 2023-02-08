@@ -96,6 +96,7 @@ Msg("\n"
       "  NSTLIM <nstlim>     : MD input; steps per exchange. Required.\n"
       "  DT <step>           : MD input; time step.\n"
       "  IG <seed>           : MD input; random seed.\n"
+      "  SOLVPH <ph>         : MD input; solvent pH.\n"
       "  NUMEXCHG <#>        : MD input; number of exchanges. Required for REMD.\n"
       "  NTWX <#>            : MD input; trajectory write frequency in steps.\n"
       "  MDRUNS <#>          : Number of MD runs when not REMD (default 1).\n"
@@ -135,6 +136,8 @@ int Creator::WriteOptions(TextFile& outfile) const {
     outfile.Printf("DT %f\n", mdopts_.TimeStep().Val());
   if (mdopts_.RandomSeed().IsSet())
     outfile.Printf("IG %i\n", mdopts_.RandomSeed().Val());
+  if (mdopts_.pH().IsSet())
+    outfile.Printf("SOLVPH %f\n", mdopts_.pH().Val());
   if (mdopts_.N_Exchanges().IsSet())
     outfile.Printf("NUMEXCHG %i\n", mdopts_.N_Exchanges().Val());
   if (mdopts_.Temperature0().IsSet())
@@ -171,6 +174,8 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
     mdopts_.Set_TimeStep().SetVal( convertToDouble( VAR ) );
   else if (OPT == "IG")
     mdopts_.Set_RandomSeed().SetVal( convertToInteger( VAR ) );
+  else if (OPT == "SOLVPH")
+    mdopts_.Set_pH().SetVal( convertToDouble( VAR ) );
   else if (OPT == "NUMEXCHG")
     mdopts_.Set_N_Exchanges().SetVal( convertToInteger( VAR ) );
   else if (OPT == "UMBRELLA")
@@ -308,9 +313,10 @@ int Creator::LoadDimension(std::string const& dfile) {
   */ // TODO make const by putting replica count elsewhere
 int Creator::CheckCreator() const {
   int errcount = 0;
-  // Perform tilde expansion on coords if necessary.
-  //if (!crd_dir_.empty() && crd_dir_[0] == '~')
-  //  crd_dir_ = tildeExpansion(crd_dir_);
+  if (crd_dir_.empty()) {
+    ErrorMsg("No CRD_FILE specified.\n");
+    errcount++;
+  } 
   // Do some checking based on what type of run this is.
   if (Dims_.Empty()) {
     Msg("  No dimensions defined: assuming MD run.\n");

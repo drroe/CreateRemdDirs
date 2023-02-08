@@ -90,6 +90,10 @@ int MdPackage_Amber::CheckCreatorOptions(Creator const& creator) const {
     ErrorMsg("CPIN_FILE must be specified if pH dimension is present.\n");
     errcount++;
   }
+  if (creator.MdOpts().pH().IsSet() && cpin_file_.empty()) {
+    ErrorMsg("CPIN_FILE must be specified if solvent pH is specified.\n");
+    errcount++;
+  }
   return errcount;
 }
 
@@ -467,36 +471,43 @@ const
     return 1;
   }
 
+  // Info for this run.
+  if (Debug() >= 0) // 1 
+      Msg("\tMD: top=%s\n", topname.c_str());
+      //Msg("\tMD: top=%s  temp0=%f\n", topname.c_str(), temp0_);
+  // Generate MD input  
+  MdOptions currentMdOpts;
+  if (creator.MakeMdinForMD(currentMdOpts, "")) {
+    ErrorMsg("Making input options for MD failed.\n");
+    return 1;
+  }
+  if (writeMdInputFile(creator.RunDescription(), currentMdOpts,
+                       "md.in", (run_num==start_run), RepIndexArray(), 0)) // TODO customize md.in name
+  {
+    ErrorMsg("Create input failed for MD\n");
+    return 1;
+  }
+
   // Set up run command 
   std::string cmd_opts;
   cmd_opts.assign("-i md.in -p " + topname + " -c " + inpcrd_files[0] + 
                     " -x mdcrd.nc -r mdrst.rst7 -o md.out -inf md.info");
   if (!refcrd_files.empty())
     cmd_opts.append(" -ref " + refcrd_files[0]);
-
+  // Constant pH run command setup
+  FileNameArray cpin_files;
+  if (currentMdOpts.pH().IsSet()) {
+    cpin_files = FileNameArray(cpin_file_, prevDir + "/md.cprestrt", FileNameArray::IS_FILE, "cprestrt", 3);
+    if (cpin_files.Generate(1, (start_run == run_num))) {
+      ErrorMsg("Generating CPIN file name failed.\n");
+      return 1;
+    }
+    cmd_opts.append(" -cpin " + cpin_files[0]);
+    cmd_opts.append(" -cpout md.cpout");
+    cmd_opts.append(" -cprestrt md.cprestrt");
+  }
+  // Write the run script
   creator.WriteRunMD( cmd_opts );
-  // Info for this run.
-  if (Debug() >= 0) // 1 
-      Msg("\tMD: top=%s\n", topname.c_str());
-      //Msg("\tMD: top=%s  temp0=%f\n", topname.c_str(), temp0_);
-  // Create input for non-umbrella runs.
-  //if (creator.UmbrellaWriteFreq() == 0) {
-    
-    MdOptions currentMdOpts;
-    if (creator.MakeMdinForMD(currentMdOpts, "")) {
-      ErrorMsg("Making input options for MD failed.\n");
-      return 1;
-    }
-    if (writeMdInputFile(creator.RunDescription(), currentMdOpts,
-                         "md.in", (run_num==start_run), RepIndexArray(), 0)) // TODO customize md.in name
-    {
-      ErrorMsg("Create input failed for MD\n");
-      return 1;
-    }
-  //}
-  // Input coordinates for next run will be restarts of this
-  //crd_dir_ = "../" + run_dir + "/";
-  //if (creator.N_MD_Runs() < 2) crd_dir_.append("mdrst.rst7");
 
   return 0;
 }
