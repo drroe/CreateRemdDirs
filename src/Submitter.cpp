@@ -117,7 +117,8 @@ int Submitter::ParseFileOption( OptArray::OptPair const& opair ) {
       return -1;
     }
   } else {
-    return 0;
+    // Is this a local queue option
+    return localQueue_.ParseOption( OPT, VAR );
   }
   return 1;
 }
@@ -148,15 +149,7 @@ int Submitter::ReadOptions(std::string const& input_file) {
         ErrorMsg("Could not parse option '%s' = '%s'\n", opair->first.c_str(), opair->second.c_str());
         return 1;
       } else if (ret == 0) {
-        // See if this is a local queue option
-        ret = localQueue_.ParseOption(opair->first, opair->second);
-        if (ret == -1) {
-          ErrorMsg("Could not parse queue option '%s' = '%s'\n", opair->first.c_str(), opair->second.c_str());
-
-          return 1;
-        } else if (ret == 0) {
-          Msg("Warning: Ignoring unrecognized Submit option '%s' = '%s'\n", opair->first.c_str(), opair->second.c_str());
-        }
+        Msg("Warning: Ignoring unrecognized Submit option '%s' = '%s'\n", opair->first.c_str(), opair->second.c_str());
       }
     }
   } // END loop over file options
@@ -192,6 +185,12 @@ int Submitter::CheckSubmitter() const {
     ErrorMsg("Invalid queue.\n");
     errcount++;
   }
+  if (localQueue_.QueueType() != Queue::NO_QUEUE) {
+    if (walltime_.empty()) {
+      ErrorMsg("No WALLTIME specified for queue.\n");
+      errcount++;
+    }
+  }
 
   return errcount;
 }
@@ -209,7 +208,7 @@ void Submitter::Info() const {
     Msg("  NODES     : %i\n", nodes_);
   if (procs_ > 0)
     Msg("  PROCS     : %i\n", procs_);
-  if (!walltime_.empty())
+  if (localQueue_.QueueType() != Queue::NO_QUEUE)
     Msg("  WALLTIME  : %s\n", walltime_.c_str());
   if (!email_.empty())
     Msg("  EMAIL     : %s\n", email_.c_str());
@@ -284,6 +283,7 @@ int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, in
       myprocs = iN * iP;
     }
   }
+  Msg("DEBUG: myprocs is %i\n", myprocs);
   if (localQueue_.QueueType() != Queue::NO_QUEUE && myprocs < 1) {
     Msg("Warning: Less than 1 process specified. Set PROCS or NODES/PPN.\n");
   }
@@ -308,10 +308,10 @@ int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, in
   }
   // Export EXEPATH and MPIRUN
   qout.Printf("export EXEPATH=%s\n", program_.c_str());
+  if (localQueue_.PPN() > 0) qout.Printf("PPN=%i\n", localQueue_.PPN());
+  if (nodes_ > 0) qout.Printf("NODES=%i\n", nodes_);
+  if (myprocs > 0) qout.Printf("PROCS=%i\n", myprocs);
   if (!mpirun_.empty()) {
-    if (localQueue_.PPN() > 0) qout.Printf("PPN=%i\n", localQueue_.PPN());
-    if (nodes_ > 0) qout.Printf("NODES=%i\n", nodes_);
-    if (myprocs > 0) qout.Printf("PROCS=%i\n", myprocs);
     qout.Printf("export MPIRUN=\"%s\"\n", mpirun_.c_str());
   }
   // Command to run MD script

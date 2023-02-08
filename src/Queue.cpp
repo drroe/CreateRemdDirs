@@ -96,27 +96,28 @@ bool Queue::IsValid() const {
   // No queue is automatically valid
   if (queueType_ == NO_QUEUE) return true;
   // Need at least name and PPN
+  int errcount = 0;
   if (name_.empty()) {
-    ErrorMsg("Queue is missing NAME.\n");
-    return false;
+    ErrorMsg("Queue is missing name (QUEUE).\n");
+    errcount++;
   }
   if (ppn_ < 1) {
     ErrorMsg("Queue is missing PPN.\n");
-    return false;
+    errcount++;
   }
-  return true;
+  return (errcount == 0);
 }
 
 /** Print info to stdout. */
 void Queue::Info() const {
   if (queueType_ == NO_QUEUE) return;
   if (!key_.empty())
-    Msg("  KEY       : %s\n", key_.c_str());
-  if (!name_.empty())
-    Msg("  NAME      : %s\n", name_.c_str());
-  if (ppn_ > 0)
-    Msg("  PPN       : %i\n", ppn_);
-  Msg(  "  TYPE      : %s\n", TypeStr_[queueType_]);
+    Msg(  "  KEY       : %s\n", key_.c_str());
+  Msg(    "  QTYPE     : %s\n", TypeStr_[queueType_]);
+  if (queueType_ != NO_QUEUE) {
+      Msg("  QUEUE     : %s\n", name_.c_str());
+      Msg("  PPN       : %i\n", ppn_);
+  }
   if (!additionalCommands_.empty()) {
     Msg("  Additional commands:\n");
     for (Sarray::const_iterator it = additionalCommands_.begin(); it != additionalCommands_.end(); ++it)

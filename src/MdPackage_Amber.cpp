@@ -100,6 +100,16 @@ int MdPackage_Amber::CheckCreatorOptions(Creator const& creator) const {
 /** Check amber-specific submitter options */
 int MdPackage_Amber::CheckSubmitterOptions(Creator const& creator, Submitter const& submitter) const {
   int errcount = 0;
+  // Check for MPI suffix
+  std::string ext = FileRoutines::Extension( FileRoutines::Basename( submitter.Program() ) );
+  bool exe_is_mpi = (ext == "MPI");
+
+  // MPI requires MPIRUN
+  if (exe_is_mpi && submitter.MpiRun().empty()) {
+    ErrorMsg("Amber MPI programs require MPIRUN be set.\n");
+    errcount++;
+  }  
+ 
   // If REMD or multiple groups, ensure mpirun is set
   if (creator.Dims().Ndims() > 0 || creator.N_MD_Runs() > 1) {
     if (submitter.MpiRun().empty()) {
@@ -107,8 +117,7 @@ int MdPackage_Amber::CheckSubmitterOptions(Creator const& creator, Submitter con
       errcount++;
     }
     // Check for MPI suffix
-    std::string ext = FileRoutines::Extension( FileRoutines::Basename( submitter.Program() ) );
-    if (ext != "MPI") {
+    if (!exe_is_mpi) {
       ErrorMsg("Amber requires parallel executable (.MPI) for multi-group runs.\n");
       errcount++;
     }
