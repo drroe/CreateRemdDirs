@@ -183,6 +183,7 @@ Exec::RetType Commands::ProcessCommand(std::string const& inp, Manager& manager)
 /** Read input from a file. */
 Exec::RetType Commands::ReadInput(std::string const& fname, Manager& manager)
 {
+  int errcount = 0;
   TextFile infile;
   // Change to manager top directory
   if (FileRoutines::ChangeDir( manager.TopDirName())) return Exec::ERR;
@@ -194,15 +195,22 @@ Exec::RetType Commands::ReadInput(std::string const& fname, Manager& manager)
     Exec::RetType ret = ProcessCommand( StringRoutines::NoTrailingWhitespace(inp), manager );
     if (ret == Exec::QUIT) {
       infile.Close();
+      if (errcount > 0)
+        ErrorMsg("%i errors encountered reading input from '%s'\n", errcount, fname.c_str());
       return Exec::QUIT;
     } else if (ret == Exec::ERR) {
       ErrorMsg("Bad input in file '%s'\n", fname.c_str());
-      infile.Close();
-      return Exec::ERR;
+      //infile.Close();
+      //return Exec::ERR;
+      errcount++;
     }
     ptr = infile.Gets();
   }
   infile.Close();
+  if (errcount > 0) {
+    ErrorMsg("%i errors encountered reading input from '%s'\n", errcount, fname.c_str());
+    return Exec::ERR;
+  }
   return Exec::OK;
 }
 
