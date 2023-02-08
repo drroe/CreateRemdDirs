@@ -9,8 +9,6 @@ class TextFile;
 /// Class responsible for creating run input and script
 class Creator {
   public:
-    /// Specific type of run the Creator will make (set in Setup); SYNC WITH RUNTYPESTR_ TODO deprecate
-    enum RUNTYPE { MD=0, TREMD, HREMD, PHREMD, MREMD };
     /// CONSTRUCTOR
     Creator();
 
@@ -79,22 +77,25 @@ class Creator {
     /// Load a REMD dimension from file
     int LoadDimension(std::string const&);
 
-    static const char* RUNTYPESTR_[]; ///< KEEP IN SYNC WITH RUNTYPE
+    /// Specific type of run the Creator will make; SYNC WITH RUNTYPESTR_
+    enum RUNTYPE { MD=0, TREMD, HREMD, PHREMD, MREMD };
+    /// Strings for RUNTYPE; KEEP IN SYNC WITH RUNTYPE
+    static const char* RUNTYPESTR_[];
 
     // File and MDIN variables
-    std::string top_file_;
     MdOptions mdopts_;            ///< Hold MD options
 
     ReplicaDimArray Dims_;        ///< Hold any replica dimensions
-    int debug_;
+    int debug_;                   ///< Creator debug level
     int n_md_runs_;               ///< Number of MD runs.
     int fileExtWidth_;            ///< Filename extension width
     bool mdin_needs_read_;        ///< If true, mdin_file_ needs to be read by MdPackage
     bool usePrevRestartAsRef_;    ///< If true, reference will be restart of previous run.
     bool remd_diagonal_;          ///< If true, increment all dimensions for each replica.
-    RUNTYPE runType_;             ///< Type of run from options file. TODO deprecate
+    RUNTYPE runType_;             ///< Type of run from options file. For info only.
     std::string runDescription_;  ///< Run description
-    std::string crd_dir_;         ///< Directory where input coordinates are/MD input coords (from options file).
+    std::string top_file_;        ///< Topology file name
+    std::string crd_dir_;         ///< Directory where input coordinates are/MD input coords.
     std::string ref_dir_;         ///< Directory where reference coords are (like crd_dir_)
     std::string mdin_file_;       ///< Md package-specific input file
     Sarray dim_files_;            ///< REMD dimension files
