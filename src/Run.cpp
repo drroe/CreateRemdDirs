@@ -95,6 +95,7 @@ int Run::SubmitRun(Submitter const& submit, bool first_to_submit, std::string co
     ErrorMsg("Job submission from %s failed.\n", rundir_.c_str());
     return 1;
   }
+  Msg("DEBUG: job id = %s  previous job id = %s\n", jobid_.c_str(), prev_jobidIn.c_str());
   // TODO run status
   return 0;
 }

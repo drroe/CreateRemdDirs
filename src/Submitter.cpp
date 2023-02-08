@@ -4,6 +4,7 @@
 #include "TextFile.h"
 #include "StringRoutines.h"
 #include "CommonOptions.h"
+#include <cstdlib> // system
 
 using namespace Messages;
 using namespace FileRoutines;
@@ -262,6 +263,47 @@ int Submitter::writeHeader(TextFile& qout, int run_num, std::string const& prev_
   return 0;
 } 
 
+/** Submit job to queue. */
+int Submitter::DoSubmit(std::string& jobid, std::string const& submitScript) const {
+  std::string submitCommand( localQueue_.SubmitCmd() + " " + submitScript );
+  std::string jobIdFilename = CommonOptions::Opt_JobIdFilename().Val();
+  if (localQueue_.QueueType() == Queue::PBS)
+    submitCommand.append(" > " + jobIdFilename );
+  Msg("%s\n", submitCommand.c_str());
+
+  if ( system( submitCommand.c_str() ) ) {
+    ErrorMsg("Job submission command failed.\n");
+    return 1;
+  }
+
+  // Get job ID of submitted job
+  TextFile jobfile;
+  if (localQueue_.QueueType() == Queue::PBS) {
+    if (jobfile.OpenRead( jobIdFilename )) return 1;
+    const char* ptr = jobfile.Gets();
+    if (ptr == 0) return 1;
+    jobid.assign(ptr);
+    jobfile.Close();
+  } else if (localQueue_.QueueType() == Queue::SLURM) {
+    // -i inidcates reverse sort
+    if (jobfile.OpenPipe("squeue -u " + user_ + " --sort=-i")) return 1;
+    const char* ptr = jobfile.Gets();     // Header with JOBID
+    if (ptr == 0) return 1;
+    int cols = jobfile.GetColumns(" \t"); // Should be last submitted job
+    if (cols < 1) return 1;
+    jobid.assign( jobfile.Token(0) );
+    jobfile.Close();
+    if (jobfile.OpenWrite( jobIdFilename )) return 1;
+    jobfile.Printf("%s\n", jobid.c_str());
+    jobfile.Close();
+  } else {
+    // Sanity check
+    ErrorMsg("Internal Error: DoSubmit() called with NO_QUEUE.\n");
+    return 1;
+  }
+  return 0;
+}
+
 /** Submit job, set job id */
 int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, bool first_to_submit, int run_num, std::string const& next_dir, bool testOnly) const {
   // Ensure the MD run script exists
@@ -298,7 +340,11 @@ int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, bo
   // Write the run script
   TextFile qout;
   if (qout.OpenWrite( submitScript )) return 1;
-  if (writeHeader(qout, run_num, prev_jobidIn, myprocs)) return 1;
+  // Decide if we need previous job id
+  std::string prev_jobid;
+  if (first_to_submit || dependType_ == BATCH)
+    prev_jobid = prev_jobidIn;
+  if (writeHeader(qout, run_num, prev_jobid, myprocs)) return 1;
   // Write additional commands
   if (!localQueue_.AdditionalCommands().empty()) {
     for (Queue::Sarray::const_iterator it = localQueue_.AdditionalCommands().begin();
@@ -324,12 +370,20 @@ int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, bo
   qout.Close();
   ChangePermissions( submitScript );
 
+  if (localQueue_.QueueType() == Queue::NO_QUEUE) {
+    Msg("No queue type set. Only creating script '%s'\n", runScriptName.c_str());
+    return 0;
+  }
+
   if (testOnly)
     Msg("Just testing. Skipping script submission.\n");
   else if (dependType_ == SUBMIT && !first_to_submit)
     Msg("Job will be submitted when previous job completes.\n");
   else {
-    Msg("PLACEHOLDER FOR JOB SUBMIT.\n");
+    if (DoSubmit( jobid, submitScript )) {
+      ErrorMsg("Job submission failed.\n");
+      return 1;
+    }
   }
   return 0;
 }

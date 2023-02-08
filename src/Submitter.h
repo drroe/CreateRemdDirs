@@ -42,6 +42,8 @@ class Submitter {
     static const char* DependTypeStr_[];
     /// Write queue header
     int writeHeader(TextFile&, int, std::string const&, int) const;
+    /// Perform the job submission
+    int DoSubmit(std::string&, std::string const&) const;
 
     int debug_;             ///< Debug level
     std::string job_name_;  ///< Job name
