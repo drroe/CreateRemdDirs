@@ -192,7 +192,8 @@ int Submitter::CheckSubmitter() const {
       errcount++;
     }
     if (dependType_ == NO_DEPENDS) {
-      Msg("Warning: No job dependency type set (DEPEND)\n");
+      ErrorMsg("No job dependency type set (DEPEND) for queue.\n");
+      errcount++;
     }
   }
 
