@@ -263,7 +263,7 @@ int Submitter::writeHeader(TextFile& qout, int run_num, std::string const& prev_
 } 
 
 /** Submit job, set job id */
-int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, int run_num, std::string const& next_dir) const {
+int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, int run_num, std::string const& next_dir, bool testOnly) const {
   // Ensure the MD run script exists
   std::string runScriptName = CommonOptions::Opt_RunScriptName().Val();
   if (!fileExists( runScriptName )) {

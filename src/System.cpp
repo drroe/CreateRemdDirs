@@ -363,7 +363,7 @@ int System::findRunIdx(int runNum) const {
 
 /** Submit runs in system directory. */
 int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
-                                 std::string const& prev_jobidIn)
+                                 std::string const& prev_jobidIn, bool testOnly)
 {
   if (nruns < 1) {
     ErrorMsg("Less than 1 run for SubmitRunDirectories()\n");
@@ -409,7 +409,7 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
     if (ChangeToSystemDir()) return 1;
     Msg("Submit ");
     currentRun.RunSummary();
-    if (currentRun.SubmitRun( submitter_, prev_jobid, next_dir )) {
+    if (currentRun.SubmitRun( submitter_, prev_jobid, next_dir, testOnly )) {
       ErrorMsg("Run submission failed.\n");
       return 1;
     }
