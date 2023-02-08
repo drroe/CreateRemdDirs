@@ -347,19 +347,19 @@ const
       uselog = true;
     }
   }
-  // TODO uselog for all run types
-  if (creator.IsSetupForMD()) {
+  
+  if (creator.Dims().Empty()) {
     if (creator.N_MD_Runs() > 1)
-      err = create_multimd_input( creator, start_run, run_num, run_dir, prevDir );
+      err = create_multimd_input( creator, start_run, run_num, run_dir, prevDir, uselog );
     else
-      err = create_singlemd_input( creator, start_run, run_num, run_dir, prevDir );
+      err = create_singlemd_input( creator, start_run, run_num, run_dir, prevDir, uselog );
   } else
     err = create_remd_input( creator, start_run, run_num, run_dir, prevDir, uselog );
   return err;
 }
 
 /** Create input files for Amber multi-group MD run */
-int MdPackage_Amber::create_multimd_input(Creator const& creator, int start_run, int run_num, std::string const& run_dir, std::string const& prevDir)
+int MdPackage_Amber::create_multimd_input(Creator const& creator, int start_run, int run_num, std::string const& run_dir, std::string const& prevDir, bool uselog)
 const
 {
   using namespace FileRoutines;
@@ -422,6 +422,8 @@ const
         GROUP.Printf(" -ref %s", repRef.c_str());
       }
     }
+    if (uselog)
+      GROUP.Printf(" -l %s.log", EXT.c_str());
     GROUP.Printf("\n");
   } 
   GROUP.Close();
@@ -440,7 +442,7 @@ const
 }
 
 /** Create input files for Amber single MD run. */
-int MdPackage_Amber::create_singlemd_input(Creator const& creator, int start_run, int run_num, std::string const& run_dir, std::string const& prevDir)
+int MdPackage_Amber::create_singlemd_input(Creator const& creator, int start_run, int run_num, std::string const& run_dir, std::string const& prevDir, bool uselog)
 const
 {
   using namespace FileRoutines;
@@ -506,6 +508,8 @@ const
     cmd_opts.append(" -cpout md.cpout");
     cmd_opts.append(" -cprestrt md.cprestrt");
   }
+  if (uselog)
+    cmd_opts.append(" -l md.log");
   // Write the run script
   creator.WriteRunMD( cmd_opts );
 
@@ -645,14 +649,17 @@ const
   // Create Run script
   std::string cmd_opts;
   std::string NG = integerToString( Indices.TotalReplicas() );
-  if (creator.TypeOfRun() == Creator::MREMD)
+  if (creator.Dims().Ndims() > 1)
     cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -remd-file " + remddimName_);
-  else if (creator.TypeOfRun() == Creator::HREMD)
-    cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 3");
-  else if (creator.TypeOfRun() == Creator::PHREMD)
-    cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 4");
-  else
-    cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 1");
+  else {
+    // 1 replica dimension
+    if (creator.Dims()[0].Type() == ReplicaDimension::TOPOLOGY) // Hamiltonian
+      cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 3");
+    else if (creator.Dims()[0].Type() == ReplicaDimension::PH)
+      cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 4");
+    else
+      cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -rem 1");
+  }
   if (creator.WriteRunMD( cmd_opts )) return 1;
   // Create output directories
   if (Mkdir( "OUTPUT" )) return 1;
@@ -661,7 +668,7 @@ const
   if (Mkdir( "INFO"   )) return 1;
   if (uselog)
     if (Mkdir( "LOG"    )) return 1;
-  if (creator.TypeOfRun() == Creator::PHREMD) {
+  if (!cpin_files.empty()) {
     if (Mkdir( "CPH" )) return 1;
   }
   // Create any dimension-specific directories

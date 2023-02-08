@@ -44,9 +44,9 @@ class MdPackage_Amber : public MdPackage {
     int writeMdInputFile(std::string const&, MdOptions const&, std::string const&, bool,
                          RepIndexArray const&, unsigned int) const;
     /// Create multi-group MD input
-    int create_multimd_input(Creator const&, int, int, std::string const&, std::string const&) const;
+    int create_multimd_input(Creator const&, int, int, std::string const&, std::string const&, bool) const;
     /// Create single MD input
-    int create_singlemd_input(Creator const&, int, int, std::string const&, std::string const&) const;
+    int create_singlemd_input(Creator const&, int, int, std::string const&, std::string const&, bool) const;
     /// Create remd input
     int create_remd_input(Creator const&, int, int, std::string const&, std::string const&, bool) const;
     /// Read info from an MDOUT file; gets top name

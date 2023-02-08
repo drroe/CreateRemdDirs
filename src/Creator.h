@@ -24,12 +24,8 @@ class Creator {
     int ReadOptions(std::string const&);
     /// Check creator based on current options.
     int CheckCreator() const;
-    /// \return True if the Creator is set up to make regular MD runs
-    bool IsSetupForMD() const { return (runType_ == MD); }
     /// Print info to stdout
     void Info() const;
-    /// \return Run type that this has been set for
-    RUNTYPE TypeOfRun() const { return runType_; }
     /// \return Run description
     std::string const& RunDescription() const { return runDescription_; }
     /// \return Current MD options
