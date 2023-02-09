@@ -13,7 +13,7 @@ class RunStatus {
     RunStatus(StatusType);
 
     /// Print status to stdout
-    void PrintStatus() const;
+    void PrintStatus(std::string const&) const;
     /// \return Current run status
     StatusType CurrentStat() const { return stat_; }
 

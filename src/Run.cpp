@@ -135,6 +135,6 @@ int Run::SubmitRun(Submitter const& submit, bool first_to_submit, std::string co
 /** Print run info to stdout. */
 void Run::RunSummary() const {
   Msg("%-8s : ", rundir_.c_str());
-  runStat_.PrintStatus();
+  runStat_.PrintStatus(jobid_);
   Msg("\n");
 }

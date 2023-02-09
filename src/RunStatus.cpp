@@ -30,7 +30,7 @@ const char* RunStatus::StatStr_[] = {
 };
 
 /** Print status to stdout (no newline). */
-void RunStatus::PrintStatus() const {
+void RunStatus::PrintStatus(std::string const& jobid) const {
   if (stat_ == EMPTY || stat_ == PENDING || stat_ == READY || stat_ == IN_QUEUE)
     Msg("%10s", StatStr_[stat_]);
   else {
@@ -58,6 +58,8 @@ void RunStatus::PrintStatus() const {
           runOpts_.Expected_Frames());
     if (ns_per_day_.IsSet())
       Msg(" %g ns/day", ns_per_day_.Val());
+    if (!jobid.empty())
+      Msg(" Job=%s\n", jobid.c_str());
   }
 }
 
