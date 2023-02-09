@@ -23,6 +23,8 @@ class System {
     int FindRuns(QueueArray&);
     /// Refresh current runs (true = verbose)
     int RefreshCurrentRuns(bool);
+    /// Refresh only the specified run
+    int RefreshSpecifiedRun(int);
     /// Set debug level
     void SetDebug(int);
 

@@ -302,7 +302,7 @@ int System::ParseOption(std::string const& OPT, std::string const& VAR) {
 
 /** Refresh current runs. */
 int System::RefreshCurrentRuns(bool verbose) {
-  using namespace FileRoutines;
+  //using namespace FileRoutines;
   if (ChangeToSystemDir()) {
     ErrorMsg("Could not change to system directory %s/%s\n", topDir_.c_str(), dirname_.c_str());
     return 1;
@@ -320,6 +320,22 @@ int System::RefreshCurrentRuns(bool verbose) {
     // Change directory back
     if (ChangeToSystemDir()) return 1;
   }
+  return 0;
+}
+
+/** Refresh only the specified run */
+int System::RefreshSpecifiedRun(int ridx) {
+  if (ridx < 0 || ridx >= (int)Runs_.size()) {
+    ErrorMsg("Internal Error: RefreshSpecifiedRun called with bad index %i\n", ridx);
+    return 1;
+  }
+  if (ChangeToSystemDir()) {
+    ErrorMsg("Could not change to system directory %s/%s\n", topDir_.c_str(), dirname_.c_str());
+    return 1;
+  }
+  Runs_.Set_Run(ridx).Refresh( mdInterface_.Package(), submitter_.LocalQueue() );
+  // Change directory back
+  if (ChangeToSystemDir()) return 1;
   return 0;
 }
 

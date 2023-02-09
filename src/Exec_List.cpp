@@ -9,12 +9,45 @@ using namespace Messages;
 Exec_List::Exec_List() {}
 
 void Exec_List::Help() const {
-  Msg("\t[project <idx>] [system <idx>]\n"
-      "  List projects/systems.\n");
+  Msg("\t[{[project <idx>] [system <idx>] | running}]\n"
+      "  List projects/systems. If 'running' specified only list jobs running in queue.\n");
 }
 
 /** List all systems. */
 Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
+  if (args.HasKey("running")) {
+    // List only running jobs
+    int pidx = 0;
+    for (Manager::ProjectArray::const_iterator project = manager.Projects().begin();
+                                               project != manager.Projects().end();
+                                             ++project, ++pidx)
+    {
+      // Just in case we need to update the project
+      Project& modProject = manager.Set_Project(pidx);
+      int sidx = 0;
+      for (Project::SystemArray::const_iterator system = project->Systems().begin();
+                                                system != project->Systems().end();
+                                              ++system, ++sidx)
+      {
+        // Just in case we have to update the system
+        System& modSystem = modProject.Set_System(sidx);
+        int ridx = 0;
+        for (RunArray::const_iterator run = system->Runs().begin();
+                                      run != system->Runs().end();
+                                    ++run, ++ridx)
+        {
+          if (run->Stat().CurrentStat() == RunStatus::IN_PROGRESS) {
+            modSystem.RefreshSpecifiedRun( ridx );
+            Msg("Project  %i: System %i: Run %i: ", pidx, sidx, run->RunIndex());
+            run->RunSummary();
+          }
+        }
+      }
+    }
+    return OK;
+  }
+
+  // -----------------------------------
   static const int SHOW_ALL = -1;
   static const int HIDE_ALL = -2;
   int tgtProjectIdx = SHOW_ALL;
