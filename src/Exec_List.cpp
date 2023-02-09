@@ -27,13 +27,25 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
     tgtSystemIdx = SHOW_ALL;
   else if (manager.Projects().size() == 1)
     tgtSystemIdx = SHOW_ALL;
+
   if (args.GetKeyInteger(tgtSystemIdx, "system", tgtSystemIdx)) return ERR;
-  // If a specific project was chosen, list all runs by default.
-  if (tgtSystemIdx > -1)
+  // If a specific system was chosen, list all runs by default.
+  if (tgtSystemIdx > -1) {
     tgtRunIdx = SHOW_ALL;
+    // If no project specified, choose the active project
+    if (tgtProjectIdx < 0)
+      tgtProjectIdx = manager.ActiveProjectIdx();
+  }
+
   // If there is only 1 project and 1 system, list all runs by default.
   if (manager.Projects().size() == 1 && manager.Projects()[0].Systems().size() == 1)
     tgtRunIdx = SHOW_ALL;
+  // If a project has been chosen and 1 system, list all runs by default.
+  if (tgtProjectIdx > -1) {
+    if (manager.Projects()[tgtProjectIdx].Systems().size() == 1)
+      tgtRunIdx = SHOW_ALL;
+  }
+
   // 'all' overrides everything else that is not already set to a specific index
   if (args.HasKey("all")) {
     if (tgtProjectIdx < 0)
@@ -77,11 +89,11 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
           else
             Msg("  System  %i: ", sidx);
           // If this is the target system index, show all runs
-          bool is_active_system = false;
-          if (tgtRunIdx == HIDE_ALL && 
-              pidx == manager.ActiveProjectIdx() &&
-              sidx == project->ActiveSystemIdx())
-            is_active_system = true;
+          //bool is_active_system = false;
+          //if (tgtRunIdx == HIDE_ALL && 
+          //    pidx == manager.ActiveProjectIdx() &&
+          //    sidx == project->ActiveSystemIdx())
+          //  is_active_system = true;
           // Count # frames
           unsigned int total_frames = 0;
           for (RunArray::const_iterator run = system->Runs().begin();
@@ -99,7 +111,9 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
                                               ++run, ++ridx)
           {
             //Msg("DEBUG1 %u\n", run->Stat().CurrentTrajFrames());
-            if (tgtRunIdx == SHOW_ALL || tgtRunIdx == ridx || is_active_system) {
+            //if (tgtRunIdx == SHOW_ALL || tgtRunIdx == ridx || is_active_system)
+            if (tgtRunIdx == SHOW_ALL || tgtRunIdx == ridx)
+            {
               Msg("    %i: ", run->RunIndex());
               run->RunSummary();
             }
