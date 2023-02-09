@@ -407,13 +407,14 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
   if (prev_jobid.empty()) {
     int prev_idx = findRunIdx(start_run - 1);
     if (prev_idx != -1) {
-      if (Runs_[prev_idx].Stat().CurrentStat() == RunStatus::IN_PROGRESS) {
+      if (Runs_[prev_idx].Stat().CurrentStat() == RunStatus::IN_PROGRESS ||
+          Runs_[prev_idx].Stat().CurrentStat() == RunStatus::IN_QUEUE) {
         if (Runs_[prev_idx].JobId().empty())
           Msg("Warning: Previous run %i appears to be running but has no job id.\n",
               Runs_[prev_idx].RunIndex());
         else
           prev_jobid = Runs_[prev_idx].JobId();
-      }
+      } // TODO error if not complete?
     }
   }
   if (!prev_jobid.empty())
