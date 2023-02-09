@@ -37,6 +37,8 @@ class Submitter {
     std::string const& Program() const { return program_; }
     /// \return MPI run command
     std::string const& MpiRun() const { return mpirun_; }
+    /// \return Local queue
+    Queue const& LocalQueue() const { return localQueue_; }
   private:
     /// KEEP IN SYNC WITH DependType
     static const char* DependTypeStr_[];

@@ -9,6 +9,8 @@ class Queue {
     typedef std::vector<std::string> Sarray;
     /// Queue system type. Keep in sync with TypeStr_
     enum Type { PBS = 0, SLURM, NO_QUEUE };
+    /// Queue job status type
+    enum JobStatType { QUEUED = 0, RUNNING, OTHER, ERROR, JOB_UNKNOWN };
     /// CONSTRUCTOR
     Queue();
     /// Print help to stdout
@@ -25,6 +27,8 @@ class Queue {
     std::string HeaderFlag() const;
     /// \return Queue submit command
     std::string SubmitCmd() const;
+    /// \return Status for given job id
+    JobStatType JobStatus(std::string const&) const;
     /// Write additional queue flags to file
     int AdditionalFlags(TextFile&) const;
 

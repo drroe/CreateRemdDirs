@@ -15,8 +15,32 @@ Run::Run() :
   debug_(0)
 {}
 
-/** Setup existing run dir (no changes). Assumes we are in that dir. FIXME should it?*/
-int Run::SetupExisting(std::string const& runDir, MdPackage* mdpackage)
+/** Get job id from file. */
+int Run::getJobIdFromFile(std::vector<std::string> const& all_files, Queue const& localQueue) {
+  if (runStat_.CurrentStat() != RunStatus::COMPLETE) {
+    //if (jobid_.empty()) {
+      for (std::vector<std::string>::const_iterator it = all_files.begin(); it != all_files.end(); ++it)
+      {
+        if (*it == CommonOptions::Opt_JobIdFilename().Val()) {
+          TextFile jfile;
+          if (jfile.OpenRead( *it )) return 1;
+          jobid_ = jfile.GetString();
+          jfile.Close();
+        }
+      }
+    //}
+    Queue::JobStatType jstat = localQueue.JobStatus( jobid_ );
+    Msg("DEBUG: Job ID is %s  jstat=%i\n", jobid_.c_str(), (int)jstat);
+    if (jstat == Queue::QUEUED)
+      runStat_.Set_Status(RunStatus::IN_QUEUE);
+    else if (jstat == Queue::RUNNING)
+      runStat_.Set_Status(RunStatus::IN_PROGRESS);
+  }
+  return 0;
+}
+
+/* Setup existing run dir (no changes). Assumes dir exists. */
+int Run::SetupExisting(std::string const& runDir, MdPackage* mdpackage, Queue const& localQueue)
 {
   using namespace FileRoutines;
   if (ChangeDir( runDir )) return 1;
@@ -40,28 +64,14 @@ int Run::SetupExisting(std::string const& runDir, MdPackage* mdpackage)
     // DEBUG
     //runStat_.Opts().PrintOpts(false, -1, -1);
     // If the status is not COMPLETE and no job id set, see if there is a job id file.
-    if (runStat_.CurrentStat() != RunStatus::COMPLETE) {
-      if (jobid_.empty()) {
-        for (StrArray::const_iterator it = all_files.begin(); it != all_files.end(); ++it)
-        {
-          if (*it == CommonOptions::Opt_JobIdFilename().Val()) {
-            TextFile jfile;
-            if (jfile.OpenRead( *it )) return 1;
-            jobid_ = jfile.GetString();
-            jfile.Close();
-          }
-        }
-      }
-      Msg("DEBUG: Job ID is %i\n", jobid_.c_str());
-
-    }
+    if (getJobIdFromFile(all_files, localQueue)) return 1;
   }
 
   return 0;
 }
 
 /** Refresh existing run. */
-int Run::Refresh(MdPackage* mdpackage) {
+int Run::Refresh(MdPackage* mdpackage, Queue const& localQueue) {
   using namespace FileRoutines;
   if (ChangeDir( rundir_ )) return 1;
   // Get list of files
@@ -72,6 +82,8 @@ int Run::Refresh(MdPackage* mdpackage) {
     runStat_ = RunStatus(RunStatus::EMPTY);
   } else {
     runStat_ = mdpackage->RunCurrentStatus( all_files );
+    // If the status is not COMPLETE and no job id set, see if there is a job id file.
+    if (getJobIdFromFile(all_files, localQueue)) return 1;
   }
   return 0;
 }

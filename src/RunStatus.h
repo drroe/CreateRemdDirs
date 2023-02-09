@@ -5,7 +5,7 @@
 class RunStatus {
   public:
     /// Various status types - SYNC WITH StatStr_
-    enum StatusType { UNKNOWN=0, EMPTY, PENDING, READY, INCOMPLETE, COMPLETE };
+    enum StatusType { UNKNOWN=0, EMPTY, PENDING, READY, IN_QUEUE, IN_PROGRESS, INCOMPLETE, COMPLETE };
 
     /// CONSTRUCTOR
     RunStatus();

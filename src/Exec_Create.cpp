@@ -38,8 +38,12 @@ Exec::RetType Exec_Create::Execute(Manager& manager, Cols& args) const {
     // Start at the next available run
     if (activeSystem.Runs().empty())
       start_run = 0;
-    else
-      start_run = activeSystem.Runs().back().RunIndex() + 1;
+    else {
+      if (activeSystem.Runs().back().Stat().CurrentStat() == RunStatus::EMPTY)
+        start_run = activeSystem.Runs().back().RunIndex();
+      else
+        start_run = activeSystem.Runs().back().RunIndex() + 1;
+    }
   }
   // Stop
   if (stop_run == -1) {

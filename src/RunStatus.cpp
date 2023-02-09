@@ -23,13 +23,15 @@ const char* RunStatus::StatStr_[] = {
   "Empty",
   "Pending",
   "Ready",
+  "Queued",
+  "Running",
   "Incomplete",
   "Complete"
 };
 
 /** Print status to stdout (no newline). */
 void RunStatus::PrintStatus() const {
-  if (stat_ == EMPTY || stat_ == PENDING || stat_ == READY)
+  if (stat_ == EMPTY || stat_ == PENDING || stat_ == READY || stat_ == IN_QUEUE)
     Msg("%10s", StatStr_[stat_]);
   else {
     // DEBUG

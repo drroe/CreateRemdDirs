@@ -239,7 +239,7 @@ int System::FindRuns(QueueArray& queues) {
     Msg("  Directory: %s\n", it->c_str());
     // Set up the directory
     Runs_.AddRun( Run() );
-    if (Runs_.Set_back().SetupExisting( *it, mdInterface_.Package() )) {
+    if (Runs_.Set_back().SetupExisting( *it, mdInterface_.Package(), submitter_.LocalQueue() )) {
       ErrorMsg("Setting up existing run '%s' failed.\n", it->c_str());
       return 1;
     }
@@ -307,7 +307,7 @@ int System::RefreshCurrentRuns(bool verbose) {
   {
     if (verbose)
       Msg("  Refreshing directory '%s'\n", run->RunDirName().c_str());
-    if (run->Refresh( mdInterface_.Package() )) {
+    if (run->Refresh( mdInterface_.Package(), submitter_.LocalQueue() )) {
       ErrorMsg("Refreshing existing run '%s'\n", run->RunDirName().c_str());
       return 1;
     }

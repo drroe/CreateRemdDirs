@@ -34,6 +34,36 @@ std::string Queue::SubmitCmd() const {
   return "run";
 }
 
+/** \return status string for given job id. */
+Queue::JobStatType Queue::JobStatus(std::string const& jobid) const {
+  JobStatType jstat = JOB_UNKNOWN;
+  if (queueType_ == NO_QUEUE) return jstat;
+  std::string cmd;
+  if (queueType_ == SLURM)
+    cmd.assign("squeue -h -o %T -j " + jobid);
+  else {
+    ErrorMsg("Internal Error: Queue::JobStatus not yet set up for PBS.\n");
+    return ERROR;
+  }
+  TextFile shell;
+  if (shell.OpenPipe( cmd )) return ERROR;
+  std::string statString = shell.GetString();
+  shell.Close();
+  if (statString.empty())
+    Msg("Warning: Empty status string from command '%s'\n", cmd.c_str());
+
+  if (queueType_ == SLURM) {
+    // states are PENDING, RUNNING, SUSPENDED, COMPLETING, and COMPLETED
+    if (statString == "PENDING")
+      jstat = QUEUED;
+    else if (statString == "RUNNING")
+      jstat = RUNNING;
+    else if (!statString.empty())
+      jstat = OTHER;
+  }
+  return jstat;
+}
+
 /** Print help to stdout */
 void Queue::OptHelp() {
   Msg("  QUEUE <name>           : Queue/partition name.\n"
