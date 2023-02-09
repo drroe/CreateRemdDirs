@@ -402,9 +402,25 @@ int System::SubmitRunDirectories(int start_run, int nruns, bool overwrite,
     ErrorMsg("Invalid options detected. Cannot submit.\n");
     return 1;
   }
+  // If a previous job id was not specified, see if previous run exists and is running
+  std::string prev_jobid = prev_jobidIn;
+  if (prev_jobid.empty()) {
+    int prev_idx = findRunIdx(start_run - 1);
+    if (prev_idx != -1) {
+      if (Runs_[prev_idx].Stat().CurrentStat() == RunStatus::IN_PROGRESS) {
+        if (Runs_[prev_idx].JobId().empty())
+          Msg("Warning: Previous run %i appears to be running but has no job id.\n",
+              Runs_[prev_idx].RunIndex());
+        else
+          prev_jobid = Runs_[prev_idx].JobId();
+      }
+    }
+  }
+  if (!prev_jobid.empty())
+    Msg("First run will depend on job ID %s\n", prev_jobid.c_str());
+  
   // Loop over desired run numbers
   bool first_to_submit = true;
-  std::string prev_jobid = prev_jobidIn;
   int stop_run = start_run + nruns - 1;
   for (int runNum = start_run; runNum <= stop_run; ++runNum)
   {

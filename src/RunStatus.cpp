@@ -31,9 +31,11 @@ const char* RunStatus::StatStr_[] = {
 
 /** Print status to stdout (no newline). */
 void RunStatus::PrintStatus(std::string const& jobid) const {
-  if (stat_ == EMPTY || stat_ == PENDING || stat_ == READY || stat_ == IN_QUEUE)
+  if (stat_ == EMPTY || stat_ == PENDING || stat_ == READY || stat_ == IN_QUEUE) {
     Msg("%10s", StatStr_[stat_]);
-  else {
+    if (!jobid.empty())
+      Msg(" Job=%s", jobid.c_str());
+  } else {
     // DEBUG
     double frac_steps;
     if (runOpts_.N_Steps().IsSet() && runOpts_.N_Steps().Val() > 0)
@@ -59,7 +61,7 @@ void RunStatus::PrintStatus(std::string const& jobid) const {
     if (ns_per_day_.IsSet())
       Msg(" %g ns/day", ns_per_day_.Val());
     if (!jobid.empty())
-      Msg(" Job=%s\n", jobid.c_str());
+      Msg(" Job=%s", jobid.c_str());
   }
 }
 

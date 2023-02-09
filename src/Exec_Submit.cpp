@@ -8,7 +8,7 @@ using namespace Messages;
 Exec_Submit::Exec_Submit() {}
 
 void Exec_Submit::Help() const {
-  Msg("[beg <#>] [{end <#>|nruns <#>}] [overwrite] [test]\n");
+  Msg("[beg <#>] [{end <#>|nruns <#>}] [overwrite] [depend <jobid>] [test]\n");
 }
 
 Exec::RetType Exec_Submit::Execute(Manager& manager, Cols& args) const {
@@ -36,6 +36,7 @@ Exec::RetType Exec_Submit::Execute(Manager& manager, Cols& args) const {
   if (args.GetKeyInteger(nruns, "nruns", -1)) return ERR;
   bool overwrite = args.HasKey("overwrite");
   bool testOnly = args.HasKey("test");
+  std::string prev_jobid = args.GetKey("depend");
 
   // Set defaults if needed
   // Start
@@ -75,8 +76,7 @@ Exec::RetType Exec_Submit::Execute(Manager& manager, Cols& args) const {
     ErrorMsg("Negative value for START_RUN\n");
     return ERR;
   }
-  // TODO previous job id
-  if (activeSystem.SubmitRunDirectories(start_run, nruns, overwrite, "", testOnly)) {
+  if (activeSystem.SubmitRunDirectories(start_run, nruns, overwrite, prev_jobid, testOnly)) {
     ErrorMsg("Run job submission failed.\n");
     return ERR;
   }
