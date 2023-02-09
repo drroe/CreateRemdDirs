@@ -18,17 +18,18 @@ Run::Run() :
 /** Get job id from file. */
 int Run::getJobIdFromFile(std::vector<std::string> const& all_files, Queue const& localQueue) {
   if (runStat_.CurrentStat() != RunStatus::COMPLETE) {
-    //if (jobid_.empty()) {
-      for (std::vector<std::string>::const_iterator it = all_files.begin(); it != all_files.end(); ++it)
-      {
-        if (*it == CommonOptions::Opt_JobIdFilename().Val()) {
-          TextFile jfile;
-          if (jfile.OpenRead( *it )) return 1;
-          jobid_ = jfile.GetString();
-          jfile.Close();
-        }
+    for (std::vector<std::string>::const_iterator it = all_files.begin(); it != all_files.end(); ++it)
+    {
+      if (*it == CommonOptions::Opt_JobIdFilename().Val()) {
+        TextFile jfile;
+        if (jfile.OpenRead( *it )) return 1;
+        jobid_ = jfile.GetString();
+        jfile.Close();
       }
-    //}
+    }
+    // If no job id, just exit.
+    if (jobid_.empty()) return 0;
+
     Queue::JobStatType jstat = localQueue.JobStatus( jobid_ );
     Msg("DEBUG: Job ID is %s  jstat=%i\n", jobid_.c_str(), (int)jstat);
     if (jstat == Queue::QUEUED)

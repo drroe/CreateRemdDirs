@@ -35,18 +35,22 @@ void RunStatus::PrintStatus() const {
     Msg("%10s", StatStr_[stat_]);
   else {
     // DEBUG
-    double frac_steps = (double)current_n_steps_ / (double)runOpts_.N_Steps().Val();
+    double frac_steps;
+    if (runOpts_.N_Steps().IsSet() && runOpts_.N_Steps().Val() > 0)
+      frac_steps = (double)current_n_steps_ / (double)runOpts_.N_Steps().Val();
+    else
+      frac_steps = 0;
     double pct_steps = frac_steps * 100.0;
     //runOpts_.PrintOpts(false, -1, -1);
     if (current_traj_frames_ > -1)
-      Msg("%10s Pct=%6.2f%% Frames=%10i Expected=%10i",
+      Msg("%10s Pct=%6.2f%% Frames=%10i of %10i",
           StatStr_[stat_],
           //runOpts_.Total_Time(),
           pct_steps,
           current_traj_frames_,
           runOpts_.Expected_Frames());
     else
-      Msg("%10s Pct=%6.2f%% Frames=%10s Expected=%10i",
+      Msg("%10s Pct=%6.2f%% Frames=%10s of %10i",
           StatStr_[stat_],
           //runOpts_.Total_Time(),
           pct_steps,
