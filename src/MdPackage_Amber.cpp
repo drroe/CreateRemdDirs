@@ -746,12 +746,13 @@ const
   // Scan down to '5. TIMINGS'
   bool completed = false;
   const char* ptr = mdout.Gets();
+  int current_nsteps = -1;
   while (ptr != 0) {
     std::string ptrstr(ptr);
     if (ptrstr.compare(0, 8, " NSTEP =") == 0) {
       Cols nstepline;
       nstepline.Split(ptrstr, " =");
-      int current_nsteps = convertToInteger( nstepline[1] );
+      current_nsteps = convertToInteger( nstepline[1] );
       //Msg("DEBUG: current n steps %s %i\n", ptrstr.c_str(), current_nsteps);
       currentStat.Set_CurrentNsteps(current_nsteps);
     } else if (ptrstr.compare(0, 14, "   5.  TIMINGS") == 0) {
@@ -780,9 +781,11 @@ const
   }
   mdout.Close();
 
-  if (completed)
+  if (completed) {
     currentStat.Set_Status( RunStatus::COMPLETE );
-  else
+    if (current_nsteps < 0)
+      currentStat.Set_CurrentNsteps( currentStat.Opts().N_Steps().Val() );
+  } else
     currentStat.Set_Status( RunStatus::INCOMPLETE );
 
   // DEBUG
