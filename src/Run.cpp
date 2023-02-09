@@ -4,6 +4,8 @@
 #include "StringRoutines.h"
 #include "MdPackage.h"
 #include "Submitter.h"
+#include "TextFile.h"
+#include "CommonOptions.h"
 
 using namespace Messages;
 
@@ -37,6 +39,22 @@ int Run::SetupExisting(std::string const& runDir, MdPackage* mdpackage)
     runStat_ = mdpackage->RunCurrentStatus( all_files );
     // DEBUG
     //runStat_.Opts().PrintOpts(false, -1, -1);
+    // If the status is not COMPLETE and no job id set, see if there is a job id file.
+    if (runStat_.CurrentStat() != RunStatus::COMPLETE) {
+      if (jobid_.empty()) {
+        for (StrArray::const_iterator it = all_files.begin(); it != all_files.end(); ++it)
+        {
+          if (*it == CommonOptions::Opt_JobIdFilename().Val()) {
+            TextFile jfile;
+            if (jfile.OpenRead( *it )) return 1;
+            jobid_ = jfile.GetString();
+            jfile.Close();
+          }
+        }
+      }
+      Msg("DEBUG: Job ID is %i\n", jobid_.c_str());
+
+    }
   }
 
   return 0;
