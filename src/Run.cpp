@@ -49,7 +49,8 @@ int Run::SetupExisting(std::string const& runDir, MdPackage* mdpackage, Queue co
   rundir_ = runDir;
   idx_ = StringRoutines::convertToInteger( Extension(runDir) );
   setupDir_ = GetWorkingDir();
-  Msg("DEBUG: Run::SetupExisting: '%s' '%s' '%i'\n", rundir_.c_str(), setupDir_.c_str(), idx_);
+  if (debug_ > 0)
+    Msg("DEBUG: Run::SetupExisting: '%s' '%s' '%i'\n", rundir_.c_str(), setupDir_.c_str(), idx_);
 
   // Get list of files
   StrArray all_files = FileRoutines::ExpandToFilenames("*", false);

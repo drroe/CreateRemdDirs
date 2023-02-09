@@ -66,7 +66,7 @@ int Manager::InitManager(std::string const& CurrentDir, std::string const& input
           for (int col = 3; col < ncols; col++)
             description.append(" " + input.Token(col));
           std::string system_dir = FileRoutines::tildeExpansion(input.Token(1));
-          Msg("System: %s  Description: '%s'\n", system_dir.c_str(), description.c_str());
+          Msg("\nSystem: %s  Description: '%s'\n", system_dir.c_str(), description.c_str());
           projects_.back().AddSystem( System(CurrentDir, system_dir, description) );
           projects_.back().LastSystem().SetDebug( debug_ );
           if (projects_.back().LastSystem().FindRuns(queues_)) return 1;

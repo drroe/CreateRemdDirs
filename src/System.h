@@ -56,6 +56,7 @@ class System {
     /// Read MdPackage specific MD input options
     int read_mdpackage_mdin();
 
+    int debug_; 
     RunArray Runs_;                  ///< Array of runs for the system
     std::string topDir_;             ///< Top level directory
     std::string dirname_;            ///< Directory containing runs for the system

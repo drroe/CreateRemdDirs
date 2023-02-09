@@ -83,7 +83,7 @@ int Submitter::WriteOptions(TextFile& outfile) const {
 int Submitter::ParseFileOption( OptArray::OptPair const& opair ) {
   std::string const& OPT = opair.first;
   std::string const& VAR = opair.second;
-  //if (debug_ > 0) // FIXME
+  if (debug_ > 0)
     Msg("    Option: %s  Variable: %s\n", OPT.c_str(), VAR.c_str());
   if (OPT == "INPUT_FILE") {
     Msg("Warning: INPUT_FILE is only processed when read from a Submit options file.\n");

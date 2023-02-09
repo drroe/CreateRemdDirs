@@ -10,6 +10,7 @@ using namespace Messages;
 
 /** CONSTRUCTOR */
 System::System() :
+  debug_(0),
   createOptsFilename_("remd.opts"),
   submitOptsFilename_("qsub.opts"),
   runDirPrefix_("run"),
@@ -20,6 +21,7 @@ System::System() :
 
 /** CONSTRUCTOR - toplevel dir, dirname, description */
 System::System(std::string const& top, std::string const& dirname, std::string const& description) :
+  debug_(0),
   topDir_(top),
   dirname_(dirname),
   description_(description),
@@ -33,6 +35,7 @@ System::System(std::string const& top, std::string const& dirname, std::string c
 
 /** COPY CONSTRUCTOR */
 System::System(System const& rhs) :
+  debug_(rhs.debug_),
   Runs_(rhs.Runs_),
   topDir_(rhs.topDir_),
   dirname_(rhs.dirname_),
@@ -51,6 +54,7 @@ System::System(System const& rhs) :
 /** Assignment */
 System& System::operator=(System const& rhs) {
   if (this == &rhs) return *this;
+  debug_ = rhs.debug_;
   Runs_ = rhs.Runs_;
   topDir_ = rhs.topDir_;
   dirname_ = rhs.dirname_;
@@ -203,7 +207,7 @@ int System::FindRuns(QueueArray& queues) {
   if (mdInterface_.Package()->CheckCreatorOptions(creator_)) {
     Msg("Warning: Invalid package-specific Creator options.\n");
   }
-  creator_.Info();
+  if (debug_ > 0) creator_.Info();
 
   // See if submission options exist
   if (fileExists( submitOptsFilename_ )) {
@@ -225,18 +229,18 @@ int System::FindRuns(QueueArray& queues) {
   if (mdInterface_.Package()->CheckSubmitterOptions(creator_, submitter_)) {
     Msg("Warning: Invalid package-specific Submitter options.\n");
   }
-  submitter_.Info();
+  if (debug_ > 0) submitter_.Info();
 
   // Search for runs
   StrArray runDirs = ExpandToFilenames(runDirPrefix_ + ".*");
   //if (runDirs.empty()) return 1;
 
   clearRuns(); 
-  Msg("Run directories:\n");
+  if (debug_ > 0) Msg("Run directories:\n");
   int lastIdx = -1;
   for (StrArray::const_iterator it = runDirs.begin(); it != runDirs.end(); ++it)
   {
-    Msg("  Directory: %s\n", it->c_str());
+    if (debug_ > 0) Msg("  Directory: %s\n", it->c_str());
     // Set up the directory
     Runs_.AddRun( Run() );
     if (Runs_.Set_back().SetupExisting( *it, mdInterface_.Package(), submitter_.LocalQueue() )) {
@@ -321,6 +325,7 @@ int System::RefreshCurrentRuns(bool verbose) {
 
 /** Set debug level */
 void System::SetDebug(int debugIn) {
+  debug_ = debugIn;
   creator_.SetDebug( debugIn );
   submitter_.SetDebug( debugIn );
 }
