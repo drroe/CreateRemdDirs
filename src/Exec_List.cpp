@@ -136,9 +136,12 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
   {
     if (tgtProjectIdx == SHOW_ALL || tgtProjectIdx == pidx) {
       if (manager.ActiveProjectIdx() == pidx)
-        Msg("Project *%i: %s\n", pidx, project->name());
+        Msg("Project *%i: %s", pidx, project->name());
       else
-        Msg("Project  %i: %s\n", pidx, project->name());
+        Msg("Project  %i: %s", pidx, project->name());
+      if (tgtSystemIdx == HIDE_ALL)
+        Msg(": %zu systems.", project->Systems().size());
+      Msg("\n");
       // Just in case we need to update the project
       Project& modProject = manager.Set_Project(pidx);
       int sidx = 0;
