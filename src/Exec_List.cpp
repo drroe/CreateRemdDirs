@@ -9,8 +9,9 @@ using namespace Messages;
 Exec_List::Exec_List() {}
 
 void Exec_List::Help() const {
-  Msg("\t[{[project <idx>] [system <idx>] | running}]\n"
-      "  List projects/systems. If 'running' specified only list jobs running in queue.\n");
+  Msg("\t[{[project <idx>] [system <idx>] | running | active}]\n"
+      "  List projects/systems. If 'running' specified only list jobs running in queue.\n"
+      "  If 'active' specified only list runs from active project/system.\n");
 }
 
 /** List all systems. */
@@ -38,11 +39,44 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
         {
           if (run->Stat().CurrentStat() == RunStatus::IN_PROGRESS) {
             modSystem.RefreshSpecifiedRun( ridx );
-            Msg("Project  %i: System %i: Run %i: ", pidx, sidx, run->RunIndex());
+            Msg("Project %i: System %i: Run %i: ", pidx, sidx, run->RunIndex());
             run->RunSummary();
           }
         }
       }
+    }
+    return OK;
+  }
+
+  // -----------------------------------
+  if (args.HasKey("active")) {
+    if (manager.HasActiveProjectSystem()) {
+      Project& activeProject = manager.ActiveProject();
+      System& activeSystem = manager.ActiveProjectSystem();
+      activeSystem.RefreshCurrentRuns(false);
+      Msg("Project %i: System %i: ", manager.ActiveProjectIdx(), activeProject.ActiveSystemIdx());
+      // Count # frames
+      unsigned int total_frames = 0;
+      for (RunArray::const_iterator run = activeSystem.Runs().begin();
+                                    run != activeSystem.Runs().end();
+                                  ++run)
+      {
+        //Msg("DEBUG0 %u\n", run->Stat().CurrentTrajFrames());
+        total_frames += run->Stat().CurrentTrajFrames();
+      }
+      Msg(" (%u frames) ", total_frames);
+      activeSystem.PrintSummary();
+      int ridx = 0;
+      for (RunArray::const_iterator run = activeSystem.Runs().begin();
+                                    run != activeSystem.Runs().end();
+                                  ++run, ++ridx)
+      {
+        Msg("    %i: ", run->RunIndex());
+        run->RunSummary();
+      }
+    } else {
+      ErrorMsg("No active system.\n");
+      return ERR;
     }
     return OK;
   }
