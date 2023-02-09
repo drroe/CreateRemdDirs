@@ -747,13 +747,20 @@ const
   bool completed = false;
   const char* ptr = mdout.Gets();
   while (ptr != 0) {
-    if (std::string(ptr).compare(0, 14, "   5.  TIMINGS") == 0) {
+    std::string ptrstr(ptr);
+    if (ptrstr.compare(0, 8, " NSTEP =") == 0) {
+      Cols nstepline;
+      nstepline.Split(ptrstr, " =");
+      int current_nsteps = convertToInteger( nstepline[1] );
+      //Msg("DEBUG: current n steps %s %i\n", ptrstr.c_str(), current_nsteps);
+      currentStat.Set_CurrentNsteps(current_nsteps);
+    } else if (ptrstr.compare(0, 14, "   5.  TIMINGS") == 0) {
       completed = true;
       break;
     }
     ptr = mdout.Gets();
   }
-  // Scan down to timings
+  // Get timings
   while (ptr != 0) {
     std::string ptrstr(ptr);
     if (ptrstr.compare(0, 29, "|     Average timings for all") == 0 ||

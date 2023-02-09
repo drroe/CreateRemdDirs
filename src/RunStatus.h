@@ -29,6 +29,8 @@ class RunStatus {
     void Set_Status(StatusType s) { stat_ = s; }
     /// Set current # frames
     void Set_CurrentTrajFrames(int n) { current_traj_frames_ = n; }
+    /// Set Current # steps
+    void Set_CurrentNsteps(int n) { current_n_steps_ = n; }
     /// Set ns/day
     Option<double>& Set_NsPerDay() { return ns_per_day_; }
   private:
