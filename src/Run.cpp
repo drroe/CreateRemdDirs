@@ -31,7 +31,7 @@ int Run::getJobIdFromFile(std::vector<std::string> const& all_files, Queue const
     if (jobid_.empty()) return 0;
 
     Queue::JobStatType jstat = localQueue.JobStatus( jobid_ );
-    Msg("DEBUG: Job ID is %s  jstat=%i\n", jobid_.c_str(), (int)jstat);
+    //Msg("DEBUG: Job ID is %s  jstat=%i\n", jobid_.c_str(), (int)jstat);
     if (jstat == Queue::QUEUED)
       runStat_.Set_Status(RunStatus::IN_QUEUE);
     else if (jstat == Queue::RUNNING)
