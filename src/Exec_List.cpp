@@ -4,6 +4,7 @@
 #include "Messages.h"
 #include "Cols.h"
 #include "StringRoutines.h"
+#include "RunIndex.h"
 #include <utility> // std::pair
 #include <algorithm> // std::sort
 
@@ -129,10 +130,13 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
 
   // -----------------------------------
   if (listMode == RECENT) {
-    // Pair run last modified time with run iterator
-    typedef std::pair<long int, RunArray::const_iterator> Rpair;
-    typedef std::vector<Rpair> RParray;
-    RParray sort_systems;
+    // Pair run interator with run indices
+    typedef std::pair<RunArray::const_iterator, RunIndex> RIpair;
+    // Pair run last modified time with run iterator/indices
+    typedef std::pair<long int, RIpair> TRpair;
+    // Array of time-run iterator/indices
+    typedef std::vector<TRpair> TRarray;
+    TRarray sort_systems;
 
     int pidx = 0;
     for (Manager::ProjectArray::const_iterator project = manager.Projects().begin();
@@ -154,9 +158,17 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
                                     ++run, ++ridx)
         {
           modSystem.RefreshSpecifiedRun( ridx );
-          sort_systems.push_back( Rpair(run->LastModified(), run) );
+          sort_systems.push_back( TRpair(run->LastModified(), RIpair(run, RunIndex(pidx, sidx, run->RunIndex()))) );
         }
       }
+    }
+    std::sort( sort_systems.begin(), sort_systems.end() );
+    // DEBUG
+    for (TRarray::const_iterator it = sort_systems.begin(); it != sort_systems.end(); ++it)
+    {
+      RunIndex const& IDX = it->second.second;
+      Msg("%li P=%i S=%i R=%i ", it->first, IDX.Pidx(), IDX.Sidx(), IDX.Ridx());
+      it->second.first->RunSummary();
     }
     return OK;
   }
