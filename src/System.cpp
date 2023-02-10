@@ -261,6 +261,27 @@ int System::FindRuns(QueueArray& queues) {
   return 0;
 }
 
+/** Check if all creator/submitter options are valid. Report save status. */
+bool System::CheckAllOptions() const {
+  bool is_ok = true;
+  // Creator
+  if (creator_.CheckCreator())
+    is_ok = false;
+  if (mdInterface_.Package()->CheckCreatorOptions(creator_))
+    is_ok = false;
+  if (c_needs_save_)
+    Msg("Creator options need to be saved.\n");
+
+  // Submitter
+  if (submitter_.CheckSubmitter())
+    is_ok = false;
+  if (mdInterface_.Package()->CheckSubmitterOptions(creator_, submitter_))
+    is_ok = false;
+  if (s_needs_save_)
+    Msg("Submitter options need to be saved.\n");
+  return is_ok;
+}
+
 /** Parse a single option.
   * \return 1 if processed, 0 if ignored, -1 if error.
   */
