@@ -331,14 +331,24 @@ int Creator::CheckCreator(std::string const& dirpath) const {
       ErrorMsg("TOPOLOGY not specified.\n");
       errcount++;
     }
+    if (!fileExists(dirpath + "/" + top_file_)) {
+      ErrorMsg("TOPOLOGY '%s' not found.\n", top_file_.c_str());
+      errcount++;
+    }
   } else {
     if (!Dims_.HasDim(ReplicaDimension::TEMP) && !mdopts_.Temperature0().IsSet()) {
       Msg("Warning: No dimension provides temperature and TEMPERATURE not specified.\n");
       Msg("Warning:   Using default temperature: %g\n", mdopts_.Temperature0().Val());
     }
-    if (!Dims_.HasDim(ReplicaDimension::TOPOLOGY) && top_file_.empty()) {
-      ErrorMsg("No dimension provides topology files and TOPOLOGY not specified.\n");
-      errcount++;
+    if (!Dims_.HasDim(ReplicaDimension::TOPOLOGY)) {
+      if (top_file_.empty()) {
+        ErrorMsg("No dimension provides topology files and TOPOLOGY not specified.\n");
+        errcount++;
+      }
+      if (!fileExists(dirpath + "/" + top_file_)) {
+        ErrorMsg("TOPOLOGY '%s' not found.\n", top_file_.c_str());
+        errcount++;
+      }
     }
     if (!mdopts_.N_Exchanges().IsSet()) {
       ErrorMsg("Number of exchanges NUMEXCHG not set for REMD run.\n");
