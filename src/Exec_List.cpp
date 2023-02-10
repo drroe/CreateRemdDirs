@@ -174,27 +174,14 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
         if (tgtSystemIdx == SHOW_ALL || tgtSystemIdx == sidx) {
           // Ensure system is up to date (false = silent)
           System& modSystem = modProject.Set_System(sidx);
-          modSystem.RefreshCurrentRuns(false);
+          int total_frames = modSystem.RefreshCurrentRuns(false);
+          if (total_frames < 0)
+            Msg("Warning: Could not refresh status of system runs.\n");
           if (project->ActiveSystemIdx() == sidx)
             Msg("  System *%i: ", sidx);
           else
             Msg("  System  %i: ", sidx);
-          // If this is the target system index, show all runs
-          //bool is_active_system = false;
-          //if (tgtRunIdx == HIDE_ALL && 
-          //    pidx == manager.ActiveProjectIdx() &&
-          //    sidx == project->ActiveSystemIdx())
-          //  is_active_system = true;
-          // Count # frames
-          unsigned int total_frames = 0;
-          for (RunArray::const_iterator run = system->Runs().begin();
-                                                run != system->Runs().end();
-                                              ++run)
-          {
-            //Msg("DEBUG0 %u\n", run->Stat().CurrentTrajFrames());
-            total_frames += run->Stat().CurrentTrajFrames();
-          }
-          Msg(" (%u frames) ", total_frames);
+          Msg(" (%i frames) ", total_frames);
           system->PrintSummary();
           int ridx = 0;
           for (RunArray::const_iterator run = system->Runs().begin();

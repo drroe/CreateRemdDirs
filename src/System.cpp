@@ -300,12 +300,15 @@ int System::ParseOption(std::string const& OPT, std::string const& VAR) {
   return ret;
 }
 
-/** Refresh current runs. */
+/** Refresh current runs.
+  * \return Total number of frames in all runs or -1 on error.
+  */
 int System::RefreshCurrentRuns(bool verbose) {
   //using namespace FileRoutines;
+  int total_frames = 0;
   if (ChangeToSystemDir()) {
     ErrorMsg("Could not change to system directory %s/%s\n", topDir_.c_str(), dirname_.c_str());
-    return 1;
+    return -1;
   }
   for (RunArray::iterator run = Runs_.begin(); run != Runs_.end(); ++run)
   {
@@ -313,14 +316,15 @@ int System::RefreshCurrentRuns(bool verbose) {
       Msg("  Refreshing directory '%s'\n", run->RunDirName().c_str());
     if (run->Refresh( mdInterface_.Package(), submitter_.LocalQueue() )) {
       ErrorMsg("Refreshing existing run '%s'\n", run->RunDirName().c_str());
-      return 1;
+      return -1;
     }
+    total_frames += (int)run->Stat().CurrentTrajFrames();
     if (verbose)
       run->RunSummary();
     // Change directory back
-    if (ChangeToSystemDir()) return 1;
+    if (ChangeToSystemDir()) return -1;
   }
-  return 0;
+  return total_frames;
 }
 
 /** Refresh only the specified run */
