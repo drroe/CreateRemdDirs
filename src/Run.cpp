@@ -12,7 +12,8 @@ using namespace Messages;
 /** CONSTRUCTOR */
 Run::Run() :
   idx_(-1),
-  debug_(0)
+  debug_(0),
+  t_last_mod_(-1)
 {}
 
 /** Get job id from file. */
@@ -40,6 +41,17 @@ int Run::getJobIdFromFile(std::vector<std::string> const& all_files, Queue const
   return 0;
 }
 
+/** Update time last modified. */
+int Run::updateTimeLastModified(std::vector<std::string> const& all_files) {
+  for (std::vector<std::string>::const_iterator it = all_files.begin(); it != all_files.end(); ++it) {
+    long int t_lm = FileRoutines::TimeLastModified( *it );
+    Msg("\t%s (%li)\n", it->c_str(), t_lm);
+    if (t_lm > t_last_mod_)
+      t_last_mod_ = t_lm;
+  }
+  return 0;
+}
+
 /* Setup existing run dir (no changes). Assumes dir exists. */
 int Run::SetupExisting(std::string const& runDir, MdPackage* mdpackage, Queue const& localQueue)
 {
@@ -60,8 +72,9 @@ int Run::SetupExisting(std::string const& runDir, MdPackage* mdpackage, Queue co
     runStat_ = RunStatus(RunStatus::EMPTY);
   } else {
     //Msg("DEBUG: Existing files:\n");
-    //for (StrArray::const_iterator it = all_files.begin(); it != all_files.end(); ++it)
-    //  Msg("\t%s\n", it->c_str());
+    // Update time last modified
+    updateTimeLastModified( all_files );
+
     runStat_ = mdpackage->RunCurrentStatus( all_files );
     // DEBUG
     //runStat_.Opts().PrintOpts(false, -1, -1);
@@ -83,6 +96,9 @@ int Run::Refresh(MdPackage* mdpackage, Queue const& localQueue) {
     //Msg("Warning: Run directory '%s' is empty.\n", rundir_.c_str());
     runStat_ = RunStatus(RunStatus::EMPTY);
   } else {
+    // Update time last modified
+    updateTimeLastModified( all_files );
+
     runStat_ = mdpackage->RunCurrentStatus( all_files );
     // If the status is not COMPLETE and no job id set, see if there is a job id file.
     if (getJobIdFromFile(all_files, localQueue)) return 1;

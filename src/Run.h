@@ -35,6 +35,8 @@ class Run {
   private:
     /// Get job id from file if present in array
     int getJobIdFromFile(std::vector<std::string> const&, Queue const&);
+    /// Update time last modified from files in array
+    int updateTimeLastModified(std::vector<std::string> const&);
 
     std::string rundir_;   ///< Run directory. May be relative.
     std::string setupDir_; ///< Directory in which SetupRun gets invoked. Should be absolute run dir
@@ -42,5 +44,6 @@ class Run {
     std::string jobid_;    ///< Current job id
     int idx_;              ///< Run index, based on directory name extension
     int debug_;            ///< Debug level
+    long int t_last_mod_;  ///< Time most recent file in run was modified.
 };
 #endif

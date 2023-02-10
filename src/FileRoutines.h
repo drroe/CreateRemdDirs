@@ -17,6 +17,8 @@ bool fileExists(std::string const&);
 int CheckExists(const char*, std::string const&);
 /// \return 1 if the given file is actually a directory
 int IsDirectory(std::string const&);
+/// \return Time file was last modified in seconds since epoch
+long int TimeLastModified(std::string const&);
 /// Create a directory with given name
 int Mkdir(std::string const&);
 /// \return True if given path is empty or absolute

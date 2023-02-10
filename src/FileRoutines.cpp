@@ -2,6 +2,7 @@
 #include <cerrno>
 #include <cstring>
 #include <cstdlib> // getenv
+#include <ctime> // time_t
 #include <sys/stat.h> // mkdir
 #include <unistd.h> // getcwd 
 //#if ndef __PGI
@@ -138,6 +139,20 @@ int FileRoutines::IsDirectory(std::string const& filenameIn) {
   if (frame_stat.st_mode & S_IFDIR)
     return 1;
   return 0;
+}
+
+/** \return Time (in seconds since epoch) file was last modified. */
+long int FileRoutines::TimeLastModified(std::string const& filenameIn) {
+  if (filenameIn.empty()) return  -1;
+  struct stat file_stat;
+  if (stat(filenameIn.c_str(), &file_stat) == -1) {
+    ErrorMsg("Could not find file '%s' status for time.\n", filenameIn.c_str());
+    perror("     Error from stat: ");
+    return -1;
+  }
+  struct timespec t_last_modified = file_stat.st_mtim;
+  time_t last_modified_seconds = t_last_modified.tv_sec;
+  return (long int)last_modified_seconds;
 }
 
 int FileRoutines::Mkdir(std::string const& dname) {
