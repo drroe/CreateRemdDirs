@@ -130,6 +130,7 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
 
   // -----------------------------------
   if (listMode == RECENT) {
+    Msg("%i most recent runs:\n", nrecent);
     // Pair run interator with run indices
     typedef std::pair<RunArray::const_iterator, RunIndex> RIpair;
     // Pair run last modified time with run iterator/indices
@@ -164,11 +165,15 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
     }
     std::sort( sort_systems.begin(), sort_systems.end() );
     // DEBUG
-    for (TRarray::const_iterator it = sort_systems.begin(); it != sort_systems.end(); ++it)
+    int irecent = 0;
+    for (TRarray::const_reverse_iterator it = sort_systems.rbegin(); it != sort_systems.rend(); ++it)
     {
       RunIndex const& IDX = it->second.second;
-      Msg("%li P=%i S=%i R=%i ", it->first, IDX.Pidx(), IDX.Sidx(), IDX.Ridx());
+      //Msg("%li P=%i S=%i R=%i ", it->first, IDX.Pidx(), IDX.Sidx(), IDX.Ridx());
+      Msg("Project %i: System %i: Run %i: ", IDX.Pidx(), IDX.Sidx(), IDX.Ridx() );
       it->second.first->RunSummary();
+      ++irecent;
+      if (irecent == nrecent) break;
     }
     return OK;
   }
