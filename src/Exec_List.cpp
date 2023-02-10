@@ -111,10 +111,10 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
   if (listMode == ACTIVE) {
     Msg("Active project/system:\n");
     if (manager.HasActiveProjectSystem()) {
-      Project& activeProject = manager.ActiveProject();
       System& activeSystem = manager.ActiveProjectSystem();
       activeSystem.RefreshCurrentRuns(false);
-      Msg("Project %i: System %i: ", manager.ActiveProjectIdx(), activeProject.ActiveSystemIdx());
+      Msg("Project %i: System %i: ", manager.ActiveProjectIdx(), 
+          manager.ActiveProjectSystemIdx());
       // Count # frames
       unsigned int total_frames = 0;
       for (RunArray::const_iterator run = activeSystem.Runs().begin();

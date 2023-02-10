@@ -35,6 +35,8 @@ class Manager {
     Project& ActiveProject() { return projects_[activeProjectIdx_]; }
     /// \return the active system of active project
     System& ActiveProjectSystem() { return projects_[activeProjectIdx_].ActiveSystem(); }
+    /// \return the index of the active system of active project
+    int ActiveProjectSystemIdx() const { return projects_[activeProjectIdx_].ActiveSystemIdx(); }
     /// Modifiable project
     Project& Set_Project(int idx) { return projects_[idx]; }
 

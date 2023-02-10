@@ -21,6 +21,8 @@ Exec::RetType Exec_Check::Execute(Manager& manager, Cols& args) const {
   // Get active system
   System& activeSystem = manager.ActiveProjectSystem();
 
+  activeSystem.PrintSummary();
+
   bool is_ok = activeSystem.CheckAllOptions();
   if (is_ok)
     return OK;
