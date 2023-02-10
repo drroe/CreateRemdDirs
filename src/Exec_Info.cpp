@@ -20,6 +20,8 @@ Exec::RetType Exec_Info::Execute(Manager& manager, Cols& args) const {
   }
   // Get active system
   System& activeSystem = manager.ActiveProjectSystem();
+  Msg("Project %i system %i: ", manager.ActiveProjectIdx(), manager.ActiveProjectSystemIdx());
+  activeSystem.PrintSummary();
 
   activeSystem.PrintInfo();
   return OK;
