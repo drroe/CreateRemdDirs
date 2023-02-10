@@ -783,7 +783,7 @@ const
 
   if (completed) {
     currentStat.Set_Status( RunStatus::COMPLETE );
-    if (current_nsteps < 0)
+    if (current_nsteps < 1)
       currentStat.Set_CurrentNsteps( currentStat.Opts().N_Steps().Val() );
   } else
     currentStat.Set_Status( RunStatus::INCOMPLETE );
