@@ -49,7 +49,7 @@ int Run::updateTimeLastModified(std::vector<std::string> const& all_files) {
   for (std::vector<std::string>::const_iterator it = all_files.begin(); it != all_files.end(); ++it) 
   {
     long int t_lm = FileRoutines::TimeLastModified( *it );
-    Msg("\t%s (%li)\n", it->c_str(), t_lm);
+    //Msg("DEBUG\t%s (%li)\n", it->c_str(), t_lm);
     if (t_lm > t_last_mod_) {
       t_last_mod_ = t_lm;
       ret = 1;
