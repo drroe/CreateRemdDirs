@@ -51,6 +51,8 @@ std::string Cols::GetKey(std::string const& key) {
       if (idx < columns_.size()) {
         marked_[idx] = true;
         return columns_[idx];
+      } else {
+        break;
       }
     }
   }
