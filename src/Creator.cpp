@@ -310,13 +310,17 @@ int Creator::LoadDimension(std::string const& dfile) {
 }
 
 /** Check that Creator options are valid. Count number of replicas if needed. 
-  */ // TODO make const by putting replica count elsewhere
-int Creator::CheckCreator() const {
+  */ 
+int Creator::CheckCreator(std::string const& dirpath) const {
   int errcount = 0;
   if (crd_dir_.empty()) {
     ErrorMsg("No CRD_FILE specified.\n");
     errcount++;
-  } 
+  }
+  if (!fileExists(dirpath + "/" + crd_dir_)) {
+    ErrorMsg("CRD_FILE '%s' not found.\n", crd_dir_.c_str());
+    errcount++;
+  }
   // Do some checking based on what type of run this is.
   if (Dims_.Empty()) {
     Msg("  No dimensions defined: assuming MD run.\n");

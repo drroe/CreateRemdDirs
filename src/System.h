@@ -59,6 +59,8 @@ class System {
     int findRunIdx(int) const;
     /// Read MdPackage specific MD input options
     int read_mdpackage_mdin();
+    /// \return absolute system dir path
+    std::string system_dir_path() const;
 
     int debug_; 
     RunArray Runs_;                  ///< Array of runs for the system

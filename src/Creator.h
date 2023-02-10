@@ -20,8 +20,8 @@ class Creator {
     int WriteOptions(TextFile&) const; 
     /// Read creation options from a file
     int ReadOptions(std::string const&);
-    /// Check creator based on current options.
-    int CheckCreator() const;
+    /// Check creator based on current options given system dir path.
+    int CheckCreator(std::string const&) const;
     /// Print info to stdout
     void Info() const;
     /// \return Run description

@@ -201,7 +201,7 @@ int System::FindRuns(QueueArray& queues) {
   // Process MD package-specific MD input if needed
   if (read_mdpackage_mdin()) return 1;
   // Check the options
-  if (creator_.CheckCreator()) {
+  if (creator_.CheckCreator(system_dir_path())) {
     Msg("Warning: Invalid Creator options detected.\n");
   }
   if (mdInterface_.Package()->CheckCreatorOptions(creator_)) {
@@ -265,7 +265,7 @@ int System::FindRuns(QueueArray& queues) {
 bool System::CheckAllOptions() const {
   bool is_ok = true;
   // Creator
-  if (creator_.CheckCreator())
+  if (creator_.CheckCreator(system_dir_path()))
     is_ok = false;
   if (mdInterface_.Package()->CheckCreatorOptions(creator_))
     is_ok = false;
@@ -291,7 +291,7 @@ int System::ParseOption(std::string const& OPT, std::string const& VAR) {
   int ret = creator_.ParseFileOption( opair );
   if (ret == 1) {
     // Ensure creator is refreshed after parsing the option
-    creator_.CheckCreator();
+    creator_.CheckCreator(system_dir_path());
     mdInterface_.Package()->CheckCreatorOptions(creator_);
     c_needs_save_ = true;
   }
@@ -392,6 +392,12 @@ int System::ChangeToSystemDir() const {
   if (ChangeDir( topDir_ )) return 1;
   if (ChangeDir( dirname_ )) return 1;
   return 0;
+}
+
+/** \return Total path to system directory. */
+std::string System::system_dir_path() const {
+  if (FileRoutines::is_absolute_path( dirname_ )) return dirname_;
+  return topDir_ + "/" + dirname_;
 }
 
 /** \return Index of run with specified runNum or -1 if not present. */
@@ -498,7 +504,7 @@ int System::CreateRunDirectories(int start_run, int nruns, bool overwrite)
   }
   // Ensure the creator is valid
   creator_.Info();
-  if (creator_.CheckCreator() || mdInterface_.Package()->CheckCreatorOptions(creator_)) { 
+  if (creator_.CheckCreator(system_dir_path()) || mdInterface_.Package()->CheckCreatorOptions(creator_)) { 
     ErrorMsg("Invalid options detected. Cannot create.\n");
     return 1;
   }
