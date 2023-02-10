@@ -41,14 +41,36 @@ int Run::getJobIdFromFile(std::vector<std::string> const& all_files, Queue const
   return 0;
 }
 
-/** Update time last modified. */
+/** Update time last modified. 
+  * \return 1 if time was updated, 0 if not.
+  */
 int Run::updateTimeLastModified(std::vector<std::string> const& all_files) {
-  for (std::vector<std::string>::const_iterator it = all_files.begin(); it != all_files.end(); ++it) {
+  int ret = 0;
+  for (std::vector<std::string>::const_iterator it = all_files.begin(); it != all_files.end(); ++it) 
+  {
     long int t_lm = FileRoutines::TimeLastModified( *it );
     Msg("\t%s (%li)\n", it->c_str(), t_lm);
-    if (t_lm > t_last_mod_)
+    if (t_lm > t_last_mod_) {
       t_last_mod_ = t_lm;
+      ret = 1;
+    }
   }
+  return ret;
+}
+
+/** Do all actions necessary to refresh the run. */
+int Run::internalRefresh(MdPackage* mdpackage, Queue const& localQueue, std::vector<std::string> const& all_files) {
+  // Update time last modified
+  int needs_update = updateTimeLastModified( all_files );
+  // Only update run status if files have been modified.
+  if (needs_update == 1) {
+    Msg("DEBUG: Updating status of '%s'\n", rundir_.c_str());
+    runStat_ = mdpackage->RunCurrentStatus( all_files );
+  }
+  // DEBUG
+  //runStat_.Opts().PrintOpts(false, -1, -1);
+  // If the status is not COMPLETE and no job id set, see if there is a job id file.
+  if (getJobIdFromFile(all_files, localQueue)) return 1;
   return 0;
 }
 
@@ -71,6 +93,8 @@ int Run::SetupExisting(std::string const& runDir, MdPackage* mdpackage, Queue co
       Msg("Warning: Run directory '%s' is empty.\n", rundir_.c_str());
     runStat_ = RunStatus(RunStatus::EMPTY);
   } else {
+    if (internalRefresh(mdpackage, localQueue, all_files)) return 1;
+/*
     //Msg("DEBUG: Existing files:\n");
     // Update time last modified
     updateTimeLastModified( all_files );
@@ -79,7 +103,7 @@ int Run::SetupExisting(std::string const& runDir, MdPackage* mdpackage, Queue co
     // DEBUG
     //runStat_.Opts().PrintOpts(false, -1, -1);
     // If the status is not COMPLETE and no job id set, see if there is a job id file.
-    if (getJobIdFromFile(all_files, localQueue)) return 1;
+    if (getJobIdFromFile(all_files, localQueue)) return 1;*/
   }
 
   return 0;
@@ -96,12 +120,14 @@ int Run::Refresh(MdPackage* mdpackage, Queue const& localQueue) {
     //Msg("Warning: Run directory '%s' is empty.\n", rundir_.c_str());
     runStat_ = RunStatus(RunStatus::EMPTY);
   } else {
+    if (internalRefresh(mdpackage, localQueue, all_files)) return 1;
+/*
     // Update time last modified
     updateTimeLastModified( all_files );
 
     runStat_ = mdpackage->RunCurrentStatus( all_files );
     // If the status is not COMPLETE and no job id set, see if there is a job id file.
-    if (getJobIdFromFile(all_files, localQueue)) return 1;
+    if (getJobIdFromFile(all_files, localQueue)) return 1;*/
   }
   return 0;
 }

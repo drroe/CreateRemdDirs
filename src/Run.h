@@ -37,6 +37,8 @@ class Run {
     int getJobIdFromFile(std::vector<std::string> const&, Queue const&);
     /// Update time last modified from files in array
     int updateTimeLastModified(std::vector<std::string> const&);
+    /// Perform all actions needed to refresh run status
+    int internalRefresh(MdPackage*, Queue const&, std::vector<std::string> const&);
 
     std::string rundir_;   ///< Run directory. May be relative.
     std::string setupDir_; ///< Directory in which SetupRun gets invoked. Should be absolute run dir
