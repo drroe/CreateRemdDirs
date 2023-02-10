@@ -41,6 +41,8 @@ class System {
     void PrintSummary() const;
     /// Print system info
     void PrintInfo() const;
+    /// \return true if all options are ok
+    bool CheckAllOptions() const;
     /// \return Run Array
     RunArray const& Runs() const { return Runs_; }
     /// Change to system directory
