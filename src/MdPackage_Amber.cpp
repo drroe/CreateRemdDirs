@@ -570,10 +570,10 @@ const
     }
   }
 
-  // Do we need to setup groups for MREMD?
+  // Do we need to setup MREMD?
+  bool is_MREMD = (creator.Dims().Ndims() > 1 && !creator.RemdDiagonal());
   Groups groups_;
-  bool setupGroups = (groups_.Empty() && creator.Dims().Ndims() > 1);
-  if (setupGroups)
+  if (is_MREMD)
     groups_.SetupGroups( creator.Dims().Ndims() );
   // Create INPUT directory if not present.
   std::string input_dir("INPUT");
@@ -594,7 +594,7 @@ const
       return 1;
     }
     // Save group info
-    if (setupGroups)
+    if (is_MREMD)
       groups_.AddReplica( Indices.Indices(), rep+1 );
     // Create input
     std::string mdin_name = input_dir + "/in." + EXT;
@@ -648,7 +648,7 @@ const
   if (Debug() > 1 && !groups_.Empty())
     groups_.PrintGroups();
   // Create remd.dim if necessary.
-  if (creator.Dims().Ndims() > 1) {
+  if (is_MREMD) {
     TextFile REMDDIM;
     if (REMDDIM.OpenWrite(remddimName_)) return 1;
     for (unsigned int id = 0; id != creator.Dims().Ndims(); id++)
@@ -658,7 +658,7 @@ const
   // Create Run script
   std::string cmd_opts;
   std::string NG = integerToString( Indices.TotalReplicas() );
-  if (creator.Dims().Ndims() > 1)
+  if (is_MREMD)
     cmd_opts.assign("-ng " + NG + " -groupfile " + groupfileName_ + " -remd-file " + remddimName_);
   else {
     // 1 replica dimension
