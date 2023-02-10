@@ -309,6 +309,15 @@ int Creator::LoadDimension(std::string const& dfile) {
   return 0;
 }
 
+/// \return true if the file exists
+bool check_file_exists(std::string const& dirpath, std::string const& path)
+{
+  if (FileRoutines::is_absolute_path( path ))
+    return fileExists( path );
+  else
+    return fileExists( dirpath + "/" + path );
+}
+
 /** Check that Creator options are valid. Count number of replicas if needed. 
   */ 
 int Creator::CheckCreator(std::string const& dirpath) const {
@@ -317,9 +326,15 @@ int Creator::CheckCreator(std::string const& dirpath) const {
     ErrorMsg("No CRD_FILE specified.\n");
     errcount++;
   }
-  if (!fileExists(dirpath + "/" + crd_dir_)) {
+  if (!check_file_exists(dirpath, crd_dir_)) {
     ErrorMsg("CRD_FILE '%s' not found.\n", crd_dir_.c_str());
     errcount++;
+  }
+  if (!ref_dir_.empty()) {
+    if (!check_file_exists(dirpath, ref_dir_)) {
+      ErrorMsg("REF_FILE '%s' not found.\n", ref_dir_.c_str());
+      errcount++;
+    }
   }
   // Do some checking based on what type of run this is.
   if (Dims_.Empty()) {
@@ -331,7 +346,7 @@ int Creator::CheckCreator(std::string const& dirpath) const {
       ErrorMsg("TOPOLOGY not specified.\n");
       errcount++;
     }
-    if (!fileExists(dirpath + "/" + top_file_)) {
+    if (!check_file_exists(dirpath, top_file_)) {
       ErrorMsg("TOPOLOGY '%s' not found.\n", top_file_.c_str());
       errcount++;
     }
@@ -345,7 +360,7 @@ int Creator::CheckCreator(std::string const& dirpath) const {
         ErrorMsg("No dimension provides topology files and TOPOLOGY not specified.\n");
         errcount++;
       }
-      if (!fileExists(dirpath + "/" + top_file_)) {
+      if (!check_file_exists(dirpath, top_file_)) {
         ErrorMsg("TOPOLOGY '%s' not found.\n", top_file_.c_str());
         errcount++;
       }
