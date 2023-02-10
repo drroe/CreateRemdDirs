@@ -375,7 +375,7 @@ int Submitter::SubmitJob(std::string& jobid, std::string const& prev_jobidIn, bo
   ChangePermissions( submitScript );
 
   if (localQueue_.QueueType() == Queue::NO_QUEUE) {
-    Msg("No queue type set. Only creating script '%s'\n", runScriptName.c_str());
+    Msg("No queue type set. Only creating script '%s'\n", submitScript.c_str());
     return 0;
   }
 
