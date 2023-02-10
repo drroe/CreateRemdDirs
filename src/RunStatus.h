@@ -6,6 +6,8 @@ class RunStatus {
   public:
     /// Various status types - SYNC WITH StatStr_
     enum StatusType { UNKNOWN=0, EMPTY, PENDING, READY, IN_QUEUE, IN_PROGRESS, INCOMPLETE, COMPLETE };
+    /// \return String corresponding to StatusType
+    static const char* statusString(StatusType);
 
     /// CONSTRUCTOR
     RunStatus();

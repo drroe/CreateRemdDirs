@@ -29,6 +29,11 @@ const char* RunStatus::StatStr_[] = {
   "Complete"
 };
 
+/** \return string correspnding to StatusType. */
+const char* RunStatus::statusString(StatusType t) {
+  return StatStr_[t];
+}
+
 /** Print status to stdout (no newline). */
 void RunStatus::PrintStatus(std::string const& jobid) const {
   if (stat_ == EMPTY || stat_ == PENDING || stat_ == READY || stat_ == IN_QUEUE) {

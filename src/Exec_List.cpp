@@ -13,7 +13,8 @@ using namespace Messages;
 Exec_List::Exec_List() {}
 
 void Exec_List::Help() const {
-  Msg("\t[{proj[ects] | [project <idx>] [system <idx>] [all]| running}]\n"
+  Msg("\t[{ proj[ects] | [project <idx>] [system <idx>] [all]|\n"
+      "\t   {running|queued|pending|ready|complete|incomplete} }]\n"
       "  List active project/system. If 'proj' or 'projects' is specifed, list\n"
       "  all projects. If 'project' and/or 'system' specified, show only that\n"
       "  project/system; the 'all' keyword can be used to show all systems or\n"
@@ -23,13 +24,31 @@ void Exec_List::Help() const {
 
 /** List all systems. */
 Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
-  enum ListModeType { ACTIVE = 0, RUNNING, PROJECTS, RECENT };
+  enum ListModeType { ACTIVE = 0, BY_RUN_STATUS, PROJECTS, RECENT };
   // Process input
   ListModeType listMode = ACTIVE;
-  // Check for running mode args
+  // Check for by run status mode args
+  RunStatus::StatusType tgtStat = RunStatus::UNKNOWN;
   if (args.HasKey("running")) {
-    listMode = RUNNING;
+    listMode = BY_RUN_STATUS;
+    tgtStat = RunStatus::IN_PROGRESS;
+  } else if (args.HasKey("queued")) {
+    listMode = BY_RUN_STATUS;
+    tgtStat = RunStatus::IN_QUEUE;
+  } else if (args.HasKey("pending")) {
+    listMode = BY_RUN_STATUS;
+    tgtStat = RunStatus::PENDING;
+  } else if (args.HasKey("ready")) {
+    listMode = BY_RUN_STATUS;
+    tgtStat = RunStatus::READY;
+  } else if (args.HasKey("complete")) {
+    listMode = BY_RUN_STATUS;
+    tgtStat = RunStatus::COMPLETE;
+  } else if (args.HasKey("incomplete")) {
+    listMode = BY_RUN_STATUS;
+    tgtStat = RunStatus::INCOMPLETE;
   }
+
   // Check for recent mode args
   int nrecent = 0;
   if (args.HasKey("recent")) {
@@ -88,9 +107,9 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
   }
 
   // -----------------------------------
-  if (listMode == RUNNING) {
-    Msg("Running jobs:\n");
-    // List only running jobs
+  if (listMode == BY_RUN_STATUS) {
+    Msg("%s jobs:\n", RunStatus::statusString(tgtStat));
+    // List only jobs matching tgtStat
     int pidx = 0;
     for (Manager::ProjectArray::const_iterator project = manager.Projects().begin();
                                                project != manager.Projects().end();
@@ -116,7 +135,7 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
             modSystem.RefreshSpecifiedRun( ridx );
             //needs_refresh = false;
           //}
-          if (run->Stat().CurrentStat() == RunStatus::IN_PROGRESS) {
+          if (run->Stat().CurrentStat() == tgtStat) {
             //if (needs_refresh)
             //  modSystem.RefreshSpecifiedRun( ridx );
             Msg("Project %i: System %i: Run %i: ", pidx, sidx, run->RunIndex());
