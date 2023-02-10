@@ -24,6 +24,8 @@ class Run {
     std::string const& RunDirName() const { return rundir_; }
     /// \return run job id
     std::string const& JobId() const { return jobid_; }
+    /// \return Last modified time
+    long int LastModified() const { return t_last_mod_; }
     /// Setup existing directory - run dir name
     int SetupExisting(std::string const&, MdPackage*, Queue const&);
     /// Refresh run status

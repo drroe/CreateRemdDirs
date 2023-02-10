@@ -3,6 +3,9 @@
 #include "Run.h"
 #include "Messages.h"
 #include "Cols.h"
+#include "StringRoutines.h"
+#include <utility> // std::pair
+#include <algorithm> // std::sort
 
 using namespace Messages;
 
@@ -19,12 +22,22 @@ void Exec_List::Help() const {
 
 /** List all systems. */
 Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
-  enum ListModeType { ACTIVE = 0, RUNNING, PROJECTS };
+  enum ListModeType { ACTIVE = 0, RUNNING, PROJECTS, RECENT };
   // Process input
   ListModeType listMode = ACTIVE;
   // Check for running mode args
   if (args.HasKey("running")) {
     listMode = RUNNING;
+  }
+  // Check for recent mode args
+  int nrecent = 0;
+  if (args.HasKey("recent")) {
+    listMode = RECENT;
+    std::string num = args.NextColumn();
+    if (num.empty())
+      nrecent = 5;
+    else
+      nrecent = StringRoutines::convertToInteger(num);
   }
   // Check for projects mode args
   static const int SHOW_ALL = -1;
@@ -96,18 +109,52 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
                                       run != system->Runs().end();
                                     ++run, ++ridx)
         {
-          bool needs_refresh = true;
-          if (run->Stat().CurrentStat() == RunStatus::IN_QUEUE) {
+          //bool needs_refresh = true;
+          //if (run->Stat().CurrentStat() == RunStatus::IN_QUEUE) {
             // Check if the system is now running.
             modSystem.RefreshSpecifiedRun( ridx );
-            needs_refresh = false;
-          }
+            //needs_refresh = false;
+          //}
           if (run->Stat().CurrentStat() == RunStatus::IN_PROGRESS) {
-            if (needs_refresh)
-              modSystem.RefreshSpecifiedRun( ridx );
+            //if (needs_refresh)
+            //  modSystem.RefreshSpecifiedRun( ridx );
             Msg("Project %i: System %i: Run %i: ", pidx, sidx, run->RunIndex());
             run->RunSummary();
           }
+        }
+      }
+    }
+    return OK;
+  }
+
+  // -----------------------------------
+  if (listMode == RECENT) {
+    // Pair run last modified time with run iterator
+    typedef std::pair<long int, RunArray::const_iterator> Rpair;
+    typedef std::vector<Rpair> RParray;
+    RParray sort_systems;
+
+    int pidx = 0;
+    for (Manager::ProjectArray::const_iterator project = manager.Projects().begin();
+                                               project != manager.Projects().end();
+                                             ++project, ++pidx)
+    {
+      // Just in case we need to update the project
+      Project& modProject = manager.Set_Project(pidx);
+      int sidx = 0;
+      for (Project::SystemArray::const_iterator system = project->Systems().begin();
+                                                system != project->Systems().end();
+                                              ++system, ++sidx)
+      {
+        // Just in case we have to update the system
+        System& modSystem = modProject.Set_System(sidx);
+        int ridx = 0;
+        for (RunArray::const_iterator run = system->Runs().begin();
+                                      run != system->Runs().end();
+                                    ++run, ++ridx)
+        {
+          modSystem.RefreshSpecifiedRun( ridx );
+          sort_systems.push_back( Rpair(run->LastModified(), run) );
         }
       }
     }
