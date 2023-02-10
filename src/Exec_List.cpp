@@ -96,8 +96,15 @@ Exec::RetType Exec_List::Execute(Manager& manager, Cols& args) const {
                                       run != system->Runs().end();
                                     ++run, ++ridx)
         {
-          if (run->Stat().CurrentStat() == RunStatus::IN_PROGRESS) {
+          bool needs_refresh = true;
+          if (run->Stat().CurrentStat() == RunStatus::IN_QUEUE) {
+            // Check if the system is now running.
             modSystem.RefreshSpecifiedRun( ridx );
+            needs_refresh = false;
+          }
+          if (run->Stat().CurrentStat() == RunStatus::IN_PROGRESS) {
+            if (needs_refresh)
+              modSystem.RefreshSpecifiedRun( ridx );
             Msg("Project %i: System %i: Run %i: ", pidx, sidx, run->RunIndex());
             run->RunSummary();
           }
