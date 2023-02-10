@@ -10,7 +10,7 @@ Exec_SetOpt::Exec_SetOpt() {}
 
 /** Basic help text. */
 void Exec_SetOpt::Help() const {
-  Msg("\t<OPTION> <VALUE>}\n");
+  Msg("\t<OPTION> <VALUE>\n");
 }
 
 /** Help text */

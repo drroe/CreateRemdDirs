@@ -8,7 +8,7 @@ using namespace Messages;
 Exec_Create::Exec_Create() {}
 
 void Exec_Create::Help() const {
-  Msg("[beg <#>] [{end <#>|nruns <#>}] [overwrite]\n");
+  Msg("\t[beg <#>] [{end <#>|nruns <#>}] [overwrite]\n");
 }
 
 Exec::RetType Exec_Create::Execute(Manager& manager, Cols& args) const {
