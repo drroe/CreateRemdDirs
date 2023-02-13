@@ -138,32 +138,6 @@ int System::WriteSystemOptions() {
   return 0;
 }
 
-/** Read MD package-specific input if needed. This is in a separate routine
-  * because it needs to be done after the initial creation options read
-  * (so that the MdPackage is actually allocated).
-  */
-int System::read_mdpackage_mdin() {
-  if (!creator_.MdinNeedsRead()) {
-    Msg("DEBUG: MDIN does not need reading. Skipping.\n");
-    return 0;
-  }
-  if (!creator_.MdinFileName().empty()) {
-    MdOptions packageOpts;
-    if (mdInterface_.Package()->ReadPackageInput( packageOpts, creator_.MdinFileName() )) {
-      ErrorMsg("Reading MD package input options from '%s' failed.\n", creator_.MdinFileName().c_str());
-      return 1;
-    }
-    // See if we want to use any of the package options
-    if (creator_.SetMdOptions( packageOpts )) {
-      ErrorMsg("Setting MD options from package options failed.\n");
-      return 1;
-    }
-  }
-
-  creator_.Set_MdinAsRead();
-  return 0;
-}
-
 /** Search for run directories in dirname_ */
 int System::FindRuns(QueueArray& queues) {
   using namespace FileRoutines;
@@ -190,7 +164,7 @@ int System::FindRuns(QueueArray& queues) {
   {
     std::string const& OPT = opair->first;
     std::string const& VAR = opair->second;
-    int ret = mdInterface_.Package()->ParseCreatorOption(OPT, VAR);
+    int ret = mdInterface_.Package()->ParseCreatorOption(creator_, OPT, VAR);
     if (ret == -1) {
       ErrorMsg("Could not parse package-specific option '%s' = '%s'\n", OPT.c_str(), VAR.c_str());
       return 1;
@@ -198,8 +172,6 @@ int System::FindRuns(QueueArray& queues) {
       Msg("Warning: Ignoring unrecognized option '%s' = '%s'\n", OPT.c_str(), VAR.c_str());
     }
   }
-  // Process MD package-specific MD input if needed
-  if (read_mdpackage_mdin()) return 1;
   // Check the options
   if (creator_.CheckCreator(system_dir_path())) {
     Msg("Warning: Invalid Creator options detected.\n");
@@ -297,7 +269,7 @@ int System::ParseOption(std::string const& OPT, std::string const& VAR) {
   }
   // Md package
   if (ret == 0) {
-    ret = mdInterface_.Package()->ParseCreatorOption( OPT, VAR );
+    ret = mdInterface_.Package()->ParseCreatorOption( creator_, OPT, VAR );
     if (ret == 1) {
       mdInterface_.Package()->CheckCreatorOptions(creator_);
       c_needs_save_ = true;
@@ -312,11 +284,6 @@ int System::ParseOption(std::string const& OPT, std::string const& VAR) {
       mdInterface_.Package()->CheckSubmitterOptions(creator_, submitter_);
       s_needs_save_ = true;
     }
-  }
-  // Handle return status
-  if (ret == 1) {
-    // Process MD package-specific MD input if needed
-    if (read_mdpackage_mdin()) return -1;
   }
   return ret;
 }

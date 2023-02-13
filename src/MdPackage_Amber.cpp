@@ -3,7 +3,6 @@
 #include "Messages.h"
 #include "TextFile.h"
 #include "RepIndexArray.h"
-#include "MdOptions.h"
 #include "StringRoutines.h"
 #include "Creator.h"
 #include "Groups.h"
@@ -14,6 +13,7 @@
 #include "Submitter.h"
 #include "Cols.h"
 #include "FileNameArray.h"
+#include "MdOptions.h"
 
 using namespace Messages;
 
@@ -51,13 +51,15 @@ MdPackage_Amber& MdPackage_Amber::operator=(MdPackage_Amber const& rhs) {
 
 void MdPackage_Amber::OptHelp() {
   Msg("Amber-specific:\n"
-      "  CPIN_FILE <file>   : CPIN file (constant pH only).\n"
-//      "  USELOG {yes|no}    : yes (default): use logfile (pmemd), otherwise do not (sander).\n"
+      "  MDIN_FILE <file> : File containing additional MD input in namelist format.\n"
+      "  CPIN_FILE <file> : CPIN file (constant pH only).\n"
      );
 }
 
 /** Write amber-specific creator options to file. */
 int MdPackage_Amber::WriteCreatorOptions(TextFile& outfile) const {
+  if (!mdin_file_.empty())
+    outfile.Printf("MDIN_FILE %s\n", mdin_file_.c_str());
   if (!cpin_file_.empty())
     outfile.Printf("CPIN_FILE %s\n", cpin_file_.c_str());
   return 0;
@@ -66,6 +68,7 @@ int MdPackage_Amber::WriteCreatorOptions(TextFile& outfile) const {
 /** print amber-specific options to stdout */
 void MdPackage_Amber::PackageInfo() const {
   Msg("Amber-specific options:\n");
+  Msg(  "  MDIN_FILE : %s\n", mdin_file_.c_str());
   if (!cpin_file_.empty())
     Msg("  CPIN_FILE : %s\n", cpin_file_.c_str());
 }
@@ -73,8 +76,24 @@ void MdPackage_Amber::PackageInfo() const {
 /** Parse amber-specific creator option.
   * \return 1 if option was parsed, -1 if error, 0 otherwise.
   */ 
-int MdPackage_Amber::ParseCreatorOption(std::string const& OPT, std::string const& VAR) {
-  if (OPT == "CPIN_FILE") {
+int MdPackage_Amber::ParseCreatorOption(Creator& creatorIn,
+                                        std::string const& OPT,
+                                        std::string const& VAR)
+{
+  if (OPT == "MDIN_FILE") {
+    // Reset existing options
+    MdOptions packageOpts;
+    mdin_file_ = VAR;
+    if (readMdInput( packageOpts, mdin_file_ )) {
+      ErrorMsg("Reading Amber MD input from '%s'\n", mdin_file_.c_str());
+      return -1;
+    }
+    // See if we want to use any of the MD input options
+    if (creatorIn.SetMdOptions( packageOpts )) {
+      ErrorMsg("Setting MD options from Amber options failed.\n");
+      return 1; 
+    }
+  } else if (OPT == "CPIN_FILE") {
     cpin_file_ = VAR;
     if (FileRoutines::fileExists(cpin_file_))
       cpin_file_ = FileRoutines::tildeExpansion( cpin_file_ );
@@ -127,7 +146,7 @@ int MdPackage_Amber::CheckSubmitterOptions(Creator const& creator, Submitter con
 }
 
 /** Read amber-specific input from MDIN file. */
-int MdPackage_Amber::ReadPackageInput(MdOptions& opts, std::string const& fname) {
+int MdPackage_Amber::readMdInput(MdOptions& opts, std::string const& fname) {
   using namespace FileRoutines;
   using namespace StringRoutines;
 

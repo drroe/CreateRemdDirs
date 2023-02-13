@@ -57,8 +57,6 @@ class System {
     void clearRuns();
     /// Find existing run index if present
     int findRunIdx(int) const;
-    /// Read MdPackage specific MD input options
-    int read_mdpackage_mdin();
     /// \return absolute system dir path
     std::string system_dir_path() const;
 

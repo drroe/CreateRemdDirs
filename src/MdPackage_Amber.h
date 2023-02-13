@@ -19,15 +19,13 @@ class MdPackage_Amber : public MdPackage {
     /// \return Copy of this class
     MdPackage* Copy() const { return (MdPackage*)new MdPackage_Amber(*this); }
     /// Process amber-specific creator option
-    int ParseCreatorOption(std::string const&, std::string const&);
+    int ParseCreatorOption(Creator&, std::string const&, std::string const&);
     /// Check creator options
     int CheckCreatorOptions(Creator const&) const;
     /// Check submitter options
     int CheckSubmitterOptions(Creator const&, Submitter const&) const;
     /// Write amber-specific creator options to file
     int WriteCreatorOptions(TextFile&) const;
-    /// Read amber-specific input (i.e. MDIN input) from file
-    int ReadPackageInput(MdOptions&, std::string const&);
     /// Print amber-specific options to stdout
     void PackageInfo() const;
     /// Create amber-specific input files
@@ -38,6 +36,8 @@ class MdPackage_Amber : public MdPackage {
     static const std::string groupfileName_; ///< REMD group file name TODO option
     static const std::string remddimName_;   ///< REMD remd.dim file name TODO option
 
+    /// Read amber-specific input (i.e. MDIN input) from file
+    int readMdInput(MdOptions&, std::string const&);
     /// Write given namelist to specified file
     void writeNamelist(TextFile&, std::string const&, MdinFile::TokenArray const&) const;
     /// Write Amber MDIN file
@@ -59,5 +59,6 @@ class MdPackage_Amber : public MdPackage {
     //bool override_ntx_;           ///< If true do not set ntx, use from MDIN
     MdinFile mdinFile_;           ///< Used to read input from MDIN
     std::string cpin_file_;       ///< Constant pH input file name
+    std::string mdin_file_;       ///< File containing additional namelist input
 };
 #endif

@@ -3,11 +3,11 @@
 #include <string>
 #include <vector>
 class RepIndexArray;
-class MdOptions;
 class Creator;
 class RunStatus;
 class TextFile;
 class Submitter;
+class MdOptions;
 /// Abstract base class for various MD packages.
 class MdPackage {
   public:
@@ -28,15 +28,13 @@ class MdPackage {
     virtual MdPackage* Copy() const = 0;
     /// Read package-specific creator options from a file
     /** \return 1 if parsed, 0 if not, -1 if error. */
-    virtual int ParseCreatorOption(std::string const&, std::string const&) = 0;
+    virtual int ParseCreatorOption(Creator&, std::string const&, std::string const&) = 0;
     /// Check creator options
     virtual int CheckCreatorOptions(Creator const&) const = 0;
     /// Check submitter options
     virtual int CheckSubmitterOptions(Creator const&, Submitter const&) const = 0;
     /// Write package-specific creator options to a file
     virtual int WriteCreatorOptions(TextFile&) const = 0;
-    /// Read package-specific input options from a file
-    virtual int ReadPackageInput(MdOptions&, std::string const&) = 0;
     /// Print package info to stdout
     virtual void PackageInfo() const = 0;
     /// Create package-specific input files

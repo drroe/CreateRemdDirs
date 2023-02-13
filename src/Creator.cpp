@@ -20,7 +20,6 @@ Creator::Creator() :
   debug_(0),
   n_md_runs_(0),
   fileExtWidth_(3),
-  mdin_needs_read_(false),
   usePrevRestartAsRef_(false),
   remd_diagonal_(false),
   runType_(MD),
@@ -119,8 +118,6 @@ int Creator::WriteOptions(TextFile& outfile) const {
     if (usePrevRestartAsRef_)
       outfile.Printf("REF_TYPE previous\n");
   }
-  if (!mdin_file_.empty())
-    outfile.Printf("MDIN_FILE %s\n", mdin_file_.c_str());
   if (!dim_files_.empty()) {
     for (Sarray::const_iterator it = dim_files_.begin(); it != dim_files_.end(); it++)
       outfile.Printf("DIMENSION %s\n", it->c_str());
@@ -212,15 +209,7 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
     mdopts_.Set_Temperature0().SetVal( convertToDouble( VAR ) );
   else if (OPT == "NTWX")
     mdopts_.Set_TrajWriteFreq().SetVal( convertToInteger( VAR ) );
-//  else if (OPT == "TRAJOUTARGS")
-//    trajoutargs_ = VAR;
-//  else if (OPT == "FULLARCHIVE")
-//    fullarchive_ = VAR;
-  else if (OPT == "MDIN_FILE") {
-    if (CheckExists("MDIN file", VAR)) { return -1; }
-    mdin_file_ = tildeExpansion( VAR );
-    mdin_needs_read_ = true;
-  } else if (OPT == "RST_FILE") {
+  else if (OPT == "RST_FILE") {
     if (fileExists( VAR ))
       mdopts_.Set_RstFilename().SetVal( tildeExpansion( VAR ) );
   } else {
@@ -408,7 +397,6 @@ void Creator::Info() const {
   Msg("Creator options:\n");
   Msg(    "  Run type              : %s\n", RUNTYPESTR_[runType_]);
   mdopts_.PrintOpts( (runType_ == MD), Dims_.DimIdx(ReplicaDimension::TEMP), Dims_.DimIdx(ReplicaDimension::PH));
-  Msg(    "  MDIN_FILE             : %s\n", mdin_file_.c_str());
   if (runType_ == MD) {
     // Regular MD
     Msg(  "  TOPOLOGY              : %s\n", top_file_.c_str());

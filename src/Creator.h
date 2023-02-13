@@ -34,14 +34,8 @@ class Creator {
     int ParseFileOption(OptArray::OptPair const&);
     /// Set MD options; only overwrite current options if not set.
     int SetMdOptions(MdOptions const&);
-    /// \return Package-specific options
+    /// \return Package-specific creator options
     OptArray const& PackageOpts() const { return package_opts_; }
-    /// \return MD-specific package input file name
-    std::string const& MdinFileName() const { return mdin_file_; }
-    /// \return True if MD-specific package input file needs to be read
-    bool MdinNeedsRead() const { return mdin_needs_read_; }
-    /// Set MD-specific package input file status to read
-    void Set_MdinAsRead() { mdin_needs_read_ = false; }
 
     /// \return Debug level
     int Debug() const { return debug_; }
@@ -89,7 +83,6 @@ class Creator {
     int debug_;                   ///< Creator debug level
     int n_md_runs_;               ///< Number of MD runs.
     int fileExtWidth_;            ///< Filename extension width
-    bool mdin_needs_read_;        ///< If true, mdin_file_ needs to be read by MdPackage
     bool usePrevRestartAsRef_;    ///< If true, reference will be restart of previous run.
     bool remd_diagonal_;          ///< If true, increment all dimensions for each replica.
     RUNTYPE runType_;             ///< Type of run from options file. For info only.
@@ -97,7 +90,6 @@ class Creator {
     std::string top_file_;        ///< Topology file name
     std::string crd_dir_;         ///< Directory where input coordinates are/MD input coords.
     std::string ref_dir_;         ///< Directory where reference coords are (like crd_dir_)
-    std::string mdin_file_;       ///< Md package-specific input file
     Sarray dim_files_;            ///< REMD dimension files
     OptArray package_opts_;       ///< Hold any potential package-specific options
 };
