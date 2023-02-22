@@ -264,15 +264,14 @@ const
 
   int irest = 1;
   int ntx = 5;
-  //if (!override_irest_) {
+  if (!mdopts.UseInitialCrdVelocities().Val()) {
     if (is_initial) {
       if (rep == 0)
         Msg("    Initial run: irest=0, ntx=1\n");
       irest = 0;
       ntx = 1;
     }
-  //} else
-  //  Msg("    Using irest/ntx from MDIN.\n");
+  }
   //if (debug_ > 1)
     Msg("\t\tMDIN: %s\n", fname.c_str()); // DEBUG
 

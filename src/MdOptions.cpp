@@ -9,7 +9,8 @@ MdOptions::MdOptions() :
   random_seed_(-1),
   nexchanges_(0),
   timeStep_(0.002),
-  temp0_(300.0)
+  temp0_(300.0),
+  useInitialCrdVelocities_(false)
 {}
 
 /** \return Total expected number of steps based on nsteps_ and nexchanges_ */
@@ -66,4 +67,9 @@ void MdOptions::PrintOpts(bool is_md, int temp0_dim, int ph_dim) const {
     if (ph_dim == -1 && pH_.IsSet())
       Msg("  pH                    : %s\n", print_opt< Option<double> >( pH_ ).c_str());
   }
+  Msg(    "  Total time            : %g\n", Total_Time());
+  if (useInitialCrdVelocities_.Val())
+    Msg(  "  First run uses velocities from initial coordinates.\n");
+  else
+    Msg(  "  First run will not use velocities from initial coordinates.\n");
 }

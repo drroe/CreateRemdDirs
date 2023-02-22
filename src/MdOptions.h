@@ -29,6 +29,7 @@ class MdOptions {
     Option<SgldType>& Set_Sgld()         { return sgld_; }
     Option<double>& Set_SgldAvgTime()    { return sgld_avgtime_; }
     Option<double>& Set_SgldTemp()       { return sgld_temp_; }
+    Option<bool>&   Set_UseInitialCrdVelocities() { return useInitialCrdVelocities_; }
 
     Option<int>    const& N_Steps()        const { return nsteps_; }
     Option<int>    const& TrajWriteFreq()  const { return traj_write_freq_; }
@@ -46,6 +47,8 @@ class MdOptions {
     Option<SgldType> const& Sgld()         const { return sgld_; }
     Option<double> const& SgldAvgTime()    const { return sgld_avgtime_; }
     Option<double> const& SgldTemp()       const { return sgld_temp_; }
+    /// \return True if velocities from initial coords should be used
+    Option<bool> const& UseInitialCrdVelocities() const { return useInitialCrdVelocities_; }
 
     // Derived quantities
     /// \return total expected # steps based on # steps and # exchanges.
@@ -73,5 +76,6 @@ class MdOptions {
     Option<SgldType> sgld_;         ///< self-guided langevin type
     Option<double> sgld_avgtime_;   ///< Self-guided langevin averaging time
     Option<double> sgld_temp_;      ///< Self-guided langevin temperature
+    Option<bool> useInitialCrdVelocities_; ///< If true, use velocities from crd_dir_.
 };
 #endif

@@ -77,7 +77,8 @@ std::string Creator::NumericalExt(int num, int max) const {
 void Creator::OptHelp() {
   Msg("Creation input file variables:\n"
       "  CRD_FILE <dir>      : Starting coordinates file/directory (run 0 only).\n"
-      "                       Expect name '<CRD_FILE>/XXX.rst7' for REMD.\n"
+      "                        Expect name '<CRD_FILE>/XXX.rst7' for REMD.\n"
+      "  CRD_VEL {yes|*no}   : Use initial velocities from starting coordinates (yes or no).\n"
       "  REF_FILE <dir>      : Reference coordinates file/directory (optional).\n"
       "                       Expect name '<REF_FILE>/XXX.rst7' for REMD.\n"
       "  REF_TYPE <type>     : <type>=single (default): Use single reference. <type>=previous: Use previous run restart.\n"
@@ -113,6 +114,12 @@ int Creator::WriteOptions(TextFile& outfile) const {
     outfile.Printf("TOPOLOGY %s\n", top_file_.c_str());
   if (!crd_dir_.empty())
     outfile.Printf("CRD_FILE %s\n", crd_dir_.c_str());
+  if (mdopts_.UseInitialCrdVelocities().IsSet()) {
+    if (mdopts_.UseInitialCrdVelocities().Val())
+      outfile.Printf("CRD_VEL yes\n");
+    else
+      outfile.Printf("CRD_VEL no\n");
+  }
   if (!ref_dir_.empty()) {
     outfile.Printf("REF_FILE %s\n", ref_dir_.c_str());
     if (usePrevRestartAsRef_)
@@ -158,8 +165,17 @@ int Creator::ParseFileOption( OptArray::OptPair const& opair ) {
   std::string const& VAR = opair.second;
   if (debug_ > 0)
     Msg("    Option: %s  Variable: %s\n", OPT.c_str(), VAR.c_str());
-  if      (OPT == "CRD_FILE") {
+  if        (OPT == "CRD_FILE") {
     crd_dir_ = VAR;
+  } else if (OPT == "CRD_VEL") {
+    if (VAR == "yes")
+      mdopts_.Set_UseInitialCrdVelocities().SetVal( true );
+    else if (VAR == "no")
+      mdopts_.Set_UseInitialCrdVelocities().SetVal( false );
+    else {
+      ErrorMsg("Expected only 'yes' or 'no' for CRD_VEL, got '%s'\n", VAR.c_str());
+      return 1;
+    }
   } else if (OPT == "DIMENSION") {
     if (CheckExists("Dimension file", VAR)) { return -1; }
     if (LoadDimension( tildeExpansion(VAR) )) { return -1; }
